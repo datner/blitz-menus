@@ -2,7 +2,7 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -41,13 +41,11 @@ model Session {
 }
 
 model Token {
-  id          Int      @id @default(autoincrement())
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id          Int       @id @default(autoincrement())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
   hashedToken String
-  type        String
-  // See note below about TokenType enum
-  // type        TokenType
+  type        TokenType
   expiresAt   DateTime
   sentTo      String
 
@@ -57,9 +55,118 @@ model Token {
   @@unique([hashedToken, type])
 }
 
-// NOTE: It's highly recommended to use an enum for the token type
-//       but enums only work in Postgres.
-//       See: https://blitzjs.com/docs/database-overview#switch-to-postgre-sql
-// enum TokenType {
-//   RESET_PASSWORD
-// }
+enum TokenType {
+  RESET_PASSWORD
+}
+
+model Restaurant {
+  id         Int              @id @default(autoincrement())
+  slug       String           @unique
+  logo       String
+  content    RestaurantI18L[]
+  menu       Menu?
+  orders     Order[]
+  categories Category[]
+  inventory  Item[]
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @default(now()) @updatedAt
+}
+
+model RestaurantI18L {
+  id           Int        @id @default(autoincrement())
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  restaurantId Int
+  locale       Locale
+  name         String
+}
+
+model Menu {
+  id           Int        @id @default(autoincrement())
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  restaurantId Int        @unique
+  identifier   String     @unique
+  categories   Category[]
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @default(now()) @updatedAt
+
+  @@unique([restaurantId, identifier])
+}
+
+model Category {
+  id           Int            @id @default(autoincrement())
+  menu         Menu?          @relation(fields: [menuId], references: [id])
+  menuId       Int?
+  restaurant   Restaurant     @relation(fields: [restaurantId], references: [id])
+  restaurantId Int
+  identifier   String         @unique
+  content      CategoryI18L[]
+  items        Item[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @default(now()) @updatedAt
+
+  @@unique([restaurantId, identifier])
+}
+
+model CategoryI18L {
+  id          Int      @id @default(autoincrement())
+  category    Category @relation(fields: [categoryId], references: [id])
+  categoryId  Int
+  locale      Locale
+  name        String
+  description String?  @default("")
+}
+
+model Item {
+  id           Int         @id @default(autoincrement())
+  price        Int
+  identifier   String      @unique
+  image        String
+  content      ItemI18L[]
+  orderItems   OrderItem[]
+  category     Category    @relation(fields: [categoryId], references: [id])
+  categoryId   Int
+  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id])
+  restaurantId Int
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @default(now()) @updatedAt
+
+  @@unique([restaurantId, identifier])
+}
+
+model ItemI18L {
+  id          Int    @id @default(autoincrement())
+  item        Item   @relation(fields: [itemId], references: [id])
+  itemId      Int
+  locale      Locale
+  name        String
+  description String
+}
+
+model Order {
+  id           Int         @id @default(autoincrement())
+  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id])
+  restaurantId Int
+  table        String
+  fulilled     Boolean     @default(false)
+  deleted      Boolean     @default(false)
+  orderItems   OrderItem[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @default(now()) @updatedAt
+}
+
+model OrderItem {
+  id        Int      @id @default(autoincrement())
+  item      Item     @relation(fields: [itemId], references: [id])
+  itemId    Int
+  order     Order    @relation(fields: [orderId], references: [id])
+  orderId   Int
+  fulilled  Boolean  @default(false)
+  deleted   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+enum Locale {
+  en
+  he
+}
