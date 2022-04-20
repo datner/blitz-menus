@@ -52,5 +52,8 @@ lib-cov
 # Serverless directories
 .serverless/
 
+# Google Cloud Services
+keys.json
+
 # Stores VSCode versions used for testing VSCode extensions
 .vscode-test

@@ -146,7 +146,7 @@ const seed = async () => {
       identifier: "coka-cola",
       restaurant: { connect: { id: jenia.id } },
       category: { connect: { id: drinks.id } },
-      image: "coke.png",
+      image: "items/coca-cola.jpg",
       price: 13,
       content: {
         createMany: {
@@ -173,7 +173,7 @@ const seed = async () => {
       identifier: "fanta",
       restaurant: { connect: { id: jenia.id } },
       category: { connect: { id: drinks.id } },
-      image: "fanta.png",
+      image: "items/coca-cola.jpg",
       price: 13,
       content: {
         createMany: {
@@ -196,7 +196,7 @@ const seed = async () => {
       identifier: "soda",
       restaurant: { connect: { id: jenia.id } },
       category: { connect: { identifier: drinks.identifier } },
-      image: "soda.png",
+      image: "items/coca-cola.jpg",
       price: 11,
       content: {
         createMany: {
@@ -219,7 +219,7 @@ const seed = async () => {
       identifier: "goldstar",
       restaurant: { connect: { id: jenia.id } },
       category: { connect: { identifier: beers.identifier } },
-      image: "fanta.png",
+      image: "items/coca-cola.jpg",
       price: 27,
       content: {
         createMany: {
@@ -242,7 +242,7 @@ const seed = async () => {
       identifier: "heiniken",
       restaurant: { connect: { id: jenia.id } },
       category: { connect: { identifier: beers.identifier } },
-      image: "fanta.png",
+      image: "items/coca-cola.jpg",
       price: 27,
       content: {
         createMany: {
@@ -268,7 +268,7 @@ const seed = async () => {
       identifier: "goldstar-unfiltered",
       restaurant: { connect: { id: jenia.id } },
       category: { connect: { identifier: beers.identifier } },
-      image: "fanta.png",
+      image: "items/coca-cola.jpg",
       price: 27,
       content: {
         createMany: {

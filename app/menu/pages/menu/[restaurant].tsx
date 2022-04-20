@@ -6,6 +6,7 @@ import {
   InferGetStaticPropsType,
   useMutation,
   useRouter,
+  Image,
 } from "blitz"
 import clsx from "clsx"
 import db, { Locale } from "db"
@@ -114,7 +115,7 @@ export default function Menu(props: InferGetStaticPropsType<typeof getStaticProp
               }}
               className="mb-2 border-b pl-5 border-gray-200 px-6 py-1 font-medium text-gray-800"
             >
-              <h3 className="text-3xl">{getTitle(category)}</h3>
+              <h3 className="text-lg sm:text-3xl">{getTitle(category)}</h3>
             </div>
             <ul role="list" className="flex flex-col gap-2">
               {category.items?.map((item) => {
@@ -126,12 +127,25 @@ export default function Menu(props: InferGetStaticPropsType<typeof getStaticProp
                   <li
                     key={item.id}
                     onClick={() => setItems((prev) => [...prev, item])}
-                    className="relative px-2"
+                    className="relative px-2 sm:px-6"
                   >
-                    <div className="relative flex flex-1 overflow-hidden rounded-lg bg-white object-fill shadow">
-                      <ItemData content={content} price={item.price} />
-                      <div className="relative h-28 w-56 flex-shrink-0 translate-x-1/4 bg-gray-500 rtl:-translate-x-1/4">
-                        <div className="absolute inset-y-0 -left-px right-1/2 bg-gradient-to-r from-white rtl:left-1/2 rtl:-right-px rtl:bg-gradient-to-l" />
+                    <div className="relative flex flex-1 h-28 overflow-hidden rounded-lg bg-white shadow">
+                      <div className="flex-shrink-0 flex-grow w-40 overflow-hidden">
+                        <ItemData content={content} price={item.price} />
+                      </div>
+                      <div className="flex-shrink-0 flex relative justify-center items-center">
+                        <div className="relative flex-shrink-0 w-32 mr-4 h-20 sm:w-48 sm:h-24 sm:mr-2">
+                          <Image
+                            src={`${item.image}?fit=crop`}
+                            layout="fill"
+                            objectFit="cover"
+                            className="rounded"
+                            height={112 * 2}
+                            width={224 * 2}
+                            alt={item.identifier}
+                          />
+                          <div className="absolute hidden inset-y-0 -left-px right-1/2 bg-gradient-to-r from-white rtl:left-1/2 rtl:-right-px rtl:bg-gradient-to-l" />
+                        </div>
                       </div>
                     </div>
                   </li>
