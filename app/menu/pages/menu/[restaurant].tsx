@@ -38,7 +38,7 @@ const titleLocale = (locale: Locale) =>
 export default function Menu(props: InferGetStaticPropsType<typeof getStaticProps>) {
   const { restaurant } = props
   const { categories } = restaurant
-  const [section, setSection] = useState(categories?.at(0)?.identifier)
+  const [section, setSection] = useState(categories?.[0]?.identifier)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const categoryRefs = useRef<HTMLDivElement[]>([])
   const navsLocations = useRef<HTMLButtonElement[]>([])
@@ -92,8 +92,10 @@ export default function Menu(props: InferGetStaticPropsType<typeof getStaticProp
           (it) => it.getBoundingClientRect().top > STICKY_BAR_HEIGHT
         )
         const activeIndex = Math.max(nextSection, 0) - 1
-        const activeSection = categoryRefs.current.at(activeIndex)
-        const activeButton = navsLocations.current.at(activeIndex)
+        const activeSection =
+          categoryRefs.current[activeIndex === -1 ? categoryRefs.current.length - 1 : activeIndex]
+        const activeButton =
+          navsLocations.current[activeIndex === -1 ? navsLocations.current.length - 1 : activeIndex]
         if (activeSection && section !== activeSection.id) {
           setSection(activeSection.id)
           activeButton?.scrollIntoView({ inline: "start", behavior: "smooth" })
@@ -115,7 +117,7 @@ export default function Menu(props: InferGetStaticPropsType<typeof getStaticProp
               navsLocations.current[index] = el
             }}
             onClick={() => {
-              const el = categoryRefs.current.at(index)
+              const el = categoryRefs.current[index]
               if (!scrollContainerRef.current || !el) return
 
               const top = el.offsetTop - STICKY_BAR_HEIGHT
