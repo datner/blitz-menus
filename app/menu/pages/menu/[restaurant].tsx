@@ -18,10 +18,9 @@ import { useRef, useState } from "react"
 import { z } from "zod"
 import { ItemData } from "app/menu/components/ItemData"
 import { Category__Content } from "app/menu/types/menu"
-
-const zLocale = z.nativeEnum(Locale).default(Locale.en)
-
-type Unarray<T> = T extends Array<infer U> ? U : T
+import { OrderModal } from "app/menu/components/OrderModal"
+import { zLocale } from "app/core/hooks/useLocale"
+import { Item__Content } from "app/menu/types/item"
 
 const STICKY_BAR_HEIGHT = 52
 
@@ -46,15 +45,42 @@ export default function Menu(props: InferGetStaticPropsType<typeof getStaticProp
   const router = useRouter()
   const locale = zLocale.parse(router.locale)
   const { table } = Query.parse(router.params)
-  const [items, setItems] = useState<SendOrderItem[]>([])
-  const { y: buttonY } = useSpring({ y: items.length ? 0 : 200 })
+  const [item, setItem] = useState<Item__Content | null>(null)
+  const [open, setOpen] = useState(false)
+
+  const itemsRef = useRef<Map<Item__Content, number>>(new Map())
+  const [orderItems, setItems] = useState<SendOrderItem[]>([])
+  const [overallAmount, setOverallAmount] = useState(0)
+  const [overallPrice, setOverallPrice] = useState(0)
+  const { y: buttonY } = useSpring({ y: orderItems.length ? 0 : 200 })
   const [sendOrder] = useMutation(sendOrderMutation, {
     onSuccess() {
+      itemsRef.current.clear()
       setItems([])
     },
   })
 
   const getTitle = titleLocale(locale)
+
+  const handleShowOrderModal = (item: Item__Content) => {
+    setItem(item)
+    setOpen(true)
+  }
+
+  const handleOrder = (amount: number) => {
+    setOpen(false)
+    if (!item) return
+    itemsRef.current.set(item, amount)
+    const itemTuples = Array.from(itemsRef.current.entries())
+    setOverallAmount(itemTuples.reduce((sum, [, amount]) => sum + amount, 0))
+    setOverallPrice(itemTuples.reduce((sum, [item, amount]) => sum + item.price * amount, 0))
+    setItems(
+      itemTuples.map(([item, amount]) => ({
+        amount,
+        item: { id: item.id },
+      }))
+    )
+  }
 
   if (!categories) return <>:()</>
 
@@ -73,7 +99,10 @@ export default function Menu(props: InferGetStaticPropsType<typeof getStaticProp
           activeButton?.scrollIntoView({ inline: "start", behavior: "smooth" })
         }
       }}
-      className="relative h-full bg-gray-50 scroll-smooth overflow-auto"
+      className={clsx(
+        "relative h-full bg-gray-50 scroll-smooth",
+        open ? "overflow-hidden" : "overflow-auto"
+      )}
     >
       <nav
         aria-label="Categories"
@@ -126,7 +155,7 @@ export default function Menu(props: InferGetStaticPropsType<typeof getStaticProp
                 return (
                   <li
                     key={item.id}
-                    onClick={() => setItems((prev) => [...prev, item])}
+                    onClick={() => handleShowOrderModal(item)}
                     className="relative px-2 sm:px-6"
                   >
                     <div className="relative flex flex-1 h-28 overflow-hidden rounded-lg bg-white shadow">
@@ -136,15 +165,12 @@ export default function Menu(props: InferGetStaticPropsType<typeof getStaticProp
                       <div className="flex-shrink-0 flex relative justify-center items-center">
                         <div className="relative flex-shrink-0 w-32 mr-4 h-20 sm:w-48 sm:h-24 sm:mr-2">
                           <Image
-                            src={`${item.image}?fit=crop`}
+                            src={`${item.image}?fit=crop&crop=entropy&h=${128 * 4}`}
                             layout="fill"
                             objectFit="cover"
-                            className="rounded"
-                            height={112 * 2}
-                            width={224 * 2}
+                            className="rounded h-full"
                             alt={item.identifier}
                           />
-                          <div className="absolute hidden inset-y-0 -left-px right-1/2 bg-gradient-to-r from-white rtl:left-1/2 rtl:-right-px rtl:bg-gradient-to-l" />
                         </div>
                       </div>
                     </div>
@@ -157,11 +183,24 @@ export default function Menu(props: InferGetStaticPropsType<typeof getStaticProp
       </div>
       <animated.button
         style={{ y: buttonY }}
-        className="fixed bottom-3 right-3"
-        onClick={() => sendOrder({ table, restaurantId: restaurant.id, items })}
+        className="inline-flex fixed inset-x-3 bottom-3 justify-center items-center rounded-md border border-transparent shadow-lg shadow-indigo-300 px-2 py-2 bg-indigo-600 text-base text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm"
+        onClick={() => {
+          // sendOrder({ table, restaurantId: restaurant.id, orderItems })
+          console.log("sending order with", orderItems)
+        }}
       >
-        {items.length}
+        <span className="bg-indigo-100 border text-xs border-indigo-500 text-indigo-800 rounded-full h-6 w-6 flex justify-center items-center">
+          {overallAmount}
+        </span>
+        <span className="inline-block text-left flex-grow pl-3">View Order</span>
+        <span className="tracking-wider font-thin">₪{overallPrice}</span>
       </animated.button>
+      <OrderModal
+        open={open}
+        onClose={() => setOpen(false)}
+        item={item}
+        onAddToOrder={handleOrder}
+      />
     </div>
   )
 }

@@ -160,6 +160,7 @@ model OrderItem {
   itemId    Int
   order     Order    @relation(fields: [orderId], references: [id])
   orderId   Int
+  amount    Int      @default(1)
   fulilled  Boolean  @default(false)
   deleted   Boolean  @default(false)
   createdAt DateTime @default(now())
