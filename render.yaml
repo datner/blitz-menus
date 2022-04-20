@@ -7,7 +7,7 @@ services:
     name: blitzapp
     env: node
     plan: free
-    buildCommand: yarn --frozen-lockfile --prod=false && blitz build && blitz prisma migrate deploy
+    buildCommand: yarn --frozen-lockfile --prod=false && blitz prisma migrate deploy && blitz build
     startCommand: blitz start
     envVars:
       - key: NODE_ENV
