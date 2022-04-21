@@ -25,10 +25,12 @@ const seed = async () => {
   })
 
   for (let i = 0; i < 5; i++) {
-    const type = faker.unique(faker.animal.type)
+    const type = faker.animal.type()
+    const name = faker.name.firstName()
+    const identifier = `${name}-${type}`
     const cat = await db.category.create({
       data: {
-        identifier: type,
+        identifier,
         restaurant: { connect: { id: rnd.id } },
         content: {
           create: {

@@ -147,7 +147,7 @@ model Order {
   restaurant   Restaurant  @relation(fields: [restaurantId], references: [id])
   restaurantId Int
   table        String
-  fulilled     Boolean     @default(false)
+  fulfilled    Boolean     @default(false)
   deleted      Boolean     @default(false)
   orderItems   OrderItem[]
   createdAt    DateTime    @default(now())
