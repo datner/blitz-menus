@@ -1,18 +1,37 @@
+import { animated, useSpring } from "@react-spring/web"
 import { ItemI18L } from "db"
-import { identity } from "fp-ts/function"
+import { flow, identity, pipe } from "fp-ts/function"
+import * as O from "fp-ts/Option"
+import { useEffect, useRef } from "react"
 
 type Props = {
   price: number
   content: ItemI18L
+  amount: O.Option<number>
 }
 
+const reveal = flow(O.isSome, (it) => (it ? 1 : 0))
+
+const orOne = O.getOrElse(() => 1)
+
 export function ItemData(props: Props) {
-  const { price, content } = props
+  const { price, content, amount } = props
+  const { opacity } = useSpring({ opacity: reveal(amount) })
+  const amountRef = useRef(1)
+  useEffect(() => {
+    amountRef.current = orOne(amount)
+  }, [amount])
+  const orPrev = O.getOrElse(() => amountRef.current)
   const t = identity
   return (
     <dl className="z-10 flex h-full flex-col truncate p-3">
       <dt className="sr-only">{t("name")}</dt>
-      <dd className="text-sm sm:text-base text-gray-800">{content.name}</dd>
+      <dd className="text-sm sm:text-base text-gray-800">
+        {content.name}{" "}
+        <animated.span style={{ opacity }} className="font-semibold text-indigo-600">
+          x{orPrev(amount)}
+        </animated.span>
+      </dd>
       <dt className="sr-only">{t("description")}</dt>
       <dd className="text-xs sm:text-sm text-gray-500 whitespace-normal line-clamp-2 ">
         {content.description}
@@ -20,7 +39,7 @@ export function ItemData(props: Props) {
       <dt className="sr-only">{t("price")}</dt>
       <div className="flex-grow" />
       <dd>
-        <span className="rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800">
+        <span className="rounded-full bg-indigo-100 px-2 py-1 ml-1 text-xs font-medium text-indigo-800">
           {price} ₪
         </span>
       </dd>

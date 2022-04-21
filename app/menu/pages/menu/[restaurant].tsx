@@ -1,4 +1,4 @@
-import { animated, useSpring } from "@react-spring/web"
+import { animated, Spring, useSpring } from "@react-spring/web"
 import sendOrderMutation, { SendOrderItem } from "app/menu/mutations/sendOrder"
 import {
   GetStaticPaths,
@@ -21,6 +21,7 @@ import { Category__Content } from "app/menu/types/menu"
 import { OrderModal } from "app/menu/components/OrderModal"
 import { zLocale } from "app/core/hooks/useLocale"
 import { Item__Content } from "app/menu/types/item"
+import { Transition } from "@headlessui/react"
 
 const STICKY_BAR_HEIGHT = 52
 
@@ -68,9 +69,10 @@ export default function Menu(props: InferGetStaticPropsType<typeof getStaticProp
   }
 
   const handleOrder = (amount: number) => {
-    setOpen(false)
     if (!item) return
-    itemsRef.current.set(item, amount)
+
+    amount === 0 ? itemsRef.current.delete(item) : itemsRef.current.set(item, amount)
+
     const itemTuples = Array.from(itemsRef.current.entries())
     setOverallAmount(itemTuples.reduce((sum, [, amount]) => sum + amount, 0))
     setOverallPrice(itemTuples.reduce((sum, [item, amount]) => sum + item.price * amount, 0))
@@ -151,6 +153,13 @@ export default function Menu(props: InferGetStaticPropsType<typeof getStaticProp
             <ul role="list" className="flex flex-col gap-2">
               {category.items?.map((item) => {
                 const content = item.content.find((it) => it.locale === locale)
+                const isInOrder = itemsRef.current.has(item)
+                const amountOption = Op.fromNullable(itemsRef.current.get(item))
+                const price = pipe(
+                  amountOption,
+                  Op.getOrElse(() => 1),
+                  (amount) => amount * item.price
+                )
 
                 if (!content) return null
 
@@ -161,8 +170,16 @@ export default function Menu(props: InferGetStaticPropsType<typeof getStaticProp
                     className="relative px-2 sm:px-6"
                   >
                     <div className="relative flex flex-1 h-28 overflow-hidden rounded-lg bg-white shadow">
+                      <Spring to={{ x: isInOrder ? 0 : -8 }}>
+                        {(styles) => (
+                          <animated.div
+                            style={styles}
+                            className="inset-y-0 bg-indigo-500  left-0 w-2 absolute"
+                          />
+                        )}
+                      </Spring>
                       <div className="flex-shrink-0 flex-grow w-40 overflow-hidden">
-                        <ItemData content={content} price={item.price} />
+                        <ItemData content={content} price={price} amount={amountOption} />
                       </div>
                       <div className="flex-shrink-0 flex relative justify-center items-center">
                         <div className="relative flex-shrink-0 w-32 mr-4 h-20 sm:w-48 sm:h-24 sm:mr-2">
@@ -201,6 +218,7 @@ export default function Menu(props: InferGetStaticPropsType<typeof getStaticProp
         open={open}
         onClose={() => setOpen(false)}
         item={item}
+        previousAmount={item && itemsRef.current.get(item)}
         onAddToOrder={handleOrder}
       />
     </div>
