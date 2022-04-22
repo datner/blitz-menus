@@ -639,6 +639,45 @@
   resolved "https://registry.yarnpkg.com/@faker-js/faker/-/faker-6.1.2.tgz#7093ea65e6d78eae388918a46968c083366bd621"
   integrity sha512-QSvmexHCxeRUk1/yKmoEDaWB5Hohjvtim5g2JJwy8S/l0L4b3y/GxSpE6vN4SBoVGGahEQW21uqyRr7EofI35A==
 
+"@formatjs/ecma402-abstract@1.11.4", "@formatjs/ecma402-abstract@^1.11.4":
+  version "1.11.4"
+  resolved "https://registry.yarnpkg.com/@formatjs/ecma402-abstract/-/ecma402-abstract-1.11.4.tgz#b962dfc4ae84361f9f08fbce411b4e4340930eda"
+  integrity sha512-EBikYFp2JCdIfGEb5G9dyCkTGDmC57KSHhRQOC3aYxoPWVZvfWCDjZwkGYHN7Lis/fmuWl906bnNTJifDQ3sXw==
+  dependencies:
+    "@formatjs/intl-localematcher" "0.2.25"
+    tslib "^2.1.0"
+
+"@formatjs/fast-memoize@1.2.1":
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/@formatjs/fast-memoize/-/fast-memoize-1.2.1.tgz#e6f5aee2e4fd0ca5edba6eba7668e2d855e0fc21"
+  integrity sha512-Rg0e76nomkz3vF9IPlKeV+Qynok0r7YZjL6syLz4/urSg0IbjPZCB/iYUMNsYA643gh4mgrX3T7KEIFIxJBQeg==
+  dependencies:
+    tslib "^2.1.0"
+
+"@formatjs/icu-messageformat-parser@2.0.19":
+  version "2.0.19"
+  resolved "https://registry.yarnpkg.com/@formatjs/icu-messageformat-parser/-/icu-messageformat-parser-2.0.19.tgz#3a9ae986b9e42b6a833aceab010ee88e36020d26"
+  integrity sha512-8HsLm9YLyVVIDMyBJb7wmve2wGd461cUwJ470eUog5YH5ZsF4p5lgvaJ+oGKxz1mrSMNNdDHU9v/NDsS+z+ilg==
+  dependencies:
+    "@formatjs/ecma402-abstract" "1.11.4"
+    "@formatjs/icu-skeleton-parser" "1.3.6"
+    tslib "^2.1.0"
+
+"@formatjs/icu-skeleton-parser@1.3.6":
+  version "1.3.6"
+  resolved "https://registry.yarnpkg.com/@formatjs/icu-skeleton-parser/-/icu-skeleton-parser-1.3.6.tgz#4ce8c0737d6f07b735288177049e97acbf2e8964"
+  integrity sha512-I96mOxvml/YLrwU2Txnd4klA7V8fRhb6JG/4hm3VMNmeJo1F03IpV2L3wWt7EweqNLES59SZ4d6hVOPCSf80Bg==
+  dependencies:
+    "@formatjs/ecma402-abstract" "1.11.4"
+    tslib "^2.1.0"
+
+"@formatjs/intl-localematcher@0.2.25":
+  version "0.2.25"
+  resolved "https://registry.yarnpkg.com/@formatjs/intl-localematcher/-/intl-localematcher-0.2.25.tgz#60892fe1b271ec35ba07a2eb018a2dd7bca6ea3a"
+  integrity sha512-YmLcX70BxoSopLFdLr1Ds99NdlTI2oWoLbaUW2M406lxOIPzE1KQhRz2fPUkq34xVZQaihCoU29h0KK7An3bhA==
+  dependencies:
+    tslib "^2.1.0"
+
 "@hapi/accept@5.0.2":
   version "5.0.2"
   resolved "https://registry.yarnpkg.com/@hapi/accept/-/accept-5.0.2.tgz#ab7043b037e68b722f93f376afb05e85c0699523"
@@ -5258,6 +5297,16 @@ internal-slot@^1.0.3:
     has "^1.0.3"
     side-channel "^1.0.4"
 
+intl-messageformat@^9.3.18:
+  version "9.12.0"
+  resolved "https://registry.yarnpkg.com/intl-messageformat/-/intl-messageformat-9.12.0.tgz#b69d042fa7db229e799eaf3afb09f8ceadd306e7"
+  integrity sha512-5Q9j21JreB1G27/CqMYsA+pvJ19JjHyhiTSeUuvZK9BCDJGHtOLgpUUcGM+GLHiUuoVMKVeeX1smamiVHQrSKQ==
+  dependencies:
+    "@formatjs/ecma402-abstract" "1.11.4"
+    "@formatjs/fast-memoize" "1.2.1"
+    "@formatjs/icu-messageformat-parser" "2.0.19"
+    tslib "^2.1.0"
+
 is-accessor-descriptor@^0.1.6:
   version "0.1.6"
   resolved "https://registry.yarnpkg.com/is-accessor-descriptor/-/is-accessor-descriptor-0.1.6.tgz#a9e12cb3ae8d876727eeef3843f8a0897b5c98d6"
@@ -7037,6 +7086,13 @@ new-github-issue-url@0.2.1:
   version "0.2.1"
   resolved "https://registry.yarnpkg.com/new-github-issue-url/-/new-github-issue-url-0.2.1.tgz#e17be1f665a92de465926603e44b9f8685630c1d"
   integrity sha512-md4cGoxuT4T4d/HDOXbrUHkTKrp/vp+m3aOA7XXVYwNsUNMK49g3SQicTSeV5GIz/5QVGAeYRAOlyp9OvlgsYA==
+
+next-intl@2.6.0:
+  version "2.6.0"
+  resolved "https://registry.yarnpkg.com/next-intl/-/next-intl-2.6.0.tgz#e657c1be2e80741de7558df3d1bc07c98090ba83"
+  integrity sha512-5cDibs69le41o/qBxDbNWbuEbyAbRbbe2gGF43mx2qwUMQ1esMIA0XoLqvtMPg4qLA4kJViz447Ah01SvRhcXw==
+  dependencies:
+    use-intl "^2.6.0"
 
 "next@npm:@blitzjs/next@11.1.0-0.45.4":
   version "11.1.0-0.45.4"
@@ -9839,6 +9895,14 @@ url@^0.11.0:
   dependencies:
     punycode "1.3.2"
     querystring "0.2.0"
+
+use-intl@^2.6.0:
+  version "2.6.0"
+  resolved "https://registry.yarnpkg.com/use-intl/-/use-intl-2.6.0.tgz#e797c61b9b96e093345b1de3f2d12f5887889479"
+  integrity sha512-c9UyAo0isJ7Lg7QPp3z8RBmUuUqRk6SQpOF5WsspSc6zs7ERbcwFcoG+WVLhk1hkpD+fVX5WaI+hd3A+5ezbjg==
+  dependencies:
+    "@formatjs/ecma402-abstract" "^1.11.4"
+    intl-messageformat "^9.3.18"
 
 use-subscription@1.5.1:
   version "1.5.1"

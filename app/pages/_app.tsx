@@ -9,17 +9,20 @@ import {
 } from "blitz"
 import LoginForm from "app/auth/components/LoginForm"
 import "app/core/styles/index.css"
+import { NextIntlProvider } from "next-intl"
 
 export default function App({ Component, pageProps }: AppProps) {
   const getLayout = Component.getLayout || ((page) => page)
 
   return (
-    <ErrorBoundary
-      FallbackComponent={RootErrorFallback}
-      onReset={useQueryErrorResetBoundary().reset}
-    >
-      {getLayout(<Component {...pageProps} />)}
-    </ErrorBoundary>
+    <NextIntlProvider messages={pageProps.messages}>
+      <ErrorBoundary
+        FallbackComponent={RootErrorFallback}
+        onReset={useQueryErrorResetBoundary().reset}
+      >
+        {getLayout(<Component {...pageProps} />)}
+      </ErrorBoundary>
+    </NextIntlProvider>
   )
 }
 

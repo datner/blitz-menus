@@ -1,0 +1,24 @@
+{
+  "Components": {
+    "ViewOrderButton": {
+      "viewOrder": "צפה בהזמנה"
+    },
+    "CallToActionText": {
+      "new": "הוסף להזמנה",
+      "update": "עדכן הזמנה",
+      "remove": {
+        "_": "הסר",
+        "all": "הכל"
+      }
+    },
+    "OrderModal": {
+      "yourOrder": "ההזמנה שלך",
+      "order": "הזמן!"
+    },
+    "ItemData": {
+      "name": "שם",
+      "description": "תיאור",
+      "price": "מחיר"
+    }
+  }
+}
