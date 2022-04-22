@@ -11,7 +11,7 @@ export function AmountButtons(props: AmountButtonsProps) {
   const { amount, onChange, minimum } = props
 
   return (
-    <span className="relative w-full z-0 inline-flex shadow-sm rounded-md">
+    <span className="relative w-full z-0 inline-flex rtl:flex-row-reverse shadow-sm rounded-md">
       <button
         type="button"
         onClick={() => amount > minimum && onChange(decrement(amount))}

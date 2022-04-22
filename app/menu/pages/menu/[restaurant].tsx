@@ -1,25 +1,24 @@
-import { animated, Spring, useSpring } from "@react-spring/web"
-import sendOrderMutation, { SendOrderItem } from "app/menu/mutations/sendOrder"
+import { animated, Spring } from "@react-spring/web"
 import {
   GetStaticPaths,
   GetStaticPropsContext,
   InferGetStaticPropsType,
-  useMutation,
   useRouter,
   Image,
 } from "blitz"
 import clsx from "clsx"
 import db, { Locale } from "db"
-import { pipe, flow } from "fp-ts/function"
+import { pipe } from "fp-ts/function"
 import * as Op from "fp-ts/Option"
 import { useRef, useState } from "react"
 import { z } from "zod"
 import { ItemData } from "app/menu/components/ItemData"
 import { ItemModal } from "app/menu/components/ItemModal"
-import { zLocale } from "app/core/hooks/useLocale"
+import { useLocale } from "app/core/hooks/useLocale"
 import { Item__Content } from "app/menu/types/item"
 import { FullOrderItem, OrderModal } from "app/menu/components/OrderModal"
 import { titleFor } from "app/core/helpers/content"
+import { ViewOrderButton } from "app/menu/components/ViewOrderButton"
 
 const STICKY_BAR_HEIGHT = 52
 
@@ -31,7 +30,7 @@ export default function Menu(props: InferGetStaticPropsType<typeof getStaticProp
   const categoryRefs = useRef<HTMLDivElement[]>([])
   const navsLocations = useRef<HTMLButtonElement[]>([])
   const router = useRouter()
-  const locale = zLocale.parse(router.locale)
+  const locale = useLocale()
   const { table } = Query.parse(router.params)
   const [item, setItem] = useState<Item__Content | null>(null)
   const [open, setOpen] = useState(false)
@@ -41,13 +40,6 @@ export default function Menu(props: InferGetStaticPropsType<typeof getStaticProp
   const [orderItems, setItems] = useState<FullOrderItem[]>([])
   const [overallAmount, setOverallAmount] = useState(0)
   const [overallPrice, setOverallPrice] = useState(0)
-  const { y: buttonY } = useSpring({ y: orderItems.length ? 0 : 200 })
-  const [sendOrder] = useMutation(sendOrderMutation, {
-    onSuccess() {
-      itemsRef.current.clear()
-      setItems([])
-    },
-  })
 
   const getTitle = titleFor(locale)
 
@@ -76,6 +68,7 @@ export default function Menu(props: InferGetStaticPropsType<typeof getStaticProp
   }
 
   if (!categories) return <>:()</>
+  const hideIndicator = locale === "he" ? 8 : -8
 
   return (
     <div
@@ -96,7 +89,7 @@ export default function Menu(props: InferGetStaticPropsType<typeof getStaticProp
       }}
       className={clsx(
         "relative h-full bg-gray-50 scroll-smooth",
-        open ? "overflow-hidden" : "overflow-auto"
+        open || open2 ? "overflow-hidden" : "overflow-auto"
       )}
     >
       <nav
@@ -130,7 +123,7 @@ export default function Menu(props: InferGetStaticPropsType<typeof getStaticProp
       </nav>
       <div className="space-y-8">
         {categories?.map((category, index) => (
-          <div key={category.id}>
+          <div key={category.id} className="group">
             <div
               id={category.identifier}
               ref={(el) => {
@@ -141,7 +134,7 @@ export default function Menu(props: InferGetStaticPropsType<typeof getStaticProp
             >
               <h3 className="text-lg sm:text-3xl">{getTitle(category)}</h3>
             </div>
-            <ul role="list" className="flex flex-col gap-2">
+            <ul role="list" className="flex flex-col gap-2 group-last:min-h-screen">
               {category.items?.map((item) => {
                 const content = item.content.find((it) => it.locale === locale)
                 const isInOrder = itemsRef.current.has(item)
@@ -161,19 +154,19 @@ export default function Menu(props: InferGetStaticPropsType<typeof getStaticProp
                     className="relative px-2 sm:px-6"
                   >
                     <div className="relative flex flex-1 h-28 overflow-hidden rounded-lg bg-white shadow">
-                      <Spring to={{ x: isInOrder ? 0 : -8 }}>
+                      <Spring to={{ x: isInOrder ? 0 : hideIndicator }}>
                         {(styles) => (
                           <animated.div
                             style={styles}
-                            className="inset-y-0 bg-indigo-500  left-0 w-2 absolute"
+                            className="inset-y-0 bg-indigo-500 ltr:left-0 rtl:right-0 w-2 absolute"
                           />
                         )}
                       </Spring>
-                      <div className="flex-shrink-0 flex-grow w-40 overflow-hidden">
+                      <div className="grow w-40 overflow-hidden">
                         <ItemData content={content} price={price} amount={amountOption} />
                       </div>
-                      <div className="flex-shrink-0 flex relative justify-center items-center">
-                        <div className="relative flex-shrink-0 w-32 mr-4 h-20 sm:w-48 sm:h-24 sm:mr-2">
+                      <div className="flex relative justify-center items-center">
+                        <div className="relative flex-shrink-0 w-32 ltr:mr-4 rtl:ml-4 h-20 sm:w-48 sm:h-24 sm:mr-2">
                           <Image
                             src={`${item.image}?fit=crop&crop=entropy&h=${128 * 4}`}
                             layout="fill"
@@ -191,20 +184,15 @@ export default function Menu(props: InferGetStaticPropsType<typeof getStaticProp
           </div>
         ))}
       </div>
-      <animated.button
-        style={{ y: buttonY }}
-        className="inline-flex fixed inset-x-3 bottom-3 justify-center items-center rounded-md border border-transparent shadow-lg shadow-indigo-300 px-2 py-2 bg-indigo-600 text-base text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm"
+      <ViewOrderButton
+        show={orderItems.length > 0}
         onClick={() => {
           // sendOrder({ table, restaurantId: restaurant.id, orderItems })
           setOpen2(true)
         }}
-      >
-        <span className="bg-indigo-100 border text-xs border-indigo-500 text-indigo-800 rounded-full h-6 w-6 flex justify-center items-center">
-          {overallAmount}
-        </span>
-        <span className="inline-block text-left flex-grow pl-3">View Order</span>
-        <span className="tracking-wider font-thin">₪{overallPrice}</span>
-      </animated.button>
+        amount={overallAmount}
+        price={overallPrice}
+      />
       <ItemModal
         open={open}
         onClose={() => setOpen(false)}
@@ -260,5 +248,8 @@ export const getStaticProps = async (context: GetStaticPropsContext) => {
     },
   })
 
-  return { props: { restaurant }, revalidate: 10 }
+  return {
+    props: { restaurant, messages: await import(`app/menu/messages/${context.locale}.json`) },
+    revalidate: 10,
+  }
 }

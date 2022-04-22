@@ -3,12 +3,11 @@ import { Fragment, useEffect, useState } from "react"
 import { Dialog, Transition } from "@headlessui/react"
 import { Item__Content } from "../types/item"
 import { useLocale } from "app/core/hooks/useLocale"
-import { decrement, increment } from "fp-ts/function"
-import { PlusIcon, MinusIcon } from "@heroicons/react/solid"
 import clsx from "clsx"
 import { Nullish } from "../types/utils"
 import { descriptionFor, price, titleFor } from "app/core/helpers/content"
 import { AmountButtons } from "./AmountButtons"
+import { useTranslations } from "next-intl"
 
 type Props = {
   open?: boolean
@@ -84,7 +83,7 @@ export function ItemModal(props: Props) {
                   />
                 )}
               </div>
-              <div className="mt-3 sm:mt-5">
+              <div className="mt-3 sm:mt-5 rtl:text-right">
                 <Dialog.Title as="h3" className="text-3xl leading-6 font-medium text-gray-900">
                   {title(item)}
                 </Dialog.Title>
@@ -139,11 +138,12 @@ type OrderState = typeof OrderState[keyof typeof OrderState]
 
 function CallToActionText(props: CallToActionTextProps) {
   const { price, orderState, multi } = props
+  const t = useTranslations("Components.CallToActionText")
   switch (orderState) {
     case OrderState.NEW:
       return (
         <>
-          <span className="inline-block text-left font-medium flex-grow">Add to order</span>
+          <span className="inline-block rtl:text-right font-medium flex-grow">{t("new")}</span>
           <span className="tracking-wider">₪{price}</span>
         </>
       )
@@ -151,15 +151,15 @@ function CallToActionText(props: CallToActionTextProps) {
     case OrderState.UPDATE:
       return (
         <>
-          <span className="inline-block text-left font-medium flex-grow">Update order</span>
+          <span className="inline-block rtl:text-right font-medium flex-grow">{t("update")}</span>
           <span className="tracking-wider">₪{price}</span>
         </>
       )
 
     case OrderState.REMOVE:
       return (
-        <span className="inline-block text-left font-medium flex-grow">
-          Remove {multi && "all"}
+        <span className="inline-block rtl:text-right font-medium flex-grow">
+          {t("remove._")} {multi && t("remove.all")}
         </span>
       )
   }

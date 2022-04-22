@@ -6,6 +6,7 @@ import { useMutation } from "blitz"
 import { useLocale } from "app/core/hooks/useLocale"
 import { price, titleFor } from "app/core/helpers/content"
 import { AmountButtons } from "./AmountButtons"
+import { useTranslations } from "next-intl"
 
 export interface FullOrderItem {
   amount: number
@@ -24,6 +25,7 @@ type Props = {
 export function OrderModal(props: Props) {
   const { onClose, open, items, onOrderChange, overallPrice, overallAmount } = props
   const locale = useLocale()
+  const t = useTranslations("Components.OrderModal")
   const [sendOrder] = useMutation(sendOrderMutation, {})
 
   const title = titleFor(locale)
@@ -54,7 +56,7 @@ export function OrderModal(props: Props) {
                   >
                     <XIcon />
                   </button>
-                  <h3 className="text-2xl">Your Order</h3>
+                  <h3 className="text-2xl rtl:mt-9">{t("yourOrder")}</h3>
                   <hr className="w-1/2 mt-1 mb-2" />
                   <ul className="space-y-8">
                     {items.map(({ item, amount }) => (
@@ -63,7 +65,7 @@ export function OrderModal(props: Props) {
                           <div>
                             <p className="text-sm whitespace-pre-line">
                               <span>{title(item)}</span>
-                              <span className="rounded-full ml-1 text-xs font-medium text-indigo-800">
+                              <span className="rounded-full mx-1 text-xs font-medium text-indigo-800">
                                 {price(item) * amount}₪
                               </span>
                             </p>
@@ -84,7 +86,7 @@ export function OrderModal(props: Props) {
                     <span className="bg-indigo-100 border text-xs border-indigo-500 text-indigo-800 rounded-full h-6 w-6 flex justify-center items-center">
                       {overallAmount}
                     </span>
-                    <span className="inline-block text-left flex-grow pl-3">Order!</span>
+                    <span className="inline-block flex-grow pl-3">{t("order")}</span>
                     <span className="tracking-wider font-thin">₪{overallPrice}</span>
                   </button>
                 </div>

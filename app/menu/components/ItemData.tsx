@@ -1,7 +1,8 @@
 import { animated, useSpring } from "@react-spring/web"
 import { ItemI18L } from "db"
-import { flow, identity, pipe } from "fp-ts/function"
+import { flow } from "fp-ts/function"
 import * as O from "fp-ts/Option"
+import { useTranslations } from "next-intl"
 import { useEffect, useRef } from "react"
 
 type Props = {
@@ -17,12 +18,14 @@ const orOne = O.getOrElse(() => 1)
 export function ItemData(props: Props) {
   const { price, content, amount } = props
   const { opacity } = useSpring({ opacity: reveal(amount) })
+  const t = useTranslations("Components.ItemData")
   const amountRef = useRef(1)
   useEffect(() => {
     amountRef.current = orOne(amount)
   }, [amount])
+
   const orPrev = O.getOrElse(() => amountRef.current)
-  const t = identity
+
   return (
     <dl className="z-10 flex h-full flex-col truncate p-3">
       <dt className="sr-only">{t("name")}</dt>
