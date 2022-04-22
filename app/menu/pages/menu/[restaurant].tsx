@@ -12,29 +12,16 @@ import clsx from "clsx"
 import db, { Locale } from "db"
 import { pipe, flow } from "fp-ts/function"
 import * as Op from "fp-ts/Option"
-import * as O from "monocle-ts/Optional"
-import * as L from "monocle-ts/Lens"
 import { useRef, useState } from "react"
 import { z } from "zod"
 import { ItemData } from "app/menu/components/ItemData"
-import { Category__Content } from "app/menu/types/menu"
-import { OrderModal } from "app/menu/components/OrderModal"
+import { ItemModal } from "app/menu/components/ItemModal"
 import { zLocale } from "app/core/hooks/useLocale"
 import { Item__Content } from "app/menu/types/item"
-import { Transition } from "@headlessui/react"
+import { FullOrderItem, OrderModal } from "app/menu/components/OrderModal"
+import { titleFor } from "app/core/helpers/content"
 
 const STICKY_BAR_HEIGHT = 52
-
-const titleLocale = (locale: Locale) =>
-  flow(
-    pipe(
-      L.id<Category__Content>(),
-      L.prop("content"),
-      L.findFirst((it) => it.locale === locale),
-      O.prop("name")
-    ).getOption,
-    Op.getOrElse(() => "Unknown")
-  )
 
 export default function Menu(props: InferGetStaticPropsType<typeof getStaticProps>) {
   const { restaurant } = props
@@ -48,9 +35,10 @@ export default function Menu(props: InferGetStaticPropsType<typeof getStaticProp
   const { table } = Query.parse(router.params)
   const [item, setItem] = useState<Item__Content | null>(null)
   const [open, setOpen] = useState(false)
+  const [open2, setOpen2] = useState(false)
 
   const itemsRef = useRef<Map<Item__Content, number>>(new Map())
-  const [orderItems, setItems] = useState<SendOrderItem[]>([])
+  const [orderItems, setItems] = useState<FullOrderItem[]>([])
   const [overallAmount, setOverallAmount] = useState(0)
   const [overallPrice, setOverallPrice] = useState(0)
   const { y: buttonY } = useSpring({ y: orderItems.length ? 0 : 200 })
@@ -61,16 +49,14 @@ export default function Menu(props: InferGetStaticPropsType<typeof getStaticProp
     },
   })
 
-  const getTitle = titleLocale(locale)
+  const getTitle = titleFor(locale)
 
   const handleShowOrderModal = (item: Item__Content) => {
     setItem(item)
     setOpen(true)
   }
 
-  const handleOrder = (amount: number) => {
-    if (!item) return
-
+  const changeOrder = (item: Item__Content, amount: number) => {
     amount === 0 ? itemsRef.current.delete(item) : itemsRef.current.set(item, amount)
 
     const itemTuples = Array.from(itemsRef.current.entries())
@@ -79,9 +65,14 @@ export default function Menu(props: InferGetStaticPropsType<typeof getStaticProp
     setItems(
       itemTuples.map(([item, amount]) => ({
         amount,
-        item: { id: item.id },
+        item,
       }))
     )
+  }
+
+  const handleOrder = (amount: number) => {
+    if (!item) return
+    changeOrder(item, amount)
   }
 
   if (!categories) return <>:()</>
@@ -205,7 +196,7 @@ export default function Menu(props: InferGetStaticPropsType<typeof getStaticProp
         className="inline-flex fixed inset-x-3 bottom-3 justify-center items-center rounded-md border border-transparent shadow-lg shadow-indigo-300 px-2 py-2 bg-indigo-600 text-base text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm"
         onClick={() => {
           // sendOrder({ table, restaurantId: restaurant.id, orderItems })
-          console.log("sending order with", orderItems)
+          setOpen2(true)
         }}
       >
         <span className="bg-indigo-100 border text-xs border-indigo-500 text-indigo-800 rounded-full h-6 w-6 flex justify-center items-center">
@@ -214,12 +205,20 @@ export default function Menu(props: InferGetStaticPropsType<typeof getStaticProp
         <span className="inline-block text-left flex-grow pl-3">View Order</span>
         <span className="tracking-wider font-thin">₪{overallPrice}</span>
       </animated.button>
-      <OrderModal
+      <ItemModal
         open={open}
         onClose={() => setOpen(false)}
         item={item}
         previousAmount={item && itemsRef.current.get(item)}
         onAddToOrder={handleOrder}
+      />
+      <OrderModal
+        overallAmount={overallAmount}
+        overallPrice={overallPrice}
+        onOrderChange={changeOrder}
+        open={open2}
+        onClose={() => setOpen2(false)}
+        items={orderItems}
       />
     </div>
   )
