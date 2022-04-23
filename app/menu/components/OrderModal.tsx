@@ -86,7 +86,9 @@ export function OrderModal(props: Props) {
                     <span className="bg-indigo-100 border text-xs border-indigo-500 text-indigo-800 rounded-full h-6 w-6 flex justify-center items-center">
                       {overallAmount}
                     </span>
-                    <span className="inline-block flex-grow pl-3">{t("order")}</span>
+                    <span className="inline-block flex-grow px-3 text-left rtl:text-right">
+                      {t("order")}
+                    </span>
                     <span className="tracking-wider font-thin">₪{overallPrice}</span>
                   </button>
                 </div>
