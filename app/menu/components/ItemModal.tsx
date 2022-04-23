@@ -72,7 +72,7 @@ export function ItemModal(props: Props) {
               }
             }}
           >
-            <div className="absolute inset-x-0 bottom-0 inline-block w-full align-bottom bg-white rounded-xl p-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-sm sm:w-full sm:p-6">
+            <div className="absolute inset-x-0 bottom-0 inline-block w-full align-bottom bg-white rounded-t-xl p-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-sm sm:w-full sm:p-6">
               <div className="relative -mx-4 -mt-4 h-56">
                 {item && (
                   <Image
@@ -121,6 +121,8 @@ export function ItemModal(props: Props) {
     </Transition.Root>
   )
 }
+
+export default ItemModal
 
 interface CallToActionTextProps {
   price: number

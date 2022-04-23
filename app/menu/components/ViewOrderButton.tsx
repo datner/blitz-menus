@@ -37,3 +37,5 @@ export function ViewOrderButton(props: Props) {
       )
   )
 }
+
+export default ViewOrderButton
