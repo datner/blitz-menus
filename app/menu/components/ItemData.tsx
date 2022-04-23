@@ -3,7 +3,7 @@ import { ItemI18L } from "db"
 import { flow } from "fp-ts/function"
 import * as O from "fp-ts/Option"
 import { useTranslations } from "next-intl"
-import { useEffect, useRef } from "react"
+import { memo, useEffect, useRef } from "react"
 
 type Props = {
   price: number
@@ -15,7 +15,7 @@ const reveal = flow(O.isSome, (it) => (it ? 1 : 0))
 
 const orOne = O.getOrElse(() => 1)
 
-export function ItemData(props: Props) {
+export const ItemData = memo(function ItemData(props: Props) {
   const { price, content, amount } = props
   const { opacity } = useSpring({ opacity: reveal(amount) })
   const t = useTranslations("Components.ItemData")
@@ -48,4 +48,4 @@ export function ItemData(props: Props) {
       </dd>
     </dl>
   )
-}
+})

@@ -1,24 +1,17 @@
-import { animated, Spring } from "@react-spring/web"
-import {
-  GetStaticPaths,
-  GetStaticPropsContext,
-  InferGetStaticPropsType,
-  useRouter,
-  Image,
-} from "blitz"
+import { GetStaticPaths, GetStaticPropsContext, InferGetStaticPropsType, useRouter } from "blitz"
 import clsx from "clsx"
 import db, { Locale } from "db"
-import { pipe } from "fp-ts/function"
 import * as Op from "fp-ts/Option"
 import { useRef, useState } from "react"
 import { z } from "zod"
-import { ItemData } from "app/menu/components/ItemData"
 import { ItemModal } from "app/menu/components/ItemModal"
 import { useLocale } from "app/core/hooks/useLocale"
 import { Item__Content } from "app/menu/types/item"
 import { FullOrderItem, OrderModal } from "app/menu/components/OrderModal"
 import { titleFor } from "app/core/helpers/content"
 import { ViewOrderButton } from "app/menu/components/ViewOrderButton"
+import { ListItem } from "app/menu/components/ListItem"
+import { CategoryHeader } from "app/menu/components/CategoryHeader"
 
 const STICKY_BAR_HEIGHT = 52
 
@@ -68,7 +61,6 @@ export default function Menu(props: InferGetStaticPropsType<typeof getStaticProp
   }
 
   if (!categories) return <>:()</>
-  const hideIndicator = locale === "he" ? 8 : -8
 
   return (
     <div
@@ -77,11 +69,10 @@ export default function Menu(props: InferGetStaticPropsType<typeof getStaticProp
         const nextSection = categoryRefs.current.findIndex(
           (it) => it.getBoundingClientRect().top > STICKY_BAR_HEIGHT
         )
-        const activeIndex = Math.max(nextSection, 0) - 1
-        const activeSection =
-          categoryRefs.current[activeIndex === -1 ? categoryRefs.current.length - 1 : activeIndex]
-        const activeButton =
-          navsLocations.current[activeIndex === -1 ? navsLocations.current.length - 1 : activeIndex]
+        const activeIndex =
+          nextSection === -1 ? categoryRefs.current.length - 1 : Math.max(nextSection, 1) - 1
+        const activeSection = categoryRefs.current[activeIndex]
+        const activeButton = navsLocations.current[activeIndex]
         if (activeSection && section !== activeSection.id) {
           setSection(activeSection.id)
           activeButton?.scrollIntoView({ inline: "start", behavior: "smooth" })
@@ -124,62 +115,22 @@ export default function Menu(props: InferGetStaticPropsType<typeof getStaticProp
       <div className="space-y-8">
         {categories?.map((category, index) => (
           <div key={category.id} className="group">
-            <div
-              id={category.identifier}
+            <CategoryHeader
               ref={(el) => {
                 if (!el) return
                 categoryRefs.current[index] = el
               }}
-              className="mb-2 border-b pl-5 border-gray-200 px-6 py-1 font-medium text-gray-800"
-            >
-              <h3 className="text-lg sm:text-3xl">{getTitle(category)}</h3>
-            </div>
+              category={category}
+            />
             <ul role="list" className="flex flex-col gap-2 group-last:min-h-screen">
-              {category.items?.map((item) => {
-                const content = item.content.find((it) => it.locale === locale)
-                const isInOrder = itemsRef.current.has(item)
-                const amountOption = Op.fromNullable(itemsRef.current.get(item))
-                const price = pipe(
-                  amountOption,
-                  Op.getOrElse(() => 1),
-                  (amount) => amount * item.price
-                )
-
-                if (!content) return null
-
-                return (
-                  <li
-                    key={item.id}
-                    onClick={() => handleShowOrderModal(item)}
-                    className="relative px-2 sm:px-6"
-                  >
-                    <div className="relative flex flex-1 h-28 overflow-hidden rounded-lg bg-white shadow">
-                      <Spring to={{ x: isInOrder ? 0 : hideIndicator }}>
-                        {(styles) => (
-                          <animated.div
-                            style={styles}
-                            className="inset-y-0 bg-indigo-500 ltr:left-0 rtl:right-0 w-2 absolute"
-                          />
-                        )}
-                      </Spring>
-                      <div className="grow w-40 overflow-hidden">
-                        <ItemData content={content} price={price} amount={amountOption} />
-                      </div>
-                      <div className="flex relative justify-center items-center">
-                        <div className="relative flex-shrink-0 w-32 ltr:mr-4 rtl:ml-4 h-20 sm:w-48 sm:h-24 sm:mr-2">
-                          <Image
-                            src={`${item.image}?fit=crop&crop=entropy&h=${128 * 4}`}
-                            layout="fill"
-                            objectFit="cover"
-                            className="rounded h-full"
-                            alt={item.identifier}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </li>
-                )
-              })}
+              {category.items?.map((item) => (
+                <ListItem
+                  key={item.id}
+                  item={item}
+                  amountOption={Op.fromNullable(itemsRef.current.get(item))}
+                  onClick={() => handleShowOrderModal(item)}
+                />
+              ))}
             </ul>
           </div>
         ))}

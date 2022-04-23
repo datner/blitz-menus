@@ -1,12 +1,13 @@
 import { Item__Content } from "../types/item"
-import { animated, useTransition } from "@react-spring/web"
+import { animated, useChain, useSpring, useSpringRef, useTransition } from "@react-spring/web"
 import { XIcon } from "@heroicons/react/solid"
 import sendOrderMutation from "app/menu/mutations/sendOrder"
 import { useMutation } from "blitz"
 import { useLocale } from "app/core/hooks/useLocale"
 import { price, titleFor } from "app/core/helpers/content"
-import { AmountButtons } from "./AmountButtons"
+import { AmountButtons, AmountButtonsProps } from "./AmountButtons"
 import { useTranslations } from "next-intl"
+import { useEffect, useRef, useState } from "react"
 
 export interface FullOrderItem {
   amount: number
@@ -37,6 +38,10 @@ export function OrderModal(props: Props) {
     reverse: open,
   })
 
+  useEffect(() => {
+    if (open && items.length === 0) onClose()
+  }, [open, items, onClose])
+
   return (
     <>
       {transition(
@@ -58,9 +63,9 @@ export function OrderModal(props: Props) {
                   </button>
                   <h3 className="text-2xl rtl:mt-9">{t("yourOrder")}</h3>
                   <hr className="w-1/2 mt-1 mb-2" />
-                  <ul className="space-y-8">
+                  <ul className="divide-y divide-indigo-400">
                     {items.map(({ item, amount }) => (
-                      <li className="h-10 flex items-center" key={item.id}>
+                      <li className="h-10 py-8 flex items-center" key={item.id}>
                         <div className="flex-grow">
                           <div>
                             <p className="text-sm whitespace-pre-line">
@@ -72,7 +77,7 @@ export function OrderModal(props: Props) {
                           </div>
                         </div>
                         <div className="basis-28">
-                          <AmountButtons
+                          <Thing
                             minimum={0}
                             amount={amount}
                             onChange={(newAmount) => onOrderChange(item, newAmount)}
@@ -97,5 +102,57 @@ export function OrderModal(props: Props) {
           )
       )}
     </>
+  )
+}
+
+function Thing(props: AmountButtonsProps) {
+  const [show, setShow] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const containerWidth = containerRef.current?.offsetWidth ?? 0
+  const firstApi = useSpringRef()
+  const { width } = useSpring({
+    ref: firstApi,
+    width: show ? containerWidth : 40,
+  })
+
+  const secondApi = useSpringRef()
+  const { transform, opacity, pointerEvents } = useSpring({
+    ref: secondApi,
+    opacity: show ? 1 : 0,
+    transform: "",
+    pointerEvents: show ? ("auto" as const) : ("none" as const),
+    config: { mass: 5, tension: 500, friction: 80 },
+  })
+
+  useChain([firstApi, secondApi], [0, 0.3])
+
+  return (
+    <div
+      ref={containerRef}
+      className="relative flex items-center justify-center"
+      onClick={() => setShow(true)}
+    >
+      <animated.div
+        className="absolute inset-0 flex flex-row-reverse items-center"
+        style={{ opacity: opacity.to((o) => 1 - o), transform }}
+      >
+        <animated.div
+          style={{ width }}
+          className="h-10 rounded-md text-sm sm:text-base text-indigo-500 border-gray-300 flex items-center justify-center bg-indigo-50 border"
+        >
+          {props.amount}
+        </animated.div>
+      </animated.div>
+      <animated.div
+        className="absolute inset-0 flex items-center justify-center"
+        style={{
+          opacity,
+          transform,
+          pointerEvents,
+        }}
+      >
+        <AmountButtons {...props} />
+      </animated.div>
+    </div>
   )
 }

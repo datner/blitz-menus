@@ -1,7 +1,7 @@
 import { MinusIcon, PlusIcon } from "@heroicons/react/solid"
 import { decrement, increment } from "fp-ts/function"
 
-interface AmountButtonsProps {
+export interface AmountButtonsProps {
   amount: number
   onChange(amount: number): void
   minimum: number
