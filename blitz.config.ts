@@ -1,5 +1,10 @@
 import { Locale } from "db"
 import { BlitzConfig, sessionMiddleware, simpleRolesIsAuthorized } from "blitz"
+import bundleAnalyzer from "@next/bundle-analyzer"
+
+const withBundleAnalyzer = bundleAnalyzer({
+  enabled: process.env.ANALYZE === "true",
+})
 
 const config: BlitzConfig = {
   middleware: [
@@ -24,6 +29,7 @@ const config: BlitzConfig = {
     // Important: return the modified config
     return config
   },
-  */
+ */
 }
-module.exports = config
+
+module.exports = withBundleAnalyzer(config)
