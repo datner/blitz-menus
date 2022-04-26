@@ -52,7 +52,6 @@ export function Form<S extends z.ZodType<any, any>>({
             }
           }
         })}
-        className="form"
         {...props}
       >
         {/* Form fields supplied as children are rendered here */}
@@ -65,16 +64,14 @@ export function Form<S extends z.ZodType<any, any>>({
         )}
 
         {submitText && (
-          <button type="submit" disabled={ctx.formState.isSubmitting}>
+          <button
+            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            type="submit"
+            disabled={ctx.formState.isSubmitting}
+          >
             {submitText}
           </button>
         )}
-
-        <style global jsx>{`
-          .form > * + * {
-            margin-top: 1rem;
-          }
-        `}</style>
       </form>
     </FormProvider>
   )

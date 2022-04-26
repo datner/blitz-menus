@@ -1,54 +1,74 @@
 import { AuthenticationError, Link, useMutation, Routes, PromiseReturnType } from "blitz"
 import { LabeledTextField } from "app/core/components/LabeledTextField"
-import { Form, FORM_ERROR } from "app/core/components/Form"
 import login from "app/auth/mutations/login"
 import { Login } from "app/auth/validations"
+import { FormProvider } from "react-hook-form"
+import { useZodForm } from "app/core/hooks/useZodForm"
 
 type LoginFormProps = {
-  onSuccess?: (user: PromiseReturnType<typeof login>) => void
+  onSuccess(user: PromiseReturnType<typeof login>): void
 }
 
 export const LoginForm = (props: LoginFormProps) => {
+  const { onSuccess } = props
   const [loginMutation] = useMutation(login)
 
+  const form = useZodForm({
+    schema: Login,
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  })
+
+  const { formState, handleSubmit, setFormError } = form
+  const { isSubmitting } = formState
+
+  const onSubmit = handleSubmit(async (data) => {
+    try {
+      onSuccess(await loginMutation(data))
+    } catch (error: unknown) {
+      if (error instanceof AuthenticationError) {
+        return setFormError("Sorry, those credentials are invalid")
+      }
+
+      if (error instanceof Error) {
+        return setFormError(
+          "Sorry, we had an unexpected error. Please try again. - " + error.toString()
+        )
+      }
+
+      return setFormError("Sorry, we had an unexpected error. Please try again.")
+    }
+  })
+
   return (
-    <div>
-      <h1>Login</h1>
-
-      <Form
-        submitText="Login"
-        schema={Login}
-        initialValues={{ email: "", password: "" }}
-        onSubmit={async (values) => {
-          try {
-            const user = await loginMutation(values)
-            props.onSuccess?.(user)
-          } catch (error: any) {
-            if (error instanceof AuthenticationError) {
-              return { [FORM_ERROR]: "Sorry, those credentials are invalid" }
-            } else {
-              return {
-                [FORM_ERROR]:
-                  "Sorry, we had an unexpected error. Please try again. - " + error.toString(),
-              }
-            }
-          }
-        }}
-      >
-        <LabeledTextField name="email" label="Email" placeholder="Email" />
-        <LabeledTextField name="password" label="Password" placeholder="Password" type="password" />
-        <div>
-          <Link href={Routes.ForgotPasswordPage()}>
-            <a>Forgot your password?</a>
-          </Link>
-        </div>
-      </Form>
-
-      <div style={{ marginTop: "1rem" }}>
-        Or <Link href={Routes.SignupPage()}>Sign Up</Link>
+    <FormProvider {...form}>
+      <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+        <form className="space-y-6" onSubmit={onSubmit}>
+          <fieldset className="space-y-6" disabled={isSubmitting}>
+            <LabeledTextField name="email" label="Email" placeholder="Email" />
+            <LabeledTextField
+              name="password"
+              label="Password"
+              placeholder="Password"
+              type="password"
+            />
+          </fieldset>
+          <div>
+            <Link href={Routes.ForgotPasswordPage()}>
+              <a>Forgot your password?</a>
+            </Link>
+          </div>
+          <button
+            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            type="submit"
+            disabled={isSubmitting}
+          >
+            Login
+          </button>
+        </form>
       </div>
-    </div>
+    </FormProvider>
   )
 }
-
-export default LoginForm

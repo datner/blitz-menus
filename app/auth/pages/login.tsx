@@ -6,13 +6,15 @@ const LoginPage: BlitzPage = () => {
   const router = useRouter()
 
   return (
-    <div>
-      <LoginForm
-        onSuccess={(_user) => {
-          const next = router.query.next ? decodeURIComponent(router.query.next as string) : "/"
-          router.push(next)
-        }}
-      />
+    <div className="min-h-full flex bg-gray-50 flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <LoginForm
+          onSuccess={(_user) => {
+            const next = router.query.next ? decodeURIComponent(router.query.next as string) : "/"
+            router.push(next)
+          }}
+        />
+      </div>
     </div>
   )
 }

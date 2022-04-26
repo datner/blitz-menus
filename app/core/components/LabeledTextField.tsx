@@ -1,56 +1,49 @@
-import { forwardRef, PropsWithoutRef, ComponentPropsWithoutRef } from "react"
-import { useFormContext } from "react-hook-form"
+import { ExclamationCircleIcon } from "@heroicons/react/solid"
+import { ComponentPropsWithoutRef, memo } from "react"
+import { RegisterOptions, useFormContext } from "react-hook-form"
+import { InputBase } from "./InputBase"
 
-export interface LabeledTextFieldProps extends PropsWithoutRef<JSX.IntrinsicElements["input"]> {
+export interface LabeledTextFieldProps extends ComponentPropsWithoutRef<"input"> {
   /** Field name. */
   name: string
   /** Field label. */
   label: string
   /** Field type. Doesn't include radio buttons and checkboxes */
   type?: "text" | "password" | "email" | "number"
-  outerProps?: PropsWithoutRef<JSX.IntrinsicElements["div"]>
+  registerOptions?: RegisterOptions
+  outerProps?: ComponentPropsWithoutRef<"div">
   labelProps?: ComponentPropsWithoutRef<"label">
 }
 
-export const LabeledTextField = forwardRef<HTMLInputElement, LabeledTextFieldProps>(
-  ({ label, outerProps, labelProps, name, ...props }, ref) => {
-    const {
-      register,
-      formState: { isSubmitting, errors },
-    } = useFormContext()
-    const error = Array.isArray(errors[name])
-      ? errors[name].join(", ")
-      : errors[name]?.message || errors[name]
-
+export const LabeledTextField = memo<LabeledTextFieldProps>(
+  ({ label, outerProps, labelProps, name, registerOptions, ...props }) => {
+    const { register, getFieldState, formState } = useFormContext()
+    const { error } = getFieldState(name, formState)
+    const errorId = `${name}-error`
     return (
       <div {...outerProps}>
         <label {...labelProps}>
-          {label}
-          <input disabled={isSubmitting} {...register(name)} {...props} />
+          <span className="block text-sm font-medium text-gray-700">{label}</span>
+          <div className="mt-1 relative">
+            <InputBase
+              {...register(name, registerOptions)}
+              {...props}
+              aria-invalid={Boolean(error)}
+              aria-describedby={error ? errorId : undefined}
+            />
+            {error && (
+              <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                <ExclamationCircleIcon className="h-5 w-5 text-red-500" aria-hidden="true" />
+              </div>
+            )}
+          </div>
         </label>
 
         {error && (
-          <div role="alert" style={{ color: "red" }}>
-            {error}
-          </div>
+          <p id={errorId} className="mt-2 text-sm text-red-600">
+            {error.message}
+          </p>
         )}
-
-        <style jsx>{`
-          label {
-            display: flex;
-            flex-direction: column;
-            align-items: start;
-            font-size: 1rem;
-          }
-          input {
-            font-size: 1rem;
-            padding: 0.25rem 0.5rem;
-            border-radius: 3px;
-            border: 1px solid purple;
-            appearance: none;
-            margin-top: 0.5rem;
-          }
-        `}</style>
       </div>
     )
   }
