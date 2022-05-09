@@ -1,9 +1,10 @@
-import { useCallback, useLayoutEffect, useRef } from "react"
+import { useCallback, useRef } from "react"
+import { useIsomorphicLayoutEffect } from "./useIsomorphicLayoutEffect"
 
 export function useEvent<T extends (...args: any) => any>(handler: T): T {
   const handlerRef = useRef<T>(handler)
 
-  useLayoutEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     handlerRef.current = handler
   })
 
