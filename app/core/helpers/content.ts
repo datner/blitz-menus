@@ -11,7 +11,7 @@ interface ContentPartial {
 }
 
 interface ContentfulPartial {
-  content: ContentPartial[]
+  content: readonly ContentPartial[]
 }
 
 export const contentOption = (prop: keyof ContentPartial, locale: Locale) =>
