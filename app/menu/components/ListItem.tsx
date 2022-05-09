@@ -42,7 +42,7 @@ export const ListItem = memo(function ListItem(props: Props) {
           <ItemData content={content} price={price} amount={amountOption} />
         </div>
         <div className="flex relative justify-center items-center">
-          <div className="relative flex-shrink-0 w-32 xs:w-48 rtl:ml-4 h-36">
+          <div className="relative flex-shrink-0 w-32 xs:w-48 h-36">
             <Image src={item.image} layout="fill" objectFit="cover" alt={item.identifier} />
           </div>
         </div>
