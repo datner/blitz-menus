@@ -1,5 +1,6 @@
 import { Locale } from "db"
 import { BlitzConfig, sessionMiddleware, simpleRolesIsAuthorized } from "blitz"
+// @ts-ignore
 import bundleAnalyzer from "@next/bundle-analyzer"
 
 const withBundleAnalyzer = bundleAnalyzer({
