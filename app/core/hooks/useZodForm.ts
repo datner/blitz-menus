@@ -2,6 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useState } from "react"
 import { FieldValues, useForm, UseFormProps } from "react-hook-form"
 import type * as z from "zod"
+import { useEvent } from "./useEvent"
 
 type UseZodFormProps<
   Zod extends z.ZodSchema,
@@ -18,5 +19,11 @@ export const useZodForm = <Zod extends z.ZodSchema, TContext = any>({
     ...props,
     resolver: zodResolver(schema),
   })
-  return Object.assign(form, { formError, setFormError })
+  const bind = useEvent<typeof form["register"]>((name, options) => {
+    const { error } = form.getFieldState(name, form.formState)
+    const errorId = `${name}-error`
+
+    return { error, errorId, ...form.register(name, options) }
+  })
+  return Object.assign(form, { formError, setFormError, bind })
 }
