@@ -7,7 +7,7 @@ import {
   ErrorFallbackProps,
   useQueryErrorResetBoundary,
 } from "blitz"
-import LoginForm from "app/auth/components/LoginForm"
+import { LoginForm } from "app/auth/components/LoginForm"
 import "app/core/styles/index.css"
 import { NextIntlProvider } from "next-intl"
 
