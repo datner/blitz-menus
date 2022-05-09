@@ -1,27 +1,26 @@
 import { useRef, useState } from "react"
-import type { FullOrderItem } from "../components/OrderModal"
-import type { Item__Content } from "../types/item"
+import type { FullOrderItem, Item__Content, OrderMeta } from "../types/item"
 
 export function useOrder() {
-  const itemsRef = useRef<Map<Item__Content, number>>(new Map())
+  const itemsRef = useRef<Map<Item__Content, OrderMeta>>(new Map())
   const overalls = useRef({
     amount: 0,
     price: 0,
   })
   const [orderItems, setItems] = useState<FullOrderItem[]>([])
 
-  const changeOrder = (item: Item__Content, amount: number) => {
-    amount === 0 ? itemsRef.current.delete(item) : itemsRef.current.set(item, amount)
+  const changeOrder = (item: Item__Content, meta: OrderMeta) => {
+    meta.amount === 0 ? itemsRef.current.delete(item) : itemsRef.current.set(item, meta)
 
     const itemTuples = Array.from(itemsRef.current.entries())
-    overalls.current.amount = itemTuples.reduce((sum, [, amount]) => sum + amount, 0)
+    overalls.current.amount = itemTuples.reduce((sum, [, { amount }]) => sum + amount, 0)
     overalls.current.price = itemTuples.reduce(
-      (sum, [item, amount]) => sum + item.price * amount,
+      (sum, [item, { amount }]) => sum + item.price * amount,
       0
     )
     setItems(
-      itemTuples.map(([item, amount]) => ({
-        amount,
+      itemTuples.map(([item, meta]) => ({
+        ...meta,
         item,
       }))
     )
