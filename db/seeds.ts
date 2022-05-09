@@ -1,4 +1,3 @@
-import { faker } from "@faker-js/faker"
 import db, { Locale } from "./index"
 
 /*
@@ -9,61 +8,6 @@ import db, { Locale } from "./index"
  */
 const seed = async () => {
   console.log("start seeding....")
-  console.log("creating random-eats")
-
-  const rnd = await db.restaurant.create({
-    data: {
-      slug: "random-eats",
-      logo: "random-eats.png",
-      content: {
-        create: {
-          name: faker.company.bsNoun(),
-          locale: Locale.en,
-        },
-      },
-    },
-  })
-
-  for (let i = 0; i < 5; i++) {
-    const type = faker.animal.type()
-    const name = faker.name.firstName()
-    const identifier = `${name}-${type}`
-    const cat = await db.category.create({
-      data: {
-        identifier,
-        restaurant: { connect: { id: rnd.id } },
-        content: {
-          create: {
-            locale: Locale.en,
-            name: type,
-          },
-        },
-      },
-    })
-    for (let i = 0; i < 10; i++) {
-      if (type in faker.animal) {
-        const breed = faker.unique(
-          type in faker.animal ? faker.animal[type] : faker.animal.cat
-        ) as string
-        await db.item.create({
-          data: {
-            identifier: breed,
-            restaurant: { connect: { id: rnd.id } },
-            category: { connect: { id: cat.id } },
-            image: `${breed}.png`,
-            price: faker.datatype.number(100),
-            content: {
-              create: {
-                locale: Locale.en,
-                name: breed,
-                description: faker.lorem.sentence(),
-              },
-            },
-          },
-        })
-      }
-    }
-  }
 
   console.log("creating jenia...")
   const jenia = await db.restaurant.create({

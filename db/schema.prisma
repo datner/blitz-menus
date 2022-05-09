@@ -68,6 +68,7 @@ model Restaurant {
   orders     Order[]
   categories Category[]
   inventory  Item[]
+  bons       Bon[]
   createdAt  DateTime         @default(now())
   updatedAt  DateTime         @default(now()) @updatedAt
 }
@@ -146,6 +147,8 @@ model Order {
   id           Int         @id @default(autoincrement())
   restaurant   Restaurant  @relation(fields: [restaurantId], references: [id])
   restaurantId Int
+  bon          Bon?        @relation(fields: [bonId], references: [id])
+  bonId        Int?
   table        String
   fulfilled    Boolean     @default(false)
   deleted      Boolean     @default(false)
@@ -160,11 +163,24 @@ model OrderItem {
   itemId    Int
   order     Order    @relation(fields: [orderId], references: [id])
   orderId   Int
+  comment   String   @default("")
   amount    Int      @default(1)
   fulilled  Boolean  @default(false)
   deleted   Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
+}
+
+model Bon {
+  id           Int        @id @default(autoincrement())
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  restaurantId Int
+  table        String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @default(now()) @updatedAt
+  closed       Boolean    @default(false)
+  lifespan     Int
+  orders       Order[]
 }
 
 enum Locale {
