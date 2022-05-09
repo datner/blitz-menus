@@ -1,5 +1,5 @@
-import type { GetStaticPaths, GetStaticPropsContext, InferGetStaticPropsType } from "blitz"
-import type { Item__Content } from "app/menu/types/item"
+import { GetStaticPaths, GetStaticPropsContext, InferGetStaticPropsType, useMutation } from "blitz"
+import type { Item__Content, OrderMeta } from "app/menu/types/item"
 
 import clsx from "clsx"
 import db, { Locale } from "db"
@@ -12,6 +12,8 @@ import { ListItem } from "app/menu/components/ListItem"
 import { CategoryHeader } from "app/menu/components/CategoryHeader"
 import { useOrder } from "app/menu/hooks/useOrder"
 import { useNavBar } from "app/menu/hooks/useNavBar"
+import sendOrder from "app/menu/mutations/sendOrder"
+import { useZodParams } from "app/core/hooks/useParams"
 
 const LazyViewOrderButton = lazy(() => import("app/menu/components/ViewOrderButton"))
 const LazyItemModal = lazy(() => import("app/menu/components/ItemModal"))
@@ -21,20 +23,30 @@ export default function Menu(props: InferGetStaticPropsType<typeof getStaticProp
   const { restaurant } = props
   const { categories } = restaurant
   const navbar = useNavBar({ initialActive: categories?.[0]?.identifier })
+  const { table } = useZodParams(Query)
   const locale = useLocale()
   const order = useOrder()
   const [item, setItem] = useState<Item__Content | null>(null)
   const [open, setOpen] = useState(false)
   const [reviewOrder, setReviewOrder] = useState(false)
+  const [sendOrderMutation] = useMutation(sendOrder)
 
   const handleShowOrderModal = (item: Item__Content) => {
     setItem(item)
     setOpen(true)
   }
 
-  const handleOrder = (amount: number) => {
+  const handleChangeOrder = (meta: OrderMeta) => {
     if (!item) return
-    order.change(item, amount)
+    order.change(item, meta)
+  }
+
+  const handleOrder = () => {
+    sendOrderMutation({
+      table,
+      restaurantId: restaurant.id,
+      orderItems: order.items,
+    })
   }
 
   if (!categories) return <>:()</>
@@ -79,7 +91,7 @@ export default function Menu(props: InferGetStaticPropsType<typeof getStaticProp
                 <ListItem
                   key={item.id}
                   item={item}
-                  amountOption={Op.fromNullable(order.get(item))}
+                  amountOption={Op.fromNullable(order.get(item)?.amount)}
                   onClick={() => handleShowOrderModal(item)}
                 />
               ))}
@@ -102,12 +114,17 @@ export default function Menu(props: InferGetStaticPropsType<typeof getStaticProp
           open={open}
           onClose={() => setOpen(false)}
           item={item}
-          previousAmount={item && order.get(item)}
-          onAddToOrder={handleOrder}
+          meta={item && order.get(item)}
+          onAddToOrder={handleChangeOrder}
         />
       </Suspense>
       <Suspense>
-        <LazyOrderModal {...order} open={reviewOrder} onClose={() => setReviewOrder(false)} />
+        <LazyOrderModal
+          {...order}
+          open={reviewOrder}
+          onClose={() => setReviewOrder(false)}
+          onOrder={handleOrder}
+        />
       </Suspense>
     </div>
   )
@@ -116,9 +133,12 @@ export default function Menu(props: InferGetStaticPropsType<typeof getStaticProp
 export const getStaticPaths: GetStaticPaths = async () => {
   const restaurants = await db.restaurant.findMany()
 
+  const locales = Object.values(Locale)
   return {
     fallback: "blocking",
-    paths: restaurants.map((it) => ({ params: { restaurant: it.slug }, locale: Locale.en })),
+    paths: locales.flatMap((locale) =>
+      restaurants.map((it) => ({ params: { restaurant: it.slug }, locale }))
+    ),
   }
 }
 
