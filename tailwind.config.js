@@ -3,7 +3,11 @@ const plugin = require("tailwindcss/plugin")
 module.exports = {
   content: ["{pages,app}/**/*.{js,ts,jsx,tsx}"],
   theme: {
-    extend: {},
+    extend: {
+      screens: {
+        xs: "420px",
+      },
+    },
   },
   plugins: [
     require("@tailwindcss/forms"),
