@@ -7,6 +7,7 @@ import { useLocale } from "app/core/hooks/useLocale"
 import { useRef, useState } from "react"
 import useMeasure from "react-use-measure"
 import { FullOrderItem } from "../types/item"
+import { ResizeObserver } from "@juggle/resize-observer"
 import { AmountButtons, AmountButtonsProps } from "./AmountButtons"
 
 type Props = {
@@ -20,7 +21,7 @@ export function OrderModalItem(props: Props) {
   const [isOpen, setOpen] = useState(false)
   const previous = usePrev(isOpen)
   const locale = useLocale()
-  const [ref, { height: contentHeight }] = useMeasure()
+  const [ref, { height: contentHeight }] = useMeasure({ polyfill: ResizeObserver })
   const { height, opacity } = useSpring({
     from: { height: 0, opacity: 0 },
     to: { height: isOpen ? contentHeight : 0, opacity: isOpen ? 1 : 0 },
@@ -30,8 +31,8 @@ export function OrderModalItem(props: Props) {
   const title = titleFor(locale)
   return (
     <li className="pt-8 pb-6">
-      <div className="h-10 flex items-center">
-        <div className="flex-grow z-10 bg-white" onClick={() => setOpen((o) => !o)}>
+      <div className="h-14 flex items-center">
+        <div className="flex-grow z-10 bg-white mr-px" onClick={() => setOpen((o) => !o)}>
           <div className="flex items-center">
             <a.span className="m-1">
               <ChevronUpIcon className="h-5 text-indigo-600" />
@@ -44,7 +45,7 @@ export function OrderModalItem(props: Props) {
             </p>
           </div>
         </div>
-        <div className="basis-28">
+        <div className="basis-32">
           <Thing
             minimum={0}
             amount={amount}
@@ -56,7 +57,7 @@ export function OrderModalItem(props: Props) {
         className="overflow-hidden"
         style={{ opacity, height: isOpen && previous === isOpen ? "auto" : height }}
       >
-        <a.div className="pb-2" style={{ opacity }} ref={ref}>
+        <a.div className="pb-2 mx-px" style={{ opacity }} ref={ref}>
           <LabeledTextArea
             name="comment"
             value={comment}
@@ -71,8 +72,7 @@ export function OrderModalItem(props: Props) {
 
 function Thing(props: AmountButtonsProps) {
   const [show, setShow] = useState(false)
-  const containerRef = useRef<HTMLDivElement>(null)
-  const containerWidth = containerRef.current?.offsetWidth ?? 0
+  const [ref, { width: containerWidth }] = useMeasure({ polyfill: ResizeObserver })
   const firstApi = useSpringRef()
   const { width } = useSpring({
     ref: firstApi,
@@ -91,7 +91,7 @@ function Thing(props: AmountButtonsProps) {
 
   return (
     <div
-      ref={containerRef}
+      ref={ref}
       className="relative flex items-center justify-center"
       onClick={() => setShow(true)}
     >
