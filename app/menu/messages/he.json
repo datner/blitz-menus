@@ -19,6 +19,9 @@
       "name": "שם",
       "description": "תיאור",
       "price": "מחיר"
+    },
+    "ItemModal": {
+      "comment": "הערות"
     }
   }
 }
