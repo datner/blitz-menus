@@ -2,6 +2,7 @@ import { LabeledTextArea } from "app/core/components/LabeledTextArea"
 import { useZodForm } from "app/core/hooks/useZodForm"
 import clsx from "clsx"
 import { useTranslations } from "next-intl"
+import { createPortal } from "react-dom"
 import { useController } from "react-hook-form"
 import { OrderMeta } from "../types/item"
 import { Nullish } from "../types/utils"
@@ -11,6 +12,8 @@ import { AmountButtons } from "./AmountButtons"
 interface ItemModalFormProps {
   price: number
   meta: Nullish<OrderMeta>
+  // Note on containerEl: this is a filthy dirty hack because I can't find a fuck to do it right
+  containerEl: HTMLElement | null
   onSubmit(data: ItemForm): void
 }
 
@@ -28,8 +31,9 @@ const DefaultValues = ItemForm.default({
 })
 
 export function ItemModalForm(props: ItemModalFormProps) {
-  const { price, meta, onSubmit } = props
+  const { price, meta, onSubmit, containerEl } = props
   const defaultValues = DefaultValues.parse(meta)
+  const t = useTranslations("Components.ItemModal")
 
   const { control, bind, handleSubmit, formState } = useZodForm({
     schema: ItemForm,
@@ -52,26 +56,33 @@ export function ItemModalForm(props: ItemModalFormProps) {
   })
 
   return (
-    <form onSubmit={submitOrRemove}>
-      <LabeledTextArea label="Comment" {...bind("comment")} rows={4} />
-      <div className="mt-10 grid gap-4 grid-cols-[minmax(7rem,_1fr)_2fr]">
-        <AmountButtons minimum={meta ? 0 : 1} amount={amount} onChange={field.onChange} />
-        <button
-          type="submit"
-          className={clsx(
-            "inline-flex justify-center items-center w-full rounded-md border border-transparent shadow-sm px-2 sm:px-4 sm:py-2 text-xs whitespace-nowrap font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2  sm:text-base",
-            orderState === OrderState.REMOVE
-              ? "bg-red-600 hover:bg-red-700 focus:ring-red-500"
-              : "bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500"
-          )}
-        >
-          <CallToActionText
-            price={price * amount}
-            multi={defaultValues.amount > 1}
-            orderState={orderState}
-          />
-        </button>
-      </div>
+    <form id="item-form" onSubmit={submitOrRemove}>
+      <LabeledTextArea label={t("comment")} {...bind("comment")} rows={4} />
+      {containerEl &&
+        createPortal(
+          <div className="mt-6 sticky bottom-4 mx-2 flex gap-2">
+            <div className="basis-32">
+              <AmountButtons minimum={meta ? 0 : 1} amount={amount} onChange={field.onChange} />
+            </div>
+            <button
+              form="item-form"
+              type="submit"
+              className={clsx(
+                "inline-flex grow justify-center items-center rounded-md border border-transparent shadow-sm px-2 sm:px-4 py-2 text-xs whitespace-nowrap font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2  sm:text-base",
+                orderState === OrderState.REMOVE
+                  ? "bg-red-600 hover:bg-red-700 focus:ring-red-500"
+                  : "bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500"
+              )}
+            >
+              <CallToActionText
+                price={price * amount}
+                multi={defaultValues.amount > 1}
+                orderState={orderState}
+              />
+            </button>
+          </div>,
+          containerEl
+        )}
     </form>
   )
 }
