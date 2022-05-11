@@ -1,4 +1,4 @@
-import { MinusIcon, PlusIcon } from "@heroicons/react/solid"
+import { MinusCircleIcon, MinusIcon, PlusCircleIcon, PlusIcon } from "@heroicons/react/solid"
 import { decrement, increment } from "fp-ts/function"
 
 export interface AmountButtonsProps {
@@ -19,9 +19,9 @@ export function AmountButtons(props: AmountButtonsProps) {
         className="relative disabled:text-gray-300 inline-flex items-center bg-indigo-50 focus:bg-indigo-200 px-2 py-2 rounded-l-md border border-gray-300 text-sm font-medium text-indigo-500 focus:text-indigo-800 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
       >
         <span className="sr-only">Decrement</span>
-        <MinusIcon className="h-5 w-5" aria-hidden="true" />
+        <MinusCircleIcon className="h-5 w-5 m-0.5" aria-hidden="true" />
       </button>
-      <span className="relative flex-grow inline-flex items-center justify-center px-2 py-2 border-y border-gray-300 bg-white text-sm font-medium text-gray-500">
+      <span className="relative basis-11 shrink-0 flex-grow inline-flex items-center justify-center px-2 py-2 border-y border-gray-300 bg-white text-sm font-medium text-gray-500">
         {amount}
       </span>
       <button
@@ -30,7 +30,7 @@ export function AmountButtons(props: AmountButtonsProps) {
         className="-ml-px relative inline-flex items-center px-2 py-2 bg-indigo-50 focus:bg-indigo-200 rounded-r-md border border-gray-300 text-sm font-medium text-indigo-500 focus:text-indigo-800 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
       >
         <span className="sr-only">Increment</span>
-        <PlusIcon className="h-5 w-5" aria-hidden="true" />
+        <PlusCircleIcon className="h-5 w-5 m-0.5" aria-hidden="true" />
       </button>
     </span>
   )
