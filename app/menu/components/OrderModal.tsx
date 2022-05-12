@@ -26,7 +26,7 @@ export function OrderModal(props: Props) {
 
   return (
     <Modal open={open} onClose={onClose}>
-      <div className="p-3">
+      <div className="p-3 overflow-auto">
         <h3 className="text-2xl rtl:mt-9">{t("yourOrder")}</h3>
         <hr className="w-1/2 mt-1 mb-2" />
         <div>
