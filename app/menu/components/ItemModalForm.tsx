@@ -1,4 +1,5 @@
 import { LabeledTextArea } from "app/core/components/LabeledTextArea"
+import { toShekel } from "app/core/helpers/item"
 import { useZodForm } from "app/core/hooks/useZodForm"
 import clsx from "clsx"
 import { useTranslations } from "next-intl"
@@ -103,7 +104,7 @@ function CallToActionText(props: CallToActionTextProps) {
           <span className="inline-block text-left rtl:text-right font-medium flex-grow">
             {t("new")}
           </span>
-          <span className="tracking-wider">₪{price}</span>
+          <span className="tracking-wider">{toShekel(price)}</span>
         </>
       )
 
@@ -111,7 +112,7 @@ function CallToActionText(props: CallToActionTextProps) {
       return (
         <>
           <span className="inline-block rtl:text-right font-medium flex-grow">{t("update")}</span>
-          <span className="tracking-wider">₪{price}</span>
+          <span className="tracking-wider">{toShekel(price)}</span>
         </>
       )
 

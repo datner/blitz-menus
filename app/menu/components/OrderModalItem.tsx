@@ -9,6 +9,7 @@ import useMeasure from "react-use-measure"
 import { FullOrderItem } from "../types/item"
 import { ResizeObserver } from "@juggle/resize-observer"
 import { AmountButtons, AmountButtonsProps } from "./AmountButtons"
+import { toShekel } from "app/core/helpers/item"
 
 type Props = {
   readonly orderItem: FullOrderItem
@@ -40,7 +41,7 @@ export function OrderModalItem(props: Props) {
             <p className="text-sm whitespace-pre-line">
               <span>{title(item)}</span>
               <span className="rounded-full mx-1 text-xs font-medium text-indigo-800">
-                {price(item) * amount}₪
+                {toShekel(price(item) * amount)}
               </span>
             </p>
           </div>
