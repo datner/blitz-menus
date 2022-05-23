@@ -48,6 +48,8 @@ export const ListItem = memo(function ListItem(props: Props) {
               layout="fill"
               sizes="(min-width: 370px) 12rem,
               8rem"
+              placeholder="blur"
+              blurDataURL={item.blurDataUrl ?? undefined}
               quality={20}
               objectFit="cover"
               alt={item.identifier}

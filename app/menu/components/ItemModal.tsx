@@ -81,11 +81,13 @@ export function ItemModal(props: Props) {
             style={{ height: imgHeight, opacity: imgOpacity }}
             className="relative w-full self-end grow-0 shrink-0"
           >
-            {item && (
+            {item?.image && (
               <Image
-                src={item.image || "loremflickr.com/640/480/food"}
+                src={item.image}
                 layout="fill"
                 objectFit="cover"
+                placeholder="blur"
+                blurDataURL={item.blurDataUrl ?? undefined}
                 alt={item.identifier}
               />
             )}

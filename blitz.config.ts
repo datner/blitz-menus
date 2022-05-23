@@ -2,6 +2,7 @@ import { Locale } from "db"
 import { BlitzConfig, sessionMiddleware, simpleRolesIsAuthorized } from "blitz"
 // @ts-ignore
 import bundleAnalyzer from "@next/bundle-analyzer"
+import { withPlaiceholder } from "@plaiceholder/next"
 
 const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === "true",
@@ -33,4 +34,4 @@ const config: BlitzConfig = {
  */
 }
 
-module.exports = withBundleAnalyzer(config)
+module.exports = withBundleAnalyzer(withPlaiceholder(config))

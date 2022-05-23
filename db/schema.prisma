@@ -126,6 +126,7 @@ model Item {
   price        Int
   identifier   String      @unique
   image        String
+  blurDataUrl  String?
   content      ItemI18L[]
   orderItems   OrderItem[]
   category     Category    @relation(fields: [categoryId], references: [id])
