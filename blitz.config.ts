@@ -20,8 +20,8 @@ const config: BlitzConfig = {
   },
   images: {
     loader: "imgix",
-    path: "https://datner.imgix.net/",
-    domains: ["datner.imgix.net"],
+    path: "https://renu.imgix.net/",
+    domains: ["renu.imgix.net", ""],
   },
   /* Uncomment this to customize the webpack config
   webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
