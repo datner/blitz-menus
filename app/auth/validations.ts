@@ -40,3 +40,27 @@ export const ChangePassword = z.object({
   currentPassword: z.string(),
   newPassword: password,
 })
+
+const RestaurantContent = z.object({
+  name: z
+    .string()
+    .nonempty()
+    .transform((str) => str.trim()),
+})
+
+export const Slug = z
+  .string()
+  .nonempty()
+  .regex(/^[a-z0-9-]+$/, {
+    message: "Slug should contain only lowercase letters, numbers, and dashes",
+  })
+  .regex(/[^-]$/, {
+    message: "Slug should not end with a dash",
+  })
+
+export const CreateRestaurant = z.object({
+  slug: Slug,
+  logo: z.string().nonempty(),
+  en: RestaurantContent,
+  he: RestaurantContent,
+})
