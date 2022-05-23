@@ -10,6 +10,7 @@ declare module "blitz" {
     PublicData: {
       userId: User["id"]
       role: Role
+      restaurantId?: User["restaurantId"]
     }
   }
 }
