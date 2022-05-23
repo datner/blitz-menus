@@ -4,6 +4,7 @@ import { useEffect } from "react"
 import { OrderModalItem } from "./OrderModalItem"
 import { Modal } from "./Modal"
 import { useEvent } from "app/core/hooks/useEvent"
+import { toShekel } from "app/core/helpers/content"
 
 type Props = {
   open?: boolean
@@ -26,7 +27,7 @@ export function OrderModal(props: Props) {
 
   return (
     <Modal open={open} onClose={onClose}>
-      <div className="p-3 overflow-auto">
+      <div className="p-3 bg-white rounded-t-xl overflow-auto">
         <h3 className="text-2xl rtl:mt-9">{t("yourOrder")}</h3>
         <hr className="w-1/2 mt-1 mb-2" />
         <div>
@@ -50,7 +51,7 @@ export function OrderModal(props: Props) {
             <span className="inline-block flex-grow px-3 text-left rtl:text-right">
               {t("order")}
             </span>
-            <span className="tracking-wider font-thin">₪{overallPrice}</span>
+            <span className="tracking-wider font-thin">{toShekel(overallPrice)}</span>
           </button>
         </div>
       </div>

@@ -39,7 +39,7 @@ export function Modal(props: Props) {
             <div className="h-12 flex-shrink-0" />
             <div
               onClick={(event) => event.stopPropagation()}
-              className="bg-white flex flex-col overflow-hidden relative rounded-t-xl max-h-[calc(100%_-_48px)] pb-12"
+              className="flex flex-col overflow-hidden relative max-h-[calc(100%_-_48px)]"
             >
               <button
                 onClick={onClose}

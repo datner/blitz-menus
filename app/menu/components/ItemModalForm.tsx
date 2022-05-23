@@ -1,5 +1,5 @@
 import { LabeledTextArea } from "app/core/components/LabeledTextArea"
-import { toShekel } from "app/core/helpers/item"
+import { toShekel } from "app/core/helpers/content"
 import { useZodForm } from "app/core/hooks/useZodForm"
 import clsx from "clsx"
 import { useTranslations } from "next-intl"

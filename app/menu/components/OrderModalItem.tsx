@@ -2,14 +2,13 @@ import { ChevronUpIcon } from "@heroicons/react/solid"
 import { usePrev } from "@react-spring/shared"
 import { useChain, useSpring, useSpringRef, a, config } from "@react-spring/web"
 import LabeledTextArea from "app/core/components/LabeledTextArea"
-import { price, titleFor } from "app/core/helpers/content"
+import { price, titleFor, toShekel } from "app/core/helpers/content"
 import { useLocale } from "app/core/hooks/useLocale"
-import { useRef, useState } from "react"
+import { useState } from "react"
 import useMeasure from "react-use-measure"
 import { FullOrderItem } from "../types/item"
 import { ResizeObserver } from "@juggle/resize-observer"
 import { AmountButtons, AmountButtonsProps } from "./AmountButtons"
-import { toShekel } from "app/core/helpers/item"
 
 type Props = {
   readonly orderItem: FullOrderItem

@@ -1,4 +1,5 @@
 import { animated, useSpring } from "@react-spring/web"
+import { toShekel } from "app/core/helpers/content"
 import { ItemI18L } from "db"
 import { flow } from "fp-ts/function"
 import * as O from "fp-ts/Option"
@@ -14,14 +15,6 @@ type Props = {
 const reveal = flow(O.isSome, (it) => (it ? 1 : 0))
 
 const orOne = O.getOrElse(() => 1)
-
-const shekel = Intl.NumberFormat("he-IL", {
-  style: "currency",
-  currency: "ILS",
-  unitDisplay: "narrow",
-})
-
-const toShekel = flow((price: number) => price / 100, shekel.format)
 
 export const ItemData = memo(function ItemData(props: Props) {
   const { price, content, amount } = props

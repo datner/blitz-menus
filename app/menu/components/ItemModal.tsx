@@ -5,9 +5,9 @@ import { useLocale } from "app/core/hooks/useLocale"
 import { clampBetween } from "app/core/helpers/number"
 import { Nullish } from "../types/utils"
 import { a, useSpring } from "@react-spring/web"
-import { descriptionFor, price, titleFor } from "app/core/helpers/content"
+import { descriptionFor, price, priceShekel, titleFor } from "app/core/helpers/content"
 import { ItemModalForm } from "./ItemModalForm"
-import { useRef, useState } from "react"
+import { useState } from "react"
 import { Modal } from "./Modal"
 
 type Props = {
@@ -40,7 +40,7 @@ export function ItemModal(props: Props) {
     imgOpacity: 1,
     titleOpacity: 1,
     rounded: 12,
-    y: -56,
+    y: -58,
   })
 
   const bind = useScroll(({ xy: [_, yd] }) => {
@@ -48,7 +48,9 @@ export function ItemModal(props: Props) {
     const lastQuaterProgress = clampBinary(yd / THREE_QUATERS_PROGRESS)
     imgHeight.set(clampImgHeight(ImageBasis.Max - yd + 20))
     imgOpacity.set(1 - (yd - ImageBasis.Min) / ImageBasis.Min)
-    rounded.set(12 - halfwayProgress * 12)
+    if (rounded.get() !== 0) {
+      rounded.set(12 - halfwayProgress * 12)
+    }
 
     if (lastQuaterProgress === 1) {
       y.start(0)
@@ -60,7 +62,7 @@ export function ItemModal(props: Props) {
       y.stop()
       titleOpacity.stop()
       shadow.stop()
-      y.start(-56)
+      y.start(-58).then(() => rounded.start(12))
       titleOpacity.start(1)
       shadow.start(0)
     }
@@ -72,15 +74,20 @@ export function ItemModal(props: Props) {
         ref={(el) => set(el)}
         {...bind()}
         style={{ borderTopLeftRadius: rounded, borderTopRightRadius: rounded }}
-        className="relative flex flex-col overflow-auto"
+        className="relative flex flex-col overflow-auto bg-white pb-12"
       >
-        <div className="flex flex-col-reverse overflow-hidden shrink-0 basis-56">
+        <div className="flex flex-col-reverse shrink-0 basis-56">
           <a.div
             style={{ height: imgHeight, opacity: imgOpacity }}
             className="relative w-full self-end grow-0 shrink-0"
           >
             {item && (
-              <Image src={item.image} layout="fill" objectFit="cover" alt={item.identifier} />
+              <Image
+                src={item.image || "loremflickr.com/640/480/food"}
+                layout="fill"
+                objectFit="cover"
+                alt={item.identifier}
+              />
             )}
           </a.div>
         </div>
@@ -91,7 +98,7 @@ export function ItemModal(props: Props) {
           >
             {title(item)}
           </a.h3>
-          <p className="mt-2 text-indigo-600">₪ {price(item)}</p>
+          <p className="mt-2 text-indigo-600">₪ {priceShekel(item)}</p>
           <p className="mt-2 text-sm text-gray-500">{desc(item)}</p>
         </div>
         <div className="flex flex-col p-4">

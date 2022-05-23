@@ -1,4 +1,5 @@
 import { animated, useTransition } from "@react-spring/web"
+import { toShekel } from "app/core/helpers/content"
 import { useTranslations } from "next-intl"
 
 type Props = {
@@ -32,7 +33,7 @@ export function ViewOrderButton(props: Props) {
           <span className="inline-block text-left rtl:text-right flex-grow px-4">
             {t("viewOrder")}
           </span>
-          <span className="tracking-wider font-thin">₪{price}</span>
+          <span className="tracking-wider font-thin">{toShekel(price)}</span>
         </animated.button>
       )
   )

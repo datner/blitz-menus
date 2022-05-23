@@ -41,10 +41,18 @@ export const ListItem = memo(function ListItem(props: Props) {
         <div className="grow w-40 overflow-hidden">
           <ItemData content={content} price={price} amount={amountOption} />
         </div>
-        <div className="flex relative justify-center items-center">
-          <div className="relative flex-shrink-0 w-32 xs:w-48 h-36">
-            <Image src={item.image} layout="fill" objectFit="cover" alt={item.identifier} />
-          </div>
+        <div className="w-32 relative xs:w-48 m-2 rounded-md overflow-hidden h-32">
+          {item.image && (
+            <Image
+              src={item.image}
+              layout="fill"
+              sizes="(min-width: 370px) 12rem,
+              8rem"
+              quality={20}
+              objectFit="cover"
+              alt={item.identifier}
+            />
+          )}
         </div>
       </div>
     </li>
