@@ -7,7 +7,6 @@ import createRestaurant from "app/restaurants/mutations/createRestaurant"
 import { useDropzone } from "react-dropzone"
 import { useEvent } from "app/core/hooks/useEvent"
 import { useState } from "react"
-import createUploadUrl from "../mutations/createUploadUrl"
 import getUploadUrl from "app/admin/mutations/getUploadUrl"
 
 type SignupFormProps = {
@@ -16,7 +15,6 @@ type SignupFormProps = {
 
 export const RestaurantForm = (props: SignupFormProps) => {
   const { onSuccess } = props
-  const [createUrl] = useMutation(createUploadUrl)
   const [getAssetUrl] = useMutation(getUploadUrl)
   const [restaurantMutation] = useMutation(createRestaurant)
   const [file, setFile] = useState<(File & { preview: string }) | undefined>()
