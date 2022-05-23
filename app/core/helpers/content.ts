@@ -1,8 +1,9 @@
 import { Locale, Item } from "db"
 import { get } from "./common"
-import { pipe } from "fp-ts/function"
+import { flow, pipe } from "fp-ts/function"
 import * as O from "monocle-ts/Optional"
 import { Nullish } from "app/menu/types/utils"
+import { divide } from "./number"
 
 interface ContentPartial {
   locale: Locale
@@ -23,9 +24,17 @@ export const contentOption = (prop: keyof ContentPartial, locale: Locale) =>
     O.prop(prop)
   ).getOption
 
+export const shekel = Intl.NumberFormat("he-IL", {
+  style: "currency",
+  currency: "ILS",
+  unitDisplay: "narrow",
+})
+
 export const priceOption = pipe(O.id<Item | null>(), O.fromNullable, O.prop("price")).getOption
 
 export const price = get(priceOption, 0)
+export const toShekel = flow(divide(100), shekel.format)
+export const priceShekel = flow(price, toShekel)
 export const titleFor = (locale: Locale) => get(contentOption("name", locale), "")
 export const descriptionFor = (locale: Locale) => get(contentOption("description", locale), "")
 

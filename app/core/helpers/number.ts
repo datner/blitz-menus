@@ -7,3 +7,7 @@ export const clampBetween = (min: number, max: number) => (value: number) => cla
 export function sum(values: number[]) {
   return values.reduce((acc, curr) => acc + curr, 0)
 }
+
+export const divide = (by: number) => (value: number) => value / by
+
+export const multiply = (by: number) => (value: number) => value * by
