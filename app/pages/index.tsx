@@ -35,7 +35,7 @@ const UserInfo = () => {
   } else {
     return (
       <>
-        <Link href={Routes.SignupPage()}>
+        <Link href={Routes.UserSignupPage()}>
           <a className="button small">
             <strong>Sign Up</strong>
           </a>
