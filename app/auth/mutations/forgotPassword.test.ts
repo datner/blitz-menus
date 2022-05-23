@@ -24,6 +24,12 @@ describe.skip("forgotPassword mutation", () => {
     const user = await db.user.create({
       data: {
         email: "user@example.com",
+        restaurant: {
+          create: {
+            logo: "",
+            slug: "example",
+          },
+        },
         tokens: {
           // Create old token to ensure it's deleted
           create: {
