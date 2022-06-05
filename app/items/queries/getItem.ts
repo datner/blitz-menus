@@ -1,17 +1,29 @@
-import { resolver, NotFoundError } from "blitz"
+import { validateOwnership } from "app/auth/helpers/validateOwnership"
+import { resolver } from "blitz"
 import db from "db"
 import { z } from "zod"
+import { ensureItemExists } from "../validations"
 
-const GetItem = z.object({
-  // This accepts type of undefined, but is required at runtime
-  id: z.number().optional().refine(Boolean, "Required"),
-})
+const GetItem = z
+  .object({
+    // This accepts type of undefined, but is required at runtime
+    id: z.number().optional(),
+    identifier: z.string().optional(),
+  })
+  .refine(({ id, identifier }) => Boolean(id) || Boolean(identifier), "Id or Identifier Required")
+  .refine(
+    ({ id, identifier }) => (Boolean(id) ? !identifier : Boolean(identifier)),
+    "*Either* Id or Identifier Supported"
+  )
 
-export default resolver.pipe(resolver.zod(GetItem), resolver.authorize(), async ({ id }) => {
-  // TODO: in multi-tenant app, you must add validation to ensure correct tenant
-  const item = await db.item.findFirst({ where: { id }, include: { content: true } })
-
-  if (!item) throw new NotFoundError()
-
-  return item
-})
+export default resolver.pipe(
+  resolver.zod(GetItem),
+  resolver.authorize(),
+  validateOwnership(ensureItemExists),
+  ({ id, identifier }) =>
+    db.item.findUnique({
+      where: { id, identifier },
+      include: { content: true },
+      rejectOnNotFound: true,
+    })
+)

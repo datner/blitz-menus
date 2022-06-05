@@ -1,23 +1,29 @@
+import { validateOwnership } from "app/auth/helpers/validateOwnership"
 import { resolver } from "blitz"
+import { isExists } from "app/core/helpers/common"
 import db from "db"
 import { getPlaiceholder } from "plaiceholder"
-import { UpdateItem } from "../validations"
+import { ensureItemExists, UpdateItem } from "../validations"
 
-function isExists<T>(val: T | undefined | null): val is T {
-  return val !== undefined && val !== null
+async function getBlurDataUrl(image?: string) {
+  if (!image) return ""
+
+  const url = new URL(`https://renu.imgix.net/${image}`)
+  url.searchParams.append("q", "5") // quality = 5
+  url.searchParams.append("auto", "compress")
+  const { base64: blurDataUrl } = await getPlaiceholder(url.toString(), { size: 10 })
+  return blurDataUrl
 }
 
 export default resolver.pipe(
   resolver.zod(UpdateItem),
   resolver.authorize(),
-  async ({ id, en, he, ...data }) => {
-    // TODO: in multi-tenant app, you must add validation to ensure correct tenant
-    const url = new URL(`https://renu.imgix.net/${data.image}`)
-    url.searchParams.append("q", "5")
-    url.searchParams.append("auto", "compress")
-    const { base64: blurDataUrl, img } = await getPlaiceholder(url.toString(), { size: 10 })
+  validateOwnership(ensureItemExists),
+  async ({ id, en, he, image, ...data }) => {
+    const blurDataUrl = await getBlurDataUrl(image)
     const item = await db.item.update({
       where: { id },
+      include: { content: true },
       data: {
         ...data,
         blurDataUrl,
