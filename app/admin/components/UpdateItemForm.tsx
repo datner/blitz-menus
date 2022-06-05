@@ -1,32 +1,34 @@
 import getUploadUrl from "app/admin/mutations/getUploadUrl"
 import LabeledTextField from "app/core/components/LabeledTextField"
+import { toShekel } from "app/core/helpers/content"
 import { useEvent } from "app/core/hooks/useEvent"
 import { useZodForm } from "app/core/hooks/useZodForm"
 import updateItem from "app/items/mutations/updateItem"
 import getItem from "app/items/queries/getItem"
+import getItems from "app/items/queries/getItems"
 import { Content, UpdateItemSchema } from "app/items/validations"
-import { useMutation, useQuery, Image } from "blitz"
+import { useMutation, useQuery, Image, invalidateQuery } from "blitz"
 import { Locale } from "db"
 import { useEffect, useState } from "react"
 import { useDropzone } from "react-dropzone"
 import { FormProvider } from "react-hook-form"
 
 type Props = {
-  id: number
+  identifier: string
 }
 
 export function UpdateItemForm(props: Props) {
-  const { id } = props
-  const [item] = useQuery(getItem, { id })
+  const { identifier } = props
+  const [item, { setQueryData }] = useQuery(getItem, { identifier })
   const [getAssetUrl] = useMutation(getUploadUrl)
   const [updateItemMutation] = useMutation(updateItem)
   const [file, setFile] = useState<(File & { preview: string }) | undefined>()
   const [message, setMessage] = useState("Update Item")
-  const { image } = item
+  const { image, blurDataUrl } = item
 
-  const form = useZodForm({ schema: UpdateItemSchema })
+  const form = useZodForm({ schema: UpdateItemSchema, defaultValues: { price: 0 } })
 
-  const { formState, handleSubmit, setFormError, reset } = form
+  const { formState, handleSubmit, setFormError, reset, watch } = form
   const { isSubmitting } = formState
 
   const resetForm = useEvent(() => {
@@ -42,7 +44,7 @@ export function UpdateItemForm(props: Props) {
 
   useEffect(() => {
     resetForm()
-  }, [id, resetForm])
+  }, [identifier, resetForm])
 
   const onDrop = useEvent((acceptedFiles: File[]) => {
     const [file] = acceptedFiles
@@ -78,10 +80,14 @@ export function UpdateItemForm(props: Props) {
       }
       setMessage("Updating Item...")
 
-      await updateItemMutation({
-        id,
+      const newItem = await updateItemMutation({
+        id: item.id,
+        identifier,
         ...(data as typeof data & { image?: string }),
       })
+
+      setQueryData(newItem)
+      invalidateQuery(getItems)
     } catch (error: any) {
       setFormError(error.toString())
     }
@@ -100,6 +106,16 @@ export function UpdateItemForm(props: Props) {
           <div className="flex gap-4">
             <fieldset className="space-y-6 flex-1" disabled={isSubmitting}>
               <LabeledTextField name="identifier" label="Identifier" placeholder="my-item" />
+              <div className="flex gap-2 items-center">
+                <LabeledTextField
+                  outerProps={{ className: "grow shrink" }}
+                  name="price"
+                  label="Price"
+                  registerOptions={{ min: 0, valueAsNumber: true }}
+                  placeholder="my-item"
+                />
+                <pre className="pt-6 basis-32">{toShekel(watch("price") || 0)}</pre>
+              </div>
               <LabeledTextField name="en.name" label="English Name" placeholder="My Item" />
               <LabeledTextField name="he.name" label="Hebrew Name" placeholder="פריט שלי" />
             </fieldset>
@@ -129,7 +145,13 @@ export function UpdateItemForm(props: Props) {
                     src={file.preview}
                   />
                 ) : image ? (
-                  <Image alt="preview" objectFit="cover" layout="fill" src={image} />
+                  <Image
+                    alt="preview"
+                    objectFit="cover"
+                    layout="fill"
+                    src={image}
+                    blurDataURL={blurDataUrl ?? undefined}
+                  />
                 ) : null}
               </div>
             </div>
