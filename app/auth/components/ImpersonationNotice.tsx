@@ -6,10 +6,10 @@ export const ImpersonationNotice = () => {
   if (!session.impersonatingFromUserId) return null
 
   return (
-    <div className="bg-yellow-400 px-2 py-1 text-center font-semibold">
+    <div className="bg-yellow-400 px-2 py-2 text-center font-semibold">
       <span>Currently impersonating user {session.userId}</span>
       <button
-        className="appearance-none bg-transparent text-black uppercase"
+        className="appearance-none bg-transparent text-black uppercase ml-2"
         onClick={async () => {
           await invoke(stopImpersonating, {})
           queryClient.clear()
