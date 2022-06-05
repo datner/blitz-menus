@@ -1,7 +1,15 @@
-import { MenuAlt2Icon, PlusSmIcon, SearchIcon } from "@heroicons/react/solid"
+import {
+  GlobeAltIcon,
+  GlobeIcon,
+  MenuAlt2Icon,
+  PlusSmIcon,
+  SearchIcon,
+} from "@heroicons/react/solid"
 import clsx from "clsx"
 import { Transition, Menu } from "@headlessui/react"
 import { Fragment, ReactNode, useState } from "react"
+import { Link, useRouter } from "blitz"
+import { useLocale } from "app/core/hooks/useLocale"
 
 type ContentAreaProps = {
   main: ReactNode
@@ -55,6 +63,8 @@ function ContentMain(props: Props) {
 
 function ContentHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const locale = useLocale()
+  const router = useRouter()
   return (
     <header className="w-full">
       <div className="relative z-20 flex-shrink-0 h-16 bg-white border-b border-gray-200 shadow-sm flex">
@@ -135,6 +145,15 @@ function ContentHeader() {
               <PlusSmIcon className="h-6 w-6" aria-hidden="true" />
               <span className="sr-only">Add file</span>
             </button>
+            <Link href="#" locale={locale === "en" ? "he" : "en"}>
+              <a
+                type="button"
+                className="flex bg-indigo-600 p-1 rounded-full items-center justify-center text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                <GlobeAltIcon className="h-6 w-6" aria-hidden="true" />
+                <span className="sr-only">change locale</span>
+              </a>
+            </Link>
           </div>
         </div>
       </div>
