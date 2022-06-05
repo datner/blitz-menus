@@ -1,8 +1,6 @@
-import { validateOwnership } from "app/auth/helpers/validateOwnership"
-import { resolver } from "blitz"
+import { resolver, NotFoundError } from "blitz"
 import db from "db"
 import { z } from "zod"
-import { ensureItemExists } from "../validations"
 
 const GetItem = z
   .object({
@@ -19,11 +17,15 @@ const GetItem = z
 export default resolver.pipe(
   resolver.zod(GetItem),
   resolver.authorize(),
-  validateOwnership(ensureItemExists),
-  ({ id, identifier }) =>
-    db.item.findUnique({
-      where: { id, identifier },
+  async ({ id, identifier }, { session }) => {
+    const restaurantId = session.restaurantId ?? undefined
+    const item = await db.item.findFirst({
+      where: { id, identifier, restaurantId },
       include: { content: true },
-      rejectOnNotFound: true,
     })
+
+    if (!item) throw new NotFoundError()
+
+    return item
+  }
 )
