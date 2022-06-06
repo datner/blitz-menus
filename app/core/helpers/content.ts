@@ -21,7 +21,8 @@ export const contentOption = (prop: keyof ContentPartial, locale: Locale) =>
     O.fromNullable,
     O.prop("content"),
     O.findFirst((it) => it.locale === locale),
-    O.prop(prop)
+    O.prop(prop),
+    O.fromNullable
   ).getOption
 
 export const shekel = Intl.NumberFormat("he-IL", {
