@@ -9,6 +9,7 @@ import getItems from "app/items/queries/getItems"
 import { Content, UpdateItemSchema } from "app/items/validations"
 import { useMutation, useQuery, Image, invalidateQuery } from "blitz"
 import { Locale } from "db"
+import { useTranslations } from "next-intl"
 import { useEffect, useState } from "react"
 import { useDropzone } from "react-dropzone"
 import { FormProvider } from "react-hook-form"
@@ -20,10 +21,11 @@ type Props = {
 export function UpdateItemForm(props: Props) {
   const { identifier } = props
   const [item, { setQueryData }] = useQuery(getItem, { identifier })
+  const t = useTranslations("admin.Components.UpdateItemForm")
   const [getAssetUrl] = useMutation(getUploadUrl)
   const [updateItemMutation] = useMutation(updateItem)
   const [file, setFile] = useState<(File & { preview: string }) | undefined>()
-  const [message, setMessage] = useState("Update Item")
+  const [message, setMessage] = useState(t("submit.initial"))
   const { image, blurDataUrl } = item
 
   const form = useZodForm({ schema: UpdateItemSchema, defaultValues: { price: 0 } })
@@ -60,7 +62,7 @@ export function UpdateItemForm(props: Props) {
   const onSubmit = handleSubmit(async (data) => {
     try {
       if (file) {
-        setMessage("Uploading Image...")
+        setMessage(t("submit.image"))
         const { url, headers: h } = await getAssetUrl({
           name: `${data.identifier}.${file.name.split(".").pop()}`,
         })
@@ -78,7 +80,7 @@ export function UpdateItemForm(props: Props) {
         }).then((res) => res.json())
         Object.assign(data, { image: origin_path })
       }
-      setMessage("Updating Item...")
+      setMessage(t("submit.item"))
 
       const newItem = await updateItemMutation({
         id: item.id,
@@ -91,7 +93,7 @@ export function UpdateItemForm(props: Props) {
     } catch (error: any) {
       setFormError(error.toString())
     }
-    setMessage("Update Item")
+    setMessage(t("submit.initial"))
   })
 
   return (
@@ -99,25 +101,25 @@ export function UpdateItemForm(props: Props) {
       <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
         <div className="pb-4">
           <h1 className="text-xl text-gray-700 font-semibold underline underline-offset-1 decoration-indigo-600">
-            Edit an Item
+            {t("title")}
           </h1>
         </div>
         <form className="space-y-6" onSubmit={onSubmit}>
           <div className="flex gap-4">
             <fieldset className="space-y-6 flex-1" disabled={isSubmitting}>
-              <LabeledTextField name="identifier" label="Identifier" placeholder="my-item" />
+              <LabeledTextField name="identifier" label={t("identifier")} placeholder="my-item" />
               <div className="flex gap-2 items-center">
                 <LabeledTextField
                   outerProps={{ className: "grow shrink" }}
                   name="price"
-                  label="Price"
+                  label={t("price")}
                   registerOptions={{ min: 0, valueAsNumber: true }}
                   placeholder="my-item"
                 />
                 <pre className="pt-6 basis-32">{toShekel(watch("price") || 0)}</pre>
               </div>
-              <LabeledTextField name="en.name" label="English Name" placeholder="My Item" />
-              <LabeledTextField name="he.name" label="Hebrew Name" placeholder="פריט שלי" />
+              <LabeledTextField name="en.name" label={t("english name")} placeholder="My Item" />
+              <LabeledTextField name="he.name" label={t("hebrew name")} placeholder="פריט שלי" />
             </fieldset>
             <div className="flex-1 flex flex-col">
               <span className="block text-sm font-medium text-gray-700">Image</span>
@@ -127,11 +129,7 @@ export function UpdateItemForm(props: Props) {
               >
                 <input {...getInputProps()} />
                 <span className="text-gray-400 text-sm">
-                  {isDragActive ? (
-                    <p>Drop the files here ...</p>
-                  ) : (
-                    <p>Drag n drop some files here, or click to select files</p>
-                  )}
+                  {isDragActive ? <p>{t("drop files here")}</p> : <p>{t("drag and drop here")}</p>}
                 </span>
               </div>
 

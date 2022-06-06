@@ -18,7 +18,7 @@ type Props = {
 
 export function OrderModal(props: Props) {
   const { onClose, onOrder, open, items, change, price: overallPrice, amount } = props
-  const t = useTranslations("Components.OrderModal")
+  const t = useTranslations("menu.Components.OrderModal")
   const handleChange = useEvent(({ item, ...meta }: FullOrderItem) => change(item, meta))
 
   useEffect(() => {

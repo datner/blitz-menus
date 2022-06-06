@@ -170,7 +170,7 @@ export const getStaticProps = async (context: GetStaticPropsContext) => {
   })
 
   return {
-    props: { restaurant, messages: await import(`app/menu/messages/${context.locale}.json`) },
+    props: { restaurant, messages: await import(`app/core/messages/${context.locale}.json`) },
     revalidate: 10,
   }
 }

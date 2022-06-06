@@ -34,7 +34,7 @@ const DefaultValues = ItemForm.default({
 export function ItemModalForm(props: ItemModalFormProps) {
   const { price, meta, onSubmit, containerEl } = props
   const defaultValues = DefaultValues.parse(meta)
-  const t = useTranslations("Components.ItemModal")
+  const t = useTranslations("menu.Components.ItemModal")
 
   const { control, bind, handleSubmit, formState } = useZodForm({
     schema: ItemForm,
@@ -96,7 +96,7 @@ interface CallToActionTextProps {
 
 function CallToActionText(props: CallToActionTextProps) {
   const { price, orderState, multi } = props
-  const t = useTranslations("Components.CallToActionText")
+  const t = useTranslations("menu.Components.CallToActionText")
   switch (orderState) {
     case OrderState.NEW:
       return (

@@ -19,7 +19,7 @@ const orOne = O.getOrElse(() => 1)
 export const ItemData = memo(function ItemData(props: Props) {
   const { price, content, amount } = props
   const { opacity } = useSpring({ opacity: reveal(amount) })
-  const t = useTranslations("Components.ItemData")
+  const t = useTranslations("menu.Components.ItemData")
   const amountRef = useRef(1)
   useEffect(() => {
     amountRef.current = orOne(amount)

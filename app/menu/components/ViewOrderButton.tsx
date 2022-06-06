@@ -11,7 +11,7 @@ type Props = {
 
 export function ViewOrderButton(props: Props) {
   const { show, onClick, amount, price } = props
-  const t = useTranslations("Components.ViewOrderButton")
+  const t = useTranslations("menu.Components.ViewOrderButton")
   const transition = useTransition(show, {
     from: { y: 200, opacity: 0 },
     enter: { y: 0, opacity: 1 },

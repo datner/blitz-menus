@@ -1,0 +1,47 @@
+{
+  "admin": {
+    "Components": {
+      "UpdateItemForm": {
+        "title": "Edit an Item",
+        "identifier": "Identifier",
+        "price": "Price",
+        "english name": "English Name",
+        "hebrew name": "Hebrew Name",
+        "drop files here": "Drop the files here ...",
+        "drag and drop here": "Drag n drop some files here, or click to select files",
+        "submit": {
+          "initial": "Update Item",
+          "image": "Uploading Image...",
+          "item": "Updating Item..."
+        }
+      }
+    }
+  },
+  "menu": {
+    "Components": {
+      "ViewOrderButton": {
+        "viewOrder": "View Order"
+      },
+      "CallToActionText": {
+        "new": "Add to order",
+        "update": "Update order",
+        "remove": {
+          "_": "Remove",
+          "all": "all"
+        }
+      },
+      "OrderModal": {
+        "yourOrder": "Your Order",
+        "order": "Order!"
+      },
+      "ItemData": {
+        "name": "Name",
+        "description": "Description",
+        "price": "Price"
+      },
+      "ItemModal": {
+        "comment": "Comment"
+      }
+    }
+  }
+}
