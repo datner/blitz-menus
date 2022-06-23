@@ -1,14 +1,16 @@
 {
   "admin": {
     "Components": {
-      "UpdateItemForm": {
+      "FormDropzone": {
+        "drop files here": "הנח קובץ פה ...",
+        "drag and drop here": "גרור קובץ לפה, או לחץ לפתיחת חלון בחירה"
+      },
+      "ItemForm": {
         "title": "ערוך פריט",
         "identifier": "מזהה (באנגלית)",
         "price": "מחיר",
         "english name": "שם באנגלית",
         "hebrew name": "שם בעברית",
-        "drop files here": "הנח קובץ פה ...",
-        "drag and drop here": "גרור קובץ לפה, או לחץ לפתיחת חלון בחירה",
         "submit": {
           "initial": "עדכן פריט",
           "image": "מעלה תמונה ...",

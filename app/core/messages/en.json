@@ -1,14 +1,16 @@
 {
   "admin": {
     "Components": {
-      "UpdateItemForm": {
+      "FormDropzone": {
+        "drop files here": "Drop the files here ...",
+        "drag and drop here": "Drag n drop some files here, or click to select files"
+      },
+      "ItemForm": {
         "title": "Edit an Item",
         "identifier": "Identifier",
         "price": "Price",
         "english name": "English Name",
         "hebrew name": "Hebrew Name",
-        "drop files here": "Drop the files here ...",
-        "drag and drop here": "Drag n drop some files here, or click to select files",
         "submit": {
           "initial": "Update Item",
           "image": "Uploading Image...",
