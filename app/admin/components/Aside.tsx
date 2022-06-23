@@ -36,6 +36,7 @@ function AsideDirectory() {
                           objectFit="cover"
                           height={40}
                           width={40}
+                          placeholder={item.blurDataUrl ? "blur" : "empty"}
                           blurDataURL={item.blurDataUrl ?? undefined}
                         />
                       )}
