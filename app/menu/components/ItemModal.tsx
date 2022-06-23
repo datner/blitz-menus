@@ -86,7 +86,7 @@ export function ItemModal(props: Props) {
                 src={item.image}
                 layout="fill"
                 objectFit="cover"
-                placeholder="blur"
+                placeholder={item.blurDataUrl ? "blur" : "empty"}
                 blurDataURL={item.blurDataUrl ?? undefined}
                 alt={item.identifier}
               />
