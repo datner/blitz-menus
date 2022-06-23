@@ -1,11 +1,14 @@
-export function clamp(value: number, min: number, max: number) {
-  return Math.min(Math.max(min, value), max)
-}
+import * as O from "fp-ts/Ord"
+import * as N from "fp-ts/number"
+import * as M from "fp-ts/Monoid"
+import { Semigroup } from "fp-ts/lib/Semigroup"
 
-export const clampBetween = (min: number, max: number) => (value: number) => clamp(value, min, max)
+export const clamp = O.clamp(N.Ord)
 
-export function sum(values: number[]) {
-  return values.reduce((acc, curr) => acc + curr, 0)
+export const sum = M.concatAll(N.MonoidSum)
+
+export const divideMonoid: Semigroup<number> = {
+  concat: (x, y) => x / y,
 }
 
 export const divide = (by: number) => (value: number) => value / by

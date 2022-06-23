@@ -2,7 +2,7 @@ import { useScroll } from "@use-gesture/react"
 import { Image } from "blitz"
 import { Item__Content, OrderMeta } from "../types/item"
 import { useLocale } from "app/core/hooks/useLocale"
-import { clampBetween } from "app/core/helpers/number"
+import { clamp } from "app/core/helpers/number"
 import { Nullish } from "../types/utils"
 import { a, useSpring } from "@react-spring/web"
 import { descriptionFor, price, priceShekel, titleFor } from "app/core/helpers/content"
@@ -25,8 +25,8 @@ const ImageBasis = {
 
 const THREE_QUATERS_PROGRESS = ImageBasis.Min * 1.5
 
-const clampImgHeight = clampBetween(ImageBasis.Min, ImageBasis.Max)
-const clampBinary = clampBetween(0, 1)
+const clampImgHeight = clamp(ImageBasis.Min, ImageBasis.Max)
+const clampBinary = clamp(0, 1)
 
 export function ItemModal(props: Props) {
   const { open, onClose, onAddToOrder, item, meta } = props
