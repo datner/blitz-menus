@@ -32,7 +32,7 @@ export function OrderModalItem(props: Props) {
   return (
     <li className="pt-8 pb-6">
       <div className="h-14 flex items-center">
-        <div className="flex-grow z-10 bg-white mr-px" onClick={() => setOpen((o) => !o)}>
+        <div className="flex-grow bg-white mr-px" onClick={() => setOpen((o) => !o)}>
           <div className="flex items-center">
             <a.span className="m-1">
               <ChevronUpIcon className="h-5 text-indigo-600" />
