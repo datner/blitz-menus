@@ -12,7 +12,7 @@ interface ResolverValidateOwnership {
 
 export const validateOwnership: ResolverValidateOwnership = (validator) => {
   return async function _innerValidateOwnership(input, ctx) {
-    await validator((input as any).id, ctx.session)
+    await validator((input as any)[0], ctx.session)
     return input
   }
 }
