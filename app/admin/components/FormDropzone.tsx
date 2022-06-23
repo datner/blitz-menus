@@ -25,7 +25,7 @@ export function FormDropzone() {
 
   return (
     <>
-      <span className="block text-sm font-medium text-gray-700">Image</span>
+      <span className="block text-sm font-medium text-gray-700">{t("image")}</span>
       <div
         {...getRootProps()}
         className="p-2 mt-1 rounded-md cursor-pointer border border-gray-300 bg-gray-100 border-dashed"

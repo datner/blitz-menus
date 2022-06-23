@@ -10,6 +10,7 @@ import { FormDropzone } from "./FormDropzone"
 import getItem from "app/items/queries/getItem"
 import { useEffect } from "react"
 import { Lazy } from "fp-ts/function"
+import { FormCategoryCombobox } from "./FormCategoryCombobox"
 
 type Props = {
   item?: PromiseReturnType<typeof getItem>
@@ -80,7 +81,18 @@ export function ItemForm(props: Props) {
         <form className="space-y-6" onSubmit={onSubmit}>
           <div className="flex gap-4">
             <fieldset className="space-y-6 flex-1" disabled={isSubmitting}>
-              <LabeledTextField name="identifier" label={t("identifier")} placeholder="my-item" />
+              <div className="flex gap-2 items-center">
+                <div className="grow">
+                  <LabeledTextField
+                    name="identifier"
+                    label={t("identifier")}
+                    placeholder="my-item"
+                  />
+                </div>
+                <div className="grow">
+                  <FormCategoryCombobox />
+                </div>
+              </div>
               <div className="flex gap-2 items-center">
                 <LabeledTextField
                   outerProps={{ className: "grow shrink" }}

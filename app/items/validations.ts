@@ -1,6 +1,7 @@
 import { Locale } from "db"
 import { Slug } from "app/auth/validations"
 import { z } from "zod"
+import { Id } from "app/core/helpers/zod"
 
 export const Content = z.object({
   name: z.string().nonempty(),
@@ -17,6 +18,7 @@ export const ItemSchema = z.object({
   image: Image,
   price: z.number().int().multipleOf(50, "Price should only be multiples of 50"),
   identifier: Slug,
+  categoryId: Id,
   en: Content.transform((it) => ({ ...it, locale: Locale.en })),
   he: Content.transform((it) => ({ ...it, locale: Locale.he })),
 })

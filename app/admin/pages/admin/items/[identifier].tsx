@@ -3,7 +3,6 @@ import { Content } from "app/admin/components/Content"
 import { UpdateItemForm } from "app/admin/components/UpdateItemForm"
 import { AdminLayout } from "app/core/layouts/AdminLayout"
 import { BlitzPage, Routes, getSession, GetServerSidePropsContext, useParam } from "blitz"
-import db from "db"
 import { Suspense } from "react"
 
 const AdminItemsItem: BlitzPage = () => {
@@ -33,13 +32,6 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
         destination: Routes.LoginPage(),
         permanent: false,
       },
-    }
-  }
-
-  const restaurant = await db.restaurant.findUnique({ where: { id: session.restaurantId } })
-  if (!restaurant) {
-    return {
-      notFound: true,
     }
   }
 

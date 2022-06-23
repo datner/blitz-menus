@@ -13,11 +13,12 @@ type Props = {
 }
 
 const select = (item: PromiseReturnType<typeof getItem>) => {
-  const { identifier, id, price, content, image, blurDataUrl } = item
+  const { identifier, categoryId, id, price, content, image, blurDataUrl } = item
   return {
     id,
     defaultValues: {
       identifier,
+      categoryId,
       price,
       en: Content.parse(content.find((it) => it.locale === Locale.en)),
       he: Content.parse(content.find((it) => it.locale === Locale.he)),
