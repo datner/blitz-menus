@@ -1,7 +1,7 @@
 import { BlitzLayout } from "blitz"
 import clsx from "clsx"
 import { Dialog, Transition } from "@headlessui/react"
-import { Fragment, ReactNode, Suspense, useState } from "react"
+import { createContext, Fragment, ReactNode, Suspense, useContext, useReducer } from "react"
 import Layout from "./Layout"
 import {
   CogIcon,
@@ -13,19 +13,26 @@ import {
   XIcon,
 } from "@heroicons/react/solid"
 import { ImpersonationNotice } from "app/auth/components/ImpersonationNotice"
+import { useEvent } from "../hooks/useEvent"
 
 type Props = { children?: ReactNode }
 
+const layoutContent = createContext(() => {})
+export const useMobileMenu = () => useContext(layoutContent)
+
 export const AdminLayout: BlitzLayout<Props> = ({ children }) => {
+  const [mobileMenuShow, toggleMobileMenu] = useReducer((s) => !s, false)
   return (
     <Layout title="Renu | Admin">
       <Suspense>
         <ImpersonationNotice />
       </Suspense>
       <div className="h-full flex">
-        <NarrowSidebar />
-        <MobileMenu />
-        {children}
+        <layoutContent.Provider value={useEvent(() => toggleMobileMenu())}>
+          <NarrowSidebar />
+          <MobileMenu show={mobileMenuShow} onHide={toggleMobileMenu} />
+          {children}
+        </layoutContent.Provider>
       </div>
     </Layout>
   )
@@ -79,11 +86,10 @@ function NarrowSidebar() {
   )
 }
 
-function MobileMenu() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+function MobileMenu({ show, onHide }: { show: boolean; onHide(): void }) {
   return (
-    <Transition.Root show={mobileMenuOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-20 md:hidden" onClose={setMobileMenuOpen}>
+    <Transition.Root show={show} as={Fragment}>
+      <Dialog as="div" className="relative z-20 md:hidden" onClose={onHide}>
         <Transition.Child
           as={Fragment}
           enter="transition-opacity ease-linear duration-300"
@@ -120,7 +126,7 @@ function MobileMenu() {
                   <button
                     type="button"
                     className="h-12 w-12 rounded-full flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-white"
-                    onClick={() => setMobileMenuOpen(false)}
+                    onClick={onHide}
                   >
                     <XIcon className="h-6 w-6 text-white" aria-hidden="true" />
                     <span className="sr-only">Close sidebar</span>
