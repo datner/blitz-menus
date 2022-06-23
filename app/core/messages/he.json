@@ -1,7 +1,11 @@
 {
   "admin": {
     "Components": {
+      "FormCategoryCombobox": {
+        "category": "קטגוריה"
+      },
       "FormDropzone": {
+        "Image": "תמונה",
         "drop files here": "הנח קובץ פה ...",
         "drag and drop here": "גרור קובץ לפה, או לחץ לפתיחת חלון בחירה"
       },

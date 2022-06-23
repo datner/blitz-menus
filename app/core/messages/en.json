@@ -1,7 +1,11 @@
 {
   "admin": {
     "Components": {
+      "FormCategoryCombobox": {
+        "category": "Category"
+      },
       "FormDropzone": {
+        "image": "Image",
         "drop files here": "Drop the files here ...",
         "drag and drop here": "Drag n drop some files here, or click to select files"
       },

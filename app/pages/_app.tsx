@@ -10,9 +10,18 @@ import {
 import { LoginForm } from "app/auth/components/LoginForm"
 import "app/core/styles/index.css"
 import { NextIntlProvider } from "next-intl"
+import { useLocale } from "app/core/hooks/useLocale"
+import { useLayoutEffect } from "react"
+import { Locale } from "db"
 
 export default function App({ Component, pageProps }: AppProps) {
   const getLayout = Component.getLayout || ((page) => page)
+  const locale = useLocale()
+
+  useLayoutEffect(() => {
+    document.dir = locale === Locale.en ? "ltr" : "rtl"
+    document.documentElement.lang = locale
+  }, [locale])
 
   return (
     <NextIntlProvider messages={pageProps.messages}>

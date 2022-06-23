@@ -2,7 +2,7 @@ import { GlobeAltIcon, MenuAlt2Icon, PlusSmIcon, SearchIcon } from "@heroicons/r
 import clsx from "clsx"
 import { Transition, Menu } from "@headlessui/react"
 import { Fragment, ReactNode } from "react"
-import { Link } from "blitz"
+import { Link, Routes, useRouter } from "blitz"
 import { useLocale } from "app/core/hooks/useLocale"
 import { useMobileMenu } from "app/core/layouts/AdminLayout"
 
@@ -33,7 +33,7 @@ export function Content(props: ContentAreaProps) {
 
 function ContentAside({ children }: Props) {
   return (
-    <aside className="hidden w-96 bg-white border-r border-gray-200 overflow-y-auto lg:block">
+    <aside className="hidden w-96 bg-white ltr:border-r rtl:border-l border-gray-200 overflow-y-auto lg:block">
       {children}
     </aside>
   )
@@ -58,6 +58,7 @@ function ContentMain(props: Props) {
 
 function ContentHeader() {
   const setMobileMenuOpen = useMobileMenu()
+  const router = useRouter()
   const locale = useLocale()
   return (
     <header className="w-full">
@@ -90,9 +91,9 @@ function ContentHeader() {
               </div>
             </form>
           </div>
-          <div className="ml-2 flex items-center space-x-4 sm:ml-6 sm:space-x-6">
+          <div className="ltr:ml-2 rtl:mr-2 flex items-center gap-4 sm:ltr:ml-6 sm:rtl:mr-6 sm:gap-6">
             {/* Profile dropdown */}
-            <Menu as="div" className="relative flex-shrink-0">
+            <Menu as="div" className="relative shrink-0">
               <div>
                 <Menu.Button className="bg-white rounded-full flex text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                   <span className="sr-only">Open user menu</span>
@@ -132,18 +133,14 @@ function ContentHeader() {
               </Transition>
             </Menu>
 
-            <button
-              type="button"
-              className="flex bg-indigo-600 p-1 rounded-full items-center justify-center text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              <PlusSmIcon className="h-6 w-6" aria-hidden="true" />
-              <span className="sr-only">Add Item</span>
-            </button>
-            <Link href="#" locale={locale === "en" ? "he" : "en"}>
-              <a
-                type="button"
-                className="flex bg-indigo-600 p-1 rounded-full items-center justify-center text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              >
+            <Link href={Routes.AdminItemsNew()}>
+              <a className="flex shrink-0 bg-indigo-600 p-1 rounded-full items-center justify-center text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <PlusSmIcon className="h-6 w-6" aria-hidden="true" />
+                <span className="sr-only">Add Item</span>
+              </a>
+            </Link>
+            <Link href={router.asPath} locale={locale === "en" ? "he" : "en"}>
+              <a className="flex shrink-0 bg-indigo-600 p-1 rounded-full items-center justify-center text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                 <GlobeAltIcon className="h-6 w-6" aria-hidden="true" />
                 <span className="sr-only">change locale</span>
               </a>
