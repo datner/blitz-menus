@@ -5,12 +5,15 @@
         "category": "קטגוריה"
       },
       "FormDropzone": {
-        "Image": "תמונה",
+        "image": "תמונה",
         "drop files here": "הנח קובץ פה ...",
         "drag and drop here": "גרור קובץ לפה, או לחץ לפתיחת חלון בחירה"
       },
       "ItemForm": {
-        "title": "ערוך פריט",
+        "title": {
+          "edit": "ערוך פריט",
+          "new": "צור פריט"
+        },
         "identifier": "מזהה (באנגלית)",
         "price": "מחיר",
         "english name": "שם באנגלית",

@@ -26,7 +26,7 @@ function AsideDirectory() {
             <ul role="list" className="relative z-0 divide-y divide-gray-200">
               {items.map((item) => (
                 <li key={item.id} className="bg-white">
-                  <div className="relative px-6 py-5 flex items-center space-x-3 hover:bg-gray-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500">
+                  <div className="relative px-6 py-5 flex items-center gap-3 hover:bg-gray-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500">
                     <div className="flex-shrink-0">
                       {item.image && (
                         <Image

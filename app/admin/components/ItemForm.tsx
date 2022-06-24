@@ -18,16 +18,16 @@ type Props = {
   defaultValues?: DefaultValues<ItemSchema>
 }
 
-const getDefaultValues: Lazy<DefaultValues<ItemSchema>> = () => ({
+const DEFAULT_VALUES: DefaultValues<ItemSchema> = {
   identifier: "",
   price: 0,
   en: { name: "", description: "" },
   he: { name: "", description: "" },
-  image: { src: "placeholder" },
-})
+  image: { src: "" },
+}
 
 export function ItemForm(props: Props) {
-  const { defaultValues = getDefaultValues(), onSubmit: onSubmit_ } = props
+  const { defaultValues = DEFAULT_VALUES, onSubmit: onSubmit_ } = props
   const t = useTranslations("admin.Components.ItemForm")
   const form = useZodForm({
     schema: ItemSchema,
@@ -75,7 +75,7 @@ export function ItemForm(props: Props) {
       <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
         <div className="pb-4">
           <h1 className="text-xl text-gray-700 font-semibold underline underline-offset-1 decoration-indigo-600">
-            {t("title")}
+            {props.defaultValues ? t("title.edit") : t("title.new")}
           </h1>
         </div>
         <form className="space-y-6" onSubmit={onSubmit}>

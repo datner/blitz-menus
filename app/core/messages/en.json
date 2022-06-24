@@ -10,7 +10,10 @@
         "drag and drop here": "Drag n drop some files here, or click to select files"
       },
       "ItemForm": {
-        "title": "Edit an Item",
+        "title": {
+          "edit": "Edit an Item",
+          "new": "Create an Item"
+        },
         "identifier": "Identifier",
         "price": "Price",
         "english name": "English Name",
