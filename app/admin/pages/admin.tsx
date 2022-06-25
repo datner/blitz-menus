@@ -32,7 +32,7 @@ const AdminHome: BlitzPage = () => {
 AdminHome.getLayout = (page) => <AdminLayout>{page}</AdminLayout>
 
 export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
-  const { req, res } = ctx
+  const { req, res, locale } = ctx
   const session = await getSession(req, res)
   if (!session.restaurantId) {
     return {
@@ -43,7 +43,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     }
   }
   return {
-    props: {},
+    props: { messages: await import(`app/core/messages/${locale}.json`) },
   }
 }
 

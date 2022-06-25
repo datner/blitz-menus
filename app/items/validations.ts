@@ -11,7 +11,7 @@ export const Content = z.object({
 export const Image = z.object({
   file: z.any(),
   src: z.string(),
-  blur: z.string(),
+  blur: z.string().optional(),
 })
 
 export const ItemSchema = z.object({

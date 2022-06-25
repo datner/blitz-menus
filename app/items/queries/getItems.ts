@@ -10,6 +10,7 @@ export default resolver.pipe(
     const restaurantId = session.restaurantId ?? undefined
     const where = {
       restaurantId,
+      deleted: null,
       ..._where,
     }
 

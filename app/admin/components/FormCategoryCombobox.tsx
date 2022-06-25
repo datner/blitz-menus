@@ -1,5 +1,5 @@
 import { useQuery } from "blitz"
-import { match, P } from "ts-pattern"
+import { match } from "ts-pattern"
 import getCategories from "app/categories/queries/getCategories"
 import { Prisma } from "db"
 import { Combobox } from "@headlessui/react"
@@ -14,54 +14,55 @@ import { useTranslations } from "next-intl"
 export function FormCategoryCombobox() {
   const locale = useLocale()
   const t = useTranslations("admin.Components.FormCategoryCombobox")
-  const [queryBag, { isLoading }] = useQuery(
-    getCategories,
-    {
-      orderBy: { identifier: Prisma.SortOrder.asc },
-    },
-    { suspense: false }
-  )
+  const [queryBag] = useQuery(getCategories, {
+    orderBy: { identifier: Prisma.SortOrder.asc },
+  })
   const [query, setQuery] = useState("")
 
   const {
     field: { ref, onBlur, ...field },
-  } = useController({ name: "categoryId" })
+  } = useController({ name: "categoryId", defaultValue: queryBag.categories[0]?.id })
+
   const title = useMemo(() => titleFor(locale), [locale])
+
+  const [selected, setSelected] = useState(() =>
+    queryBag.categories.find((it) => it.id === field.value)
+  )
 
   const categories = useMemo(
     () =>
-      match({ query, data: queryBag?.categories })
-        .with({ data: P.nullish }, () => [])
-        .with({ query: "", data: P.not(P.nullish) }, ({ data }) => data)
-        .with({ query: P.string, data: P.not(P.nullish) }, ({ data, query }) =>
-          data.filter((it) => title(it).toLowerCase().includes(query))
-        )
-        .exhaustive(),
-    [query, queryBag?.categories, title]
-  )
-
-  const value = useMemo(
-    () =>
-      match(queryBag?.categories)
-        .with(P.not(P.nullish), (cats) => cats.find((it) => it.id === field.value))
-        .otherwise(() => undefined),
-    [field.value, queryBag?.categories]
+      match(query)
+        .with("", () => queryBag.categories)
+        .otherwise(() =>
+          queryBag.categories.filter((it) => title(it).toLowerCase().includes(query.toLowerCase()))
+        ),
+    [query, queryBag.categories, title]
   )
 
   return (
     <Combobox
       as="div"
-      value={value}
-      onChange={(it) => field.onChange(it?.id)}
+      value={selected}
+      onChange={(it) => {
+        setQuery("")
+        setSelected(it)
+        field.onChange(it?.id)
+      }}
       nullable
-      disabled={isLoading}
     >
       <Combobox.Label className="block text-sm font-medium text-gray-700">
         {t("category")}
       </Combobox.Label>
       <div className="relative mt-1">
         <Combobox.Input
-          className="w-full rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm"
+          className={clsx([
+            "w-full",
+            "rounded-md border border-gray-300",
+            "bg-white py-2 pl-3 pr-10 shadow-sm",
+            "sm:text-sm",
+            "focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500",
+            "disabled:bg-gray-200",
+          ])}
           onChange={(event) => setQuery(event.target.value)}
           displayValue={title}
         />
@@ -80,37 +81,34 @@ export function FormCategoryCombobox() {
                 )
               }
             >
-              {({ active }) => {
-                const selected = it.id === field.value
-                return (
-                  <>
-                    <div className="flex">
-                      <span className={clsx("truncate px-1", selected && "font-semibold")}>
-                        {title(it)}
-                      </span>
-                      <span
-                        className={clsx(
-                          "ml-2 truncate text-gray-500",
-                          active ? "text-indigo-200" : "text-gray-500"
-                        )}
-                      >
-                        {it.identifier}
-                      </span>
-                    </div>
+              {({ active, selected }) => (
+                <>
+                  <div className="flex">
+                    <span className={clsx("truncate px-1", selected && "font-semibold")}>
+                      {title(it)}
+                    </span>
+                    <span
+                      className={clsx(
+                        "ml-2 truncate text-gray-500",
+                        active ? "text-indigo-200" : "text-gray-500"
+                      )}
+                    >
+                      {it.identifier}
+                    </span>
+                  </div>
 
-                    {selected && (
-                      <span
-                        className={clsx(
-                          "absolute inset-y-0 right-0 flex items-center pr-4",
-                          active ? "text-white" : "text-indigo-600"
-                        )}
-                      >
-                        <CheckIcon className="h-5 w-5" aria-hidden="true" />
-                      </span>
-                    )}
-                  </>
-                )
-              }}
+                  {selected && (
+                    <span
+                      className={clsx(
+                        "absolute inset-y-0 right-0 flex items-center pr-4",
+                        active ? "text-white" : "text-indigo-600"
+                      )}
+                    >
+                      <CheckIcon className="h-5 w-5" aria-hidden="true" />
+                    </span>
+                  )}
+                </>
+              )}
             </Combobox.Option>
           ))}
         </Combobox.Options>

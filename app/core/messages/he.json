@@ -1,6 +1,9 @@
 {
   "admin": {
     "Components": {
+      "Aside": {
+        "items": "פריטים"
+      },
       "FormCategoryCombobox": {
         "category": "קטגוריה"
       },
@@ -18,10 +21,14 @@
         "price": "מחיר",
         "english name": "שם באנגלית",
         "hebrew name": "שם בעברית",
-        "submit": {
+        "upload": "מעלה תמונה ...",
+        "update": {
           "initial": "עדכן פריט",
-          "image": "מעלה תמונה ...",
           "item": "מעדכן פריט ..."
+        },
+        "create": {
+          "initial": "צור פריט",
+          "item": "יוצר פריט ..."
         }
       }
     }

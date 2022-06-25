@@ -13,6 +13,7 @@ export default resolver.pipe(
     const restaurantId = session.restaurantId ?? undefined
     const where = {
       restaurantId,
+      deleted: null,
       ..._where,
     }
 
@@ -28,7 +29,10 @@ export default resolver.pipe(
       query: (paginateArgs) =>
         db.category.findMany({
           ...paginateArgs,
-          include: { content: true, items: { include: { content: true } } },
+          include: {
+            content: true,
+            items: { where: { deleted: null }, include: { content: true } },
+          },
           where,
           orderBy,
         }),

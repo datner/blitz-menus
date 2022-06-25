@@ -8,9 +8,10 @@ import { DefaultValues, FormProvider, SubmitHandler } from "react-hook-form"
 import getUploadUrl from "../mutations/getUploadUrl"
 import { FormDropzone } from "./FormDropzone"
 import getItem from "app/items/queries/getItem"
-import { useEffect } from "react"
-import { Lazy } from "fp-ts/function"
+import { useEffect, useReducer } from "react"
+import { match } from "ts-pattern"
 import { FormCategoryCombobox } from "./FormCategoryCombobox"
+import { DeleteButton } from "./DeleteButton"
 
 type Props = {
   item?: PromiseReturnType<typeof getItem>
@@ -34,6 +35,7 @@ export function ItemForm(props: Props) {
     defaultValues,
   })
   const [getAssetUrl, uploadUrl] = useMutation(getUploadUrl)
+  const [isRemoving, remove] = useReducer(() => true, false)
 
   const { handleSubmit, setFormError, watch, formState, reset } = form
   const { isSubmitting } = formState
@@ -70,17 +72,38 @@ export function ItemForm(props: Props) {
     }
   })
 
+  const result = {
+    defaultValues: Boolean(props.defaultValues),
+    isSubmitting,
+  }
+
+  const message = match(uploadUrl.isLoading)
+    .with(true, () => t("upload"))
+    .otherwise(() =>
+      match(result)
+        .with({ defaultValues: false, isSubmitting: true }, () => t("create.item"))
+        .with({ defaultValues: true, isSubmitting: true }, () => t("update.item"))
+        .with({ defaultValues: false }, () => t("create.initial"))
+        .with({ defaultValues: true }, () => t("update.initial"))
+        .exhaustive()
+    )
+
   return (
     <FormProvider {...form}>
       <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-        <div className="pb-4">
-          <h1 className="text-xl text-gray-700 font-semibold underline underline-offset-1 decoration-indigo-600">
+        <div className="pb-4 h-20 flex">
+          <h1 className="text-xl text-gray-700 font-semibold underline underline-offset-1 decoration-indigo-600 grow">
             {props.defaultValues ? t("title.edit") : t("title.new")}
           </h1>
+          <div>
+            {props.defaultValues?.identifier && (
+              <DeleteButton identifier={props.defaultValues.identifier} onRemove={remove} />
+            )}
+          </div>
         </div>
         <form className="space-y-6" onSubmit={onSubmit}>
           <div className="flex gap-4">
-            <fieldset className="space-y-6 flex-1" disabled={isSubmitting}>
+            <fieldset className="space-y-6 flex-1" disabled={isSubmitting || isRemoving}>
               <div className="flex gap-2 items-center">
                 <div className="grow">
                   <LabeledTextField
@@ -115,11 +138,7 @@ export function ItemForm(props: Props) {
             type="submit"
             disabled={isSubmitting}
           >
-            {isSubmitting
-              ? uploadUrl.isLoading
-                ? t("submit.image")
-                : t("submit.item")
-              : t("submit.initial")}
+            {message}
           </button>
         </form>
       </div>

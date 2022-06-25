@@ -16,6 +16,7 @@ export const InputBase = memo(
         "sm:text-sm",
         "error:border-red-300 error:focus:ring-red-500 error:text-red-900",
         "focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none",
+        "disabled:bg-gray-200",
       ])}
     />
   ))

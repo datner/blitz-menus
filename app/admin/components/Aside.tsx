@@ -3,9 +3,11 @@ import { priceShekel, titleFor } from "app/core/helpers/content"
 import { useLocale } from "app/core/hooks/useLocale"
 import { useQuery, Image, Link, Routes } from "blitz"
 import { Prisma } from "db"
+import { useTranslations } from "next-intl"
 
 function AsideDirectory() {
   const locale = useLocale()
+  const t = useTranslations("admin.Components.Aside")
   const [{ categories }] = useQuery(getCategories, {
     orderBy: { identifier: Prisma.SortOrder.asc },
   })
@@ -15,7 +17,7 @@ function AsideDirectory() {
   return (
     <div className="flex h-full flex-col">
       <div className="p-2 pl-4">
-        <h3 className="text-xl text-gray-800 font-semibold">Items</h3>
+        <h3 className="text-xl text-gray-800 font-semibold">{t("items")}</h3>
       </div>
       <nav className="grow overflow-y-auto" aria-label="Directory">
         {categories.map(({ items, identifier, ...rest }) => (

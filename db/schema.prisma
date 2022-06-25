@@ -26,6 +26,8 @@ model User {
 
   tokens   Token[]
   sessions Session[]
+
+  deleted DateTime?
 }
 
 model Session {
@@ -75,6 +77,8 @@ model Restaurant {
   users      User[]
   createdAt  DateTime         @default(now())
   updatedAt  DateTime         @default(now()) @updatedAt
+
+  deleted DateTime?
 }
 
 model RestaurantI18L {
@@ -94,6 +98,8 @@ model Menu {
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @default(now()) @updatedAt
 
+  deleted DateTime?
+
   @@unique([restaurantId, identifier])
 }
 
@@ -108,6 +114,8 @@ model Category {
   items        Item[]
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @default(now()) @updatedAt
+
+  deleted DateTime?
 
   @@unique([restaurantId, identifier])
 }
@@ -135,6 +143,8 @@ model Item {
   restaurantId Int
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @default(now()) @updatedAt
+
+  deleted DateTime?
 
   @@unique([restaurantId, identifier])
 }

@@ -1,6 +1,9 @@
 {
   "admin": {
     "Components": {
+      "Aside": {
+        "items": "Items"
+      },
       "FormCategoryCombobox": {
         "category": "Category"
       },
@@ -18,10 +21,14 @@
         "price": "Price",
         "english name": "English Name",
         "hebrew name": "Hebrew Name",
-        "submit": {
+        "upload": "Uploading Image...",
+        "update": {
           "initial": "Update Item",
-          "image": "Uploading Image...",
           "item": "Updating Item..."
+        },
+        "create": {
+          "initial": "Create Item",
+          "item": "Creating Item..."
         }
       }
     }

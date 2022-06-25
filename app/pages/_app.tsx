@@ -6,19 +6,26 @@ import {
   AuthorizationError,
   ErrorFallbackProps,
   useQueryErrorResetBoundary,
+  Router,
 } from "blitz"
 import { LoginForm } from "app/auth/components/LoginForm"
 import "app/core/styles/index.css"
 import { NextIntlProvider } from "next-intl"
 import { useLocale } from "app/core/hooks/useLocale"
-import { useLayoutEffect } from "react"
 import { Locale } from "db"
+import NProgress from "nprogress"
+import "app/core/styles/nprogress.css"
+import { useIsomorphicLayoutEffect } from "app/core/hooks/useIsomorphicLayoutEffect"
+
+Router.events.on("routeChangeStart", () => NProgress.start())
+Router.events.on("routeChangeComplete", () => NProgress.done())
+Router.events.on("routeChangeError", () => NProgress.done())
 
 export default function App({ Component, pageProps }: AppProps) {
   const getLayout = Component.getLayout || ((page) => page)
   const locale = useLocale()
 
-  useLayoutEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     document.dir = locale === Locale.en ? "ltr" : "rtl"
     document.documentElement.lang = locale
   }, [locale])

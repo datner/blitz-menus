@@ -14,6 +14,10 @@ import {
 } from "@heroicons/react/solid"
 import { ImpersonationNotice } from "app/auth/components/ImpersonationNotice"
 import { useEvent } from "../hooks/useEvent"
+import { ToastContainer } from "react-toastify"
+
+import "react-toastify/dist/ReactToastify.css"
+import { useIsRtl } from "../hooks/useIsRtl"
 
 type Props = { children?: ReactNode }
 
@@ -22,6 +26,7 @@ export const useMobileMenu = () => useContext(layoutContent)
 
 export const AdminLayout: BlitzLayout<Props> = ({ children }) => {
   const [mobileMenuShow, toggleMobileMenu] = useReducer((s) => !s, false)
+  const isRtl = useIsRtl()
   return (
     <Layout title="Renu | Admin">
       <Suspense>
@@ -34,6 +39,7 @@ export const AdminLayout: BlitzLayout<Props> = ({ children }) => {
           {children}
         </layoutContent.Provider>
       </div>
+      <ToastContainer rtl={isRtl} autoClose={1500} position="bottom-right" />
     </Layout>
   )
 }
