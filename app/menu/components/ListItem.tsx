@@ -43,7 +43,7 @@ export const ListItem = memo(function ListItem(props: Props) {
         if (current <= -70) onRemove()
       }
     },
-    { axis: "x", bounds: { left: 100, right: 100 }, rubberband: 0.165, from: [100, 0] }
+    { axis: "x", from: [100, 0] }
   )
   const styles = useSpring({
     x: isInOrder ? 0 : hideIndicator,
