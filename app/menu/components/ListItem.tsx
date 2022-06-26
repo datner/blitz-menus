@@ -31,12 +31,11 @@ export const ListItem = memo(function ListItem(props: Props) {
     scale: 1,
   }))
   const bind = useDrag(
-    ({ active, movement: [mx], first, offset: [ox] }) => {
-      first && console.log(mx, ox)
+    ({ active, movement: [mx] }) => {
       api.start({
         x: active ? mx : 0,
         scale: active ? 1.02 : 1,
-        config: config.stiff,
+        immediate: (name) => active && name === "x",
       })
       if (!active) {
         const current = isRtl ? -x.get() : x.get()
