@@ -8,12 +8,14 @@ import { lazy, Suspense, useState } from "react"
 import { z } from "zod"
 import { useLocale } from "app/core/hooks/useLocale"
 import { titleFor } from "app/core/helpers/content"
+import { max } from "app/core/helpers/number"
 import { ListItem } from "app/menu/components/ListItem"
 import { CategoryHeader } from "app/menu/components/CategoryHeader"
 import { useOrder } from "app/menu/hooks/useOrder"
 import { useNavBar } from "app/menu/hooks/useNavBar"
 import sendOrder from "app/menu/mutations/sendOrder"
 import { useZodParams } from "app/core/hooks/useParams"
+import { decrement, flow, increment, pipe } from "fp-ts/function"
 
 const LazyViewOrderButton = lazy(() => import("app/menu/components/ViewOrderButton"))
 const LazyItemModal = lazy(() => import("app/menu/components/ItemModal"))
@@ -52,6 +54,11 @@ export default function Menu(props: InferGetStaticPropsType<typeof getStaticProp
   if (!categories) return <>:()</>
 
   const getTitle = titleFor(locale)
+  const getMeta = flow(
+    order.get,
+    Op.fromNullable,
+    Op.getOrElse(() => ({ amount: 0, comment: "" }))
+  )
 
   return (
     <div
@@ -87,14 +94,24 @@ export default function Menu(props: InferGetStaticPropsType<typeof getStaticProp
           <div key={category.id} className="group">
             <CategoryHeader ref={navbar.sectionRef(index)} category={category} />
             <ul role="list" className="flex flex-col gap-2 group-last:min-h-screen">
-              {category.items?.map((item) => (
-                <ListItem
-                  key={item.id}
-                  item={item}
-                  amountOption={Op.fromNullable(order.get(item)?.amount)}
-                  onClick={() => handleShowOrderModal(item)}
-                />
-              ))}
+              {category.items?.map((item) => {
+                const { amount, comment } = getMeta(item)
+                return (
+                  <ListItem
+                    key={item.id}
+                    item={item}
+                    amountOption={Op.fromNullable(order.get(item)?.amount)}
+                    onClick={() => handleShowOrderModal(item)}
+                    onAdd={() => order.change(item, { amount: increment(amount), comment })}
+                    onRemove={() =>
+                      order.change(item, {
+                        amount: pipe(amount, decrement, max(0)),
+                        comment,
+                      })
+                    }
+                  />
+                )
+              })}
             </ul>
           </div>
         ))}
