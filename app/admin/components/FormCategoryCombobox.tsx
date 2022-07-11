@@ -10,8 +10,11 @@ import { useMemo, useState } from "react"
 import { CheckIcon, SelectorIcon } from "@heroicons/react/solid"
 import clsx from "clsx"
 import { useTranslations } from "next-intl"
+import { useModal } from "@ebay/nice-modal-react"
+import { CreateCategoryModal } from "./CreateCategoryModal"
 
 export function FormCategoryCombobox() {
+  const modal = useModal(CreateCategoryModal)
   const locale = useLocale()
   const t = useTranslations("admin.Components.FormCategoryCombobox")
   const [queryBag] = useQuery(getCategories, {
@@ -44,6 +47,9 @@ export function FormCategoryCombobox() {
       as="div"
       value={selected}
       onChange={(it) => {
+        if (it === null && query !== "") {
+          modal.show({ name: query })
+        }
         setQuery("")
         setSelected(it)
         field.onChange(it?.id)
@@ -70,6 +76,19 @@ export function FormCategoryCombobox() {
           <SelectorIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
         </Combobox.Button>
         <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+          {query.length > 0 && (
+            <Combobox.Option
+              value={null}
+              className={({ active }) =>
+                clsx(
+                  "relative cursor-default select-none py-2 pl-3 pr-9",
+                  active ? "bg-indigo-600 text-white" : "text-gray-900"
+                )
+              }
+            >
+              Create &quot;{query}&quot;
+            </Combobox.Option>
+          )}
           {categories.map((it) => (
             <Combobox.Option
               key={it.id}
