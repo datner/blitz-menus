@@ -9,6 +9,7 @@ import useMeasure from "react-use-measure"
 import { FullOrderItem } from "../types/item"
 import { ResizeObserver } from "@juggle/resize-observer"
 import { AmountButtons, AmountButtonsProps } from "./AmountButtons"
+import { useTranslations } from "next-intl"
 
 type Props = {
   readonly orderItem: FullOrderItem
@@ -17,6 +18,7 @@ type Props = {
 
 export function OrderModalItem(props: Props) {
   const { orderItem, onChange } = props
+  const t = useTranslations("menu.Components.OrderModalItem")
   const { item, amount, comment } = orderItem
   const [isOpen, setOpen] = useState(false)
   const previous = usePrev(isOpen)
@@ -62,7 +64,7 @@ export function OrderModalItem(props: Props) {
             name="comment"
             value={comment}
             onChange={(event) => onChange({ item, amount, comment: event.target.value })}
-            label="Comment"
+            label={t("comment")}
           />
         </a.div>
       </a.div>
