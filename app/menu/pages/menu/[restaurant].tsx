@@ -177,7 +177,10 @@ export const getStaticProps = async (context: GetStaticPropsContext) => {
         include: {
           content: true,
           items: {
-            where: { deleted: null, image: { not: "" } },
+            where: {
+              deleted: null,
+              image: { not: slug.startsWith("on-the-water") ? "gibbrish" : "" },
+            },
             include: {
               content: true,
             },
