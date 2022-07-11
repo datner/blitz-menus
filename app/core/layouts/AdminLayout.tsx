@@ -15,6 +15,7 @@ import {
 import { ImpersonationNotice } from "app/auth/components/ImpersonationNotice"
 import { useEvent } from "../hooks/useEvent"
 import { ToastContainer } from "react-toastify"
+import NiceModal from "@ebay/nice-modal-react"
 
 import "react-toastify/dist/ReactToastify.css"
 import { useIsRtl } from "../hooks/useIsRtl"
@@ -32,14 +33,16 @@ export const AdminLayout: BlitzLayout<Props> = ({ children }) => {
       <Suspense>
         <ImpersonationNotice />
       </Suspense>
-      <div className="h-full flex">
-        <layoutContent.Provider value={useEvent(() => toggleMobileMenu())}>
-          <NarrowSidebar />
-          <MobileMenu show={mobileMenuShow} onHide={toggleMobileMenu} />
-          {children}
-        </layoutContent.Provider>
-      </div>
-      <ToastContainer rtl={isRtl} autoClose={1500} position="bottom-right" />
+      <NiceModal.Provider>
+        <div className="h-full flex">
+          <layoutContent.Provider value={useEvent(() => toggleMobileMenu())}>
+            <NarrowSidebar />
+            <MobileMenu show={mobileMenuShow} onHide={toggleMobileMenu} />
+            {children}
+          </layoutContent.Provider>
+        </div>
+        <ToastContainer rtl={isRtl} autoClose={1500} position="bottom-right" />
+      </NiceModal.Provider>
     </Layout>
   )
 }
