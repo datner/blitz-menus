@@ -4,7 +4,7 @@ import { useZodForm } from "app/core/hooks/useZodForm"
 import clsx from "clsx"
 import { useTranslations } from "next-intl"
 import { createPortal } from "react-dom"
-import { useController } from "react-hook-form"
+import { FormProvider, useController } from "react-hook-form"
 import { OrderMeta } from "../types/item"
 import { Nullish } from "../types/utils"
 import { ItemForm } from "../validations/item"
@@ -36,10 +36,11 @@ export function ItemModalForm(props: ItemModalFormProps) {
   const defaultValues = DefaultValues.parse(meta)
   const t = useTranslations("menu.Components.ItemModal")
 
-  const { control, bind, handleSubmit, formState } = useZodForm({
+  const form = useZodForm({
     schema: ItemForm,
     defaultValues,
   })
+  const { control, handleSubmit, formState } = form
 
   const { isDirty } = formState
 
@@ -58,7 +59,9 @@ export function ItemModalForm(props: ItemModalFormProps) {
 
   return (
     <form id="item-form" onSubmit={submitOrRemove}>
-      <LabeledTextArea label={t("comment")} {...bind("comment")} rows={4} />
+      <FormProvider {...form}>
+        <LabeledTextArea label={t("comment")} name="comment" rows={4} />
+      </FormProvider>
       {containerEl &&
         createPortal(
           <div className="mt-6 sticky bottom-4 mx-2 flex gap-2">
