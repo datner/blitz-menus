@@ -30,6 +30,23 @@
           "initial": "צור פריט",
           "item": "יוצר פריט ..."
         }
+      },
+      "ItemForm": {
+        "title": {
+          "edit": "ערוך קטגוריה",
+          "new": "צור קטגוריה"
+        },
+        "identifier": "מזהה (באנגלית)",
+        "english name": "שם באנגלית",
+        "hebrew name": "שם בעברית",
+        "update": {
+          "initial": "עדכן קטגוריה",
+          "category": "מעדכן  קטגוריה ..."
+        },
+        "create": {
+          "initial": "צור קטגוריה",
+          "category": "יוצר קטגוריה ..."
+        }
       }
     }
   },
@@ -49,6 +66,9 @@
       "OrderModal": {
         "yourOrder": "ההזמנה שלך",
         "order": "הזמן!"
+      },
+      "OrderModalItem": {
+        "comment": "הערות"
       },
       "ItemData": {
         "name": "שם",

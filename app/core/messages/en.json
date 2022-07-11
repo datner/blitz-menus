@@ -30,6 +30,23 @@
           "initial": "Create Item",
           "item": "Creating Item..."
         }
+      },
+      "CategoryForm": {
+        "title": {
+          "edit": "Edit a Category",
+          "new": "Create a Category"
+        },
+        "identifier": "Identifier",
+        "english name": "English Name",
+        "hebrew name": "Hebrew Name",
+        "update": {
+          "initial": "Update Category",
+          "category": "Updating Category..."
+        },
+        "create": {
+          "initial": "Create Category",
+          "category": "Creating Category..."
+        }
       }
     }
   },
@@ -49,6 +66,9 @@
       "OrderModal": {
         "yourOrder": "Your Order",
         "order": "Order!"
+      },
+      "OrderModalItem": {
+        "comment": "Comment"
       },
       "ItemData": {
         "name": "Name",
