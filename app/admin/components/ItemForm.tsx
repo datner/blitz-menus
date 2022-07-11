@@ -12,6 +12,7 @@ import { useEffect, useReducer } from "react"
 import { match } from "ts-pattern"
 import { FormCategoryCombobox } from "./FormCategoryCombobox"
 import { DeleteButton } from "./DeleteButton"
+import LabeledTextArea from "app/core/components/LabeledTextArea"
 
 type Props = {
   item?: PromiseReturnType<typeof getItem>
@@ -67,6 +68,7 @@ export function ItemForm(props: Props) {
         image.src = origin_path
       }
       await onSubmit_(data)
+      reset(DEFAULT_VALUES)
     } catch (error: any) {
       setFormError(error.toString())
     }
@@ -126,8 +128,22 @@ export function ItemForm(props: Props) {
                 />
                 <pre className="pt-6 basis-32">{toShekel(watch("price") || 0)}</pre>
               </div>
-              <LabeledTextField name="en.name" label={t("english name")} placeholder="My Item" />
-              <LabeledTextField name="he.name" label={t("hebrew name")} placeholder="פריט שלי" />
+              <div>
+                <LabeledTextField name="en.name" label={t("english name")} placeholder="My Item" />
+                <LabeledTextArea
+                  name="en.description"
+                  label={t("english name")}
+                  placeholder="My Item"
+                />
+              </div>
+              <div>
+                <LabeledTextField name="he.name" label={t("hebrew name")} placeholder="פריט שלי" />
+                <LabeledTextArea
+                  name="he.description"
+                  label={t("english name")}
+                  placeholder="My Item"
+                />
+              </div>
             </fieldset>
             <div className="flex-1 flex flex-col">
               <FormDropzone />
