@@ -51,6 +51,7 @@ export const RestaurantForm = (props: SignupFormProps) => {
     try {
       const { url, headers: h } = await getAssetUrl({
         name: `${data.slug}/logo.${file.name.split(".").pop()}`,
+        restaurant: data.slug,
       })
       const headers = new Headers(h)
       headers.append("Content-Length", `${file.size + 5000}`)
