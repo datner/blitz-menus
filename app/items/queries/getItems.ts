@@ -1,13 +1,15 @@
 import { paginate, resolver, Ctx } from "blitz"
 import db, { Prisma } from "db"
 
-interface GetItemsInput
+interface GetItemsArgs
   extends Pick<Prisma.ItemFindManyArgs, "where" | "orderBy" | "skip" | "take"> {}
 
 export default resolver.pipe(
   resolver.authorize(),
-  async ({ where: _where, orderBy, skip = 0, take = 100 }: GetItemsInput, { session }: Ctx) => {
-    const restaurantId = session.restaurantId ?? undefined
+  async (
+    { where: _where, orderBy, skip = 0, take = 100 }: GetItemsArgs,
+    { session: { restaurantId } }: Ctx
+  ) => {
     const where = {
       restaurantId,
       deleted: null,

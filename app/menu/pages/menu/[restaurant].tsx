@@ -1,4 +1,10 @@
-import { GetStaticPaths, GetStaticPropsContext, InferGetStaticPropsType, useMutation } from "blitz"
+import {
+  GetStaticPaths,
+  GetStaticPropsContext,
+  InferGetStaticPropsType,
+  NotFoundError,
+  useMutation,
+} from "blitz"
 import type { Item__Content, OrderMeta } from "app/menu/types/item"
 
 import clsx from "clsx"
@@ -170,7 +176,6 @@ export const getStaticProps = async (context: GetStaticPropsContext) => {
   const { restaurant: slug } = Query.parse(context.params)
   const restaurant = await db.restaurant.findUnique({
     where: { slug },
-    rejectOnNotFound: true,
     include: {
       content: true,
       categories: {
@@ -189,6 +194,8 @@ export const getStaticProps = async (context: GetStaticPropsContext) => {
       },
     },
   })
+
+  if (!restaurant) throw new NotFoundError()
 
   return {
     props: { restaurant, messages: await import(`app/core/messages/${context.locale}.json`) },

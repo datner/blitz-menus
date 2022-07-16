@@ -2,6 +2,7 @@ import { Locale } from "db"
 import { Slug } from "app/auth/validations"
 import { z } from "zod"
 import { Id } from "app/core/helpers/zod"
+import { isExists } from "app/core/helpers/common"
 
 export const Content = z.object({
   name: z.string().nonempty(),
@@ -15,7 +16,7 @@ export const Image = z.object({
 })
 
 export const ItemSchema = z.object({
-  image: Image,
+  image: Image.transform((it) => it.src),
   price: z.number().int().multipleOf(50, "Price should only be multiples of 50"),
   identifier: Slug,
   categoryId: Id,
@@ -23,9 +24,22 @@ export const ItemSchema = z.object({
   he: Content.transform((it) => ({ ...it, locale: Locale.he })),
 })
 
-export const UpdateItem = ItemSchema
+export const CreateItem = ItemSchema.transform(({ en, he, ...rest }) => ({
+  ...rest,
+  content: { createMany: { data: [en, he] } },
+}))
 
-export const CreateItem = ItemSchema
+export const UpdateItem = ItemSchema.extend({ id: Id }).transform(({ en, he, ...rest }) => {
+  if (!en && !he) return rest
+  return {
+    ...rest,
+    content: {
+      updateMany: [en, he]
+        .filter(isExists)
+        .map((it) => ({ where: { locale: it.locale }, data: it })),
+    },
+  }
+})
 
 export type UpdateItem = z.input<typeof UpdateItem>
 export type CreateItem = z.input<typeof CreateItem>

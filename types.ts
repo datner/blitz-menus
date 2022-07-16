@@ -1,5 +1,7 @@
 import { DefaultCtx, SessionContext, SimpleRolesIsAuthorized } from "blitz"
-import { User, Role } from "db"
+import { User, GlobalRole, MembershipRole, Restaurant, Organization } from "db"
+
+type Role = GlobalRole | MembershipRole
 
 declare module "blitz" {
   export interface Ctx extends DefaultCtx {
@@ -10,7 +12,9 @@ declare module "blitz" {
     PublicData: {
       userId: User["id"]
       role: Role
-      restaurantId?: User["restaurantId"]
+      roles: Role[]
+      orgId?: Organization["id"]
+      restaurantId?: Restaurant["id"]
       impersonatingFromUserId?: User["id"]
     }
   }

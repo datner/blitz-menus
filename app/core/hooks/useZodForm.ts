@@ -7,7 +7,7 @@ import { useEvent } from "./useEvent"
 type UseZodFormProps<
   Zod extends z.ZodSchema,
   TContext = any,
-  TFieldValues extends FieldValues = z.infer<Zod>
+  TFieldValues extends FieldValues = z.input<Zod>
 > = Omit<UseFormProps<TFieldValues, TContext>, "resolver"> & { schema: Zod }
 
 export const useZodForm = <Zod extends z.ZodSchema, TContext = any>({

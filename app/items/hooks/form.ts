@@ -14,7 +14,7 @@ import createItem from "../mutations/createItem"
 import updateItem from "../mutations/updateItem"
 import getItem from "../queries/getItem"
 import getItems from "../queries/getItems"
-import { CreateItem, Content, UpdateItem } from "../validations"
+import { Content, ItemSchema } from "../validations"
 
 interface CreateOptions {
   redirect?: boolean
@@ -47,7 +47,7 @@ export const item = {
     const [createItemMutation] = useMutation(createItem)
     const router = useRouter()
 
-    const onSubmit: SubmitHandler<CreateItem> = async (data) => {
+    const onSubmit: SubmitHandler<ItemSchema> = async (data) => {
       const newItem = await createItemMutation(data)
       setQueryData(getItem, { identifier: newItem.identifier }, newItem)
       invalidateQuery(getItems)
@@ -62,8 +62,8 @@ export const item = {
 
     const [{ id, defaultValues }, { setQueryData }] = useQuery(getItem, { identifier }, { select })
 
-    const onSubmit: SubmitHandler<UpdateItem> = async (data) => {
-      const newItem = await updateItemMutation([id, data])
+    const onSubmit: SubmitHandler<ItemSchema> = async (data) => {
+      const newItem = await updateItemMutation({ id, ...data })
 
       // TODO: find who to file a bug about this to. It gets the select type instead of the data type
       setQueryData(newItem as unknown as ReturnType<typeof select>)

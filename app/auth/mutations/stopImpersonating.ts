@@ -1,4 +1,6 @@
 import { NotFoundError, resolver } from "blitz"
+import { isNonEmpty } from "fp-ts/Array"
+import { head } from "fp-ts/NonEmptyArray"
 import db from "db"
 
 export default resolver.pipe(resolver.authorize(), async (_, ctx) => {
@@ -8,13 +10,19 @@ export default resolver.pipe(resolver.authorize(), async (_, ctx) => {
     return
   }
 
-  const user = await db.user.findUnique({ where: { id: userId } })
+  const user = await db.user.findUnique({ where: { id: userId }, include: { membership: true } })
   if (!user) throw new NotFoundError(`Could not find user with id ${userId}`)
+  if (!isNonEmpty(user.membership))
+    throw new NotFoundError(`User ${user.id} is not associated with any organizations`)
+
+  // TOOD: specify which membership
+  const membership = head(user.membership)
 
   await ctx.session.$create({
     userId: user.id,
     role: user.role,
-    restaurantId: user.restaurantId,
+    roles: [user.role, membership.role],
+    restaurantId: user.restaurantId ?? undefined,
     impersonatingFromUserId: undefined,
   })
 

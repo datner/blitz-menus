@@ -1,20 +1,22 @@
-import { Slug } from "app/auth/validations"
-import { Id } from "app/core/helpers/zod"
+import { enforceSuperAdminIfNotCurrentOrganization } from "app/auth/helpers/enforceSuperAdminIfNoCurrentOrganization"
+import { setDefaultOrganizationId } from "app/auth/helpers/setDefaultOrganizationId"
+import { IdOrSlug } from "app/core/helpers/zod"
 import { resolver, NotFoundError } from "blitz"
 import db from "db"
-import { z } from "zod"
 
-const GetCategory = z.union([z.object({ id: Id }), z.object({ identifier: Slug })])
+export default resolver.pipe(
+  resolver.authorize(),
+  resolver.zod(IdOrSlug),
+  setDefaultOrganizationId,
+  enforceSuperAdminIfNotCurrentOrganization,
+  async (input) => {
+    const category = await db.category.findFirst({
+      where: input,
+      include: { content: true },
+    })
 
-export default resolver.pipe(resolver.zod(GetCategory), async (input, { session }) => {
-  session.$authorize()!
-  const restaurantId = session.restaurantId ?? undefined
-  const category = await db.category.findFirst({
-    where: { ...input, restaurantId },
-    include: { content: true },
-  })
+    if (!category) throw new NotFoundError()
 
-  if (!category) throw new NotFoundError()
-
-  return category
-})
+    return category
+  }
+)

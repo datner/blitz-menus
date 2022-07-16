@@ -1,18 +1,16 @@
-import { resolver, SecurePassword, AuthenticationError } from "blitz"
+import { resolver, SecurePassword, AuthenticationError, NotFoundError } from "blitz"
 import db from "db"
+import { isNonEmpty } from "fp-ts/Array"
+import { head } from "fp-ts/NonEmptyArray"
 import { Login } from "../validations"
 
 export const authenticateUser = async (rawEmail: string, rawPassword: string) => {
   const { email, password } = Login.parse({ email: rawEmail, password: rawPassword })
   const user = await db.user.findFirst({
     where: { email },
-    select: {
-      id: true,
-      name: true,
-      role: true,
-      hashedPassword: true,
-      restaurantId: true,
-      restaurant: { select: { id: true, slug: true } },
+    include: {
+      membership: true,
+      restaurant: true,
     },
   })
   if (!user) throw new AuthenticationError()
@@ -33,7 +31,19 @@ export default resolver.pipe(resolver.zod(Login), async ({ email, password }, ct
   // This throws an error if credentials are invalid
   const user = await authenticateUser(email, password)
 
-  await ctx.session.$create({ userId: user.id, role: user.role, restaurantId: user.restaurantId })
+  if (!isNonEmpty(user.membership))
+    throw new NotFoundError(`User ${user.id} is not associated with any organizations`)
+
+  // TOOD: specify which membership
+  const membership = head(user.membership)
+
+  await ctx.session.$create({
+    userId: user.id,
+    role: user.role,
+    roles: [user.role, membership.role],
+    orgId: membership.organizationId,
+    restaurantId: user.restaurantId ?? undefined,
+  })
 
   return user
 })

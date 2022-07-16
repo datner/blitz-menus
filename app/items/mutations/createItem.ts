@@ -4,26 +4,18 @@ import { resolver } from "blitz"
 import db from "db"
 import { CreateItem } from "../validations"
 
-export default resolver.pipe(resolver.zod(CreateItem), resolver.authorize(), async (input, ctx) => {
-  const { en, he, image, ...rest } = input
-  const restaurant = await getUserRestaurant(ctx)
-  const blurDataUrl = await getBlurDataUrl(input.image.src)
-  const item = await db.item.create({
-    data: {
-      ...rest,
-      image: image.src,
-      blurDataUrl,
-      restaurantId: restaurant.id,
-      content: {
-        createMany: {
-          data: [en, he],
-        },
-      },
-    },
-    include: {
-      content: true,
-    },
-  })
+export default resolver.pipe(
+  resolver.zod(CreateItem),
+  resolver.authorize(),
+  async (input) => ({ ...input, blurDataUrl: await getBlurDataUrl(input.image) }),
+  async (input, ctx) => {
+    const restaurant = await getUserRestaurant(ctx)
 
-  return item
-})
+    return db.item.create({
+      data: { ...input, organizationId: ctx.session.orgId, restaurantId: restaurant.id },
+      include: {
+        content: true,
+      },
+    })
+  }
+)

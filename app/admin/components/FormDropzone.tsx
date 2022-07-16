@@ -4,11 +4,11 @@ import { useDropzone } from "react-dropzone"
 import { useTranslations } from "next-intl"
 import { useController } from "react-hook-form"
 import { z } from "zod"
-import { UpdateItem } from "app/items/validations"
+import { ItemSchema } from "app/items/validations"
 
 export function FormDropzone() {
   const t = useTranslations("admin.Components.FormDropzone")
-  const { field, fieldState } = useController<z.infer<typeof UpdateItem>, "image">({
+  const { field, fieldState } = useController<z.input<typeof ItemSchema>, "image">({
     name: "image",
   })
 

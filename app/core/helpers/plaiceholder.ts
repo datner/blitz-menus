@@ -2,7 +2,7 @@ import { getPlaiceholder } from "plaiceholder"
 import { log } from "./logger"
 
 export async function getBlurDataUrl(image?: string) {
-  if (!image) return ""
+  if (!image) return undefined
 
   log.info("Creating new plaiceholder")
   const url = new URL(`https://renu.imgix.net/${image}`)

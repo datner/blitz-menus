@@ -1,18 +1,18 @@
-import { Slug } from "app/auth/validations"
-import { Id } from "app/core/helpers/zod"
+import { enforceSuperAdminIfNotCurrentOrganization } from "app/auth/helpers/enforceSuperAdminIfNoCurrentOrganization"
+import { setDefaultOrganizationId } from "app/auth/helpers/setDefaultOrganizationId"
+import { IdOrSlug } from "app/core/helpers/zod"
 import { resolver } from "blitz"
-import db, { Role } from "db"
-import { z } from "zod"
+import db, { GlobalRole, MembershipRole } from "db"
 
-const RemoveItem = z.union([z.object({ id: Id }), z.object({ identifier: Slug })])
-
-export default resolver.pipe(resolver.zod(RemoveItem), (input, ctx) => {
-  ctx.session.$authorize([Role.ADMIN, Role.SUPER])!
-
-  if (ctx.session.$isAuthorized(Role.SUPER)) {
-    return db.item.delete({ where: input })
-  }
-  db.item.findFirst({ where: { ...input, restaurantId: ctx.session.restaurantId! } })
-
-  return db.item.delete({ where: input })
-})
+export default resolver.pipe(
+  resolver.authorize([
+    GlobalRole.SUPER,
+    GlobalRole.ADMIN,
+    MembershipRole.ADMIN,
+    MembershipRole.OWNER,
+  ]),
+  resolver.zod(IdOrSlug),
+  setDefaultOrganizationId,
+  enforceSuperAdminIfNotCurrentOrganization,
+  (input) => db.item.delete({ where: input })
+)

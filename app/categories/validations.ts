@@ -15,7 +15,10 @@ export const CategorySchema = z.object({
 
 export const UpdateCategory = CategorySchema
 
-export const CreateCategory = CategorySchema
+export const CreateCategory = CategorySchema.transform(({ en, he, identifier }) => ({
+  identifier,
+  content: { createMany: { data: [en, he] } },
+}))
 
 export type UpdateCategory = z.input<typeof UpdateCategory>
 export type CreateCategory = z.input<typeof CreateCategory>

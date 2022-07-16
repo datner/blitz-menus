@@ -1,41 +1,31 @@
-import { validateOwnership } from "app/auth/helpers/validateOwnership"
-import { resolver } from "blitz"
-import { isExists } from "app/core/helpers/common"
+import { NotFoundError, resolver } from "blitz"
 import db from "db"
-import { UpdateItem } from "../validations"
-import { ensureItemExists } from "../ensureItemExists"
+import { enforceSuperAdminIfNotCurrentOrganization } from "app/auth/helpers/enforceSuperAdminIfNoCurrentOrganization"
+import { setDefaultOrganizationId } from "app/auth/helpers/setDefaultOrganizationId"
 import { getBlurDataUrl } from "app/core/helpers/plaiceholder"
-import { z } from "zod"
-import { Id } from "app/core/helpers/zod"
+import { UpdateItem } from "../validations"
 
 export default resolver.pipe(
-  resolver.zod(z.tuple([Id, UpdateItem])),
+  resolver.zod(UpdateItem),
   resolver.authorize(),
-  validateOwnership(ensureItemExists),
-  async ([id, { en, he, image, ...data }]) => {
-    const current = await db.item.findUnique({
-      where: { id },
+  setDefaultOrganizationId,
+  enforceSuperAdminIfNotCurrentOrganization,
+  (input) => input, // fixes a weird typebug 🤔
+  async (input) => {
+    const item = await db.item.findFirst({
+      where: { id: input.id, organizationId: input.organizationId },
       select: { image: true, blurDataUrl: true },
     })
+    if (!item) throw new NotFoundError()
 
-    let newBlurDataUrl = current?.blurDataUrl ?? undefined
+    if (item.image === input.image) return input
 
-    if (current?.image !== image.src) newBlurDataUrl = await getBlurDataUrl(image.src)
-
-    const item = await db.item.update({
+    return { ...input, dataBlurUrl: await getBlurDataUrl(input.image) }
+  },
+  ({ organizationId, id, ...data }) =>
+    db.item.update({
       where: { id },
       include: { content: true },
-      data: {
-        ...data,
-        blurDataUrl: newBlurDataUrl,
-        content: {
-          updateMany: [en, he]
-            .filter(isExists)
-            .map((it) => ({ where: { locale: it.locale }, data: it })),
-        },
-      },
+      data,
     })
-
-    return item
-  }
 )

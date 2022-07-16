@@ -1,6 +1,9 @@
-import { Item, ItemI18L, OrderItem } from "db"
+import { Item, ItemI18L } from "db"
 
-export type OrderMeta = Pick<OrderItem, "amount" | "comment">
+export interface OrderMeta {
+  amount: number
+  comment: string
+}
 
 export interface FullOrderItem extends OrderMeta {
   item: Item__Content

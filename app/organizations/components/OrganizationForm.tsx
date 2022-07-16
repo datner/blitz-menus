@@ -4,7 +4,6 @@ import { useZodForm } from "app/core/hooks/useZodForm"
 import { useTranslations } from "next-intl"
 import { DefaultValues, FormProvider, SubmitHandler } from "react-hook-form"
 import { useEffect } from "react"
-import { match, P } from "ts-pattern"
 import { CategorySchema } from "app/categories/validations"
 import getCategory from "app/categories/queries/getCategory"
 
@@ -20,7 +19,7 @@ const DEFAULT_VALUES: DefaultValues<CategorySchema> = {
   he: { name: "" },
 }
 
-export function CategoryForm(props: Props) {
+export function OrganizationForm(props: Props) {
   const { defaultValues = DEFAULT_VALUES, onSubmit: onSubmit_ } = props
   const t = useTranslations("admin.Components.CategoryForm")
   const form = useZodForm({
@@ -43,17 +42,9 @@ export function CategoryForm(props: Props) {
     }
   })
 
-  const result = {
-    defaultValues: props.defaultValues?.identifier,
-    isSubmitting,
-  }
-
-  const message = match(result)
-    .with({ defaultValues: P.nullish, isSubmitting: true }, () => t("create.category"))
-    .with({ defaultValues: P._, isSubmitting: true }, () => t("update.category"))
-    .with({ defaultValues: P.nullish }, () => t("create.initial"))
-    .with({ defaultValues: P._ }, () => t("update.initial"))
-    .exhaustive()
+  const suffix = isSubmitting ? "ing" : "e"
+  const verb = defaultValues.identifier ? "Updat" : "Creat"
+  const message = `${verb}${suffix} Organization ${isSubmitting ? "..." : ""}`
 
   return (
     <FormProvider {...form}>

@@ -7,17 +7,12 @@ export default resolver.pipe(
   resolver.zod(CreateCategory),
   resolver.authorize(),
   async (input, ctx) => {
-    const { identifier, en, he } = input
     const restaurant = await getUserRestaurant(ctx)
     const item = await db.category.create({
       data: {
-        identifier,
+        ...input,
         restaurantId: restaurant.id,
-        content: {
-          createMany: {
-            data: [en, he],
-          },
-        },
+        organizationId: ctx.session.orgId,
       },
       include: {
         content: true,
