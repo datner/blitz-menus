@@ -1,5 +1,5 @@
 import { render } from "test/utils"
-import { Role } from "db"
+import { GlobalRole } from "db"
 import Home from "./index"
 import { useCurrentUser } from "app/core/hooks/useCurrentUser"
 
@@ -16,7 +16,7 @@ test.skip("renders blitz documentation link", () => {
     id: 1,
     name: "User",
     email: "user@email.com",
-    role: Role.USER,
+    role: GlobalRole.USER,
   })
 
   const { getByText } = render(<Home />)
