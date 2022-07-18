@@ -1,7 +1,6 @@
 import { ChevronUpIcon } from "@heroicons/react/solid"
 import { usePrev } from "@react-spring/shared"
 import { useChain, useSpring, useSpringRef, a, config } from "@react-spring/web"
-import LabeledTextArea from "app/core/components/LabeledTextArea"
 import { price, titleFor, toShekel } from "app/core/helpers/content"
 import { useLocale } from "app/core/hooks/useLocale"
 import { useState } from "react"
@@ -10,6 +9,7 @@ import { FullOrderItem } from "../types/item"
 import { ResizeObserver } from "@juggle/resize-observer"
 import { AmountButtons, AmountButtonsProps } from "./AmountButtons"
 import { useTranslations } from "next-intl"
+import LabeledTextAreaNoForm from "app/core/components/LabeledTextAreaNoForm"
 
 type Props = {
   readonly orderItem: FullOrderItem
@@ -60,7 +60,7 @@ export function OrderModalItem(props: Props) {
         style={{ opacity, height: isOpen && previous === isOpen ? "auto" : height }}
       >
         <a.div className="pb-2 mx-px" style={{ opacity }} ref={ref}>
-          <LabeledTextArea
+          <LabeledTextAreaNoForm
             name="comment"
             value={comment}
             onChange={(event) => onChange({ item, amount, comment: event.target.value })}

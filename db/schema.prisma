@@ -94,18 +94,47 @@ model Affiliation {
 }
 
 model Venue {
-  id             Int              @id @default(autoincrement())
-  identifier     String           @unique
-  logo           String
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @default(now()) @updatedAt
-  deleted        DateTime?
-  categories     Category[]
-  inventory      Item[]
-  menus          Menu[]
-  content        RestaurantI18L[]
-  Organization   Organization     @relation(fields: [organizationId], references: [id])
-  organizationId Int
+  id                    Int                    @id @default(autoincrement())
+  identifier            String                 @unique
+  logo                  String
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @default(now()) @updatedAt
+  deleted               DateTime?
+  categories            Category[]
+  inventory             Item[]
+  menus                 Menu[]
+  content               RestaurantI18L[]
+  organization          Organization           @relation(fields: [organizationId], references: [id])
+  organizationId        Int
+  clearingIntegration   ClearingIntegration?
+  managementIntegration ManagementIntegration?
+}
+
+model ClearingIntegration {
+  id       Int              @id @default(autoincrement())
+  provider ClearingProvider
+  // it'll be unique, but no reason to enforce that, I think..
+  terminal String
+  Venue    Venue            @relation(fields: [venueId], references: [id])
+  venueId  Int              @unique
+}
+
+model ClearingProfile {
+  provider   ClearingProvider @id
+  // This will probably change between providers, so have to keep it opaque
+  vendorData Json
+}
+
+model ManagementIntegration {
+  id       Int                @id @default(autoincrement())
+  provider ManagementProvider
+  Venue    Venue              @relation(fields: [venueId], references: [id])
+  venueId  Int                @unique
+}
+
+model ManagementProfile {
+  provider   ManagementProvider @unique
+  vendorData Json
 }
 
 model Restaurant {
@@ -218,6 +247,14 @@ enum MembershipRole {
   OWNER
   ADMIN
   USER
+}
+
+enum ClearingProvider {
+  CREDIT_GUARD
+}
+
+enum ManagementProvider {
+  DORIX
 }
 
 enum GlobalRole {

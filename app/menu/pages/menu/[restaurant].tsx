@@ -37,7 +37,13 @@ export default function Menu(props: InferGetStaticPropsType<typeof getStaticProp
   const [item, setItem] = useState<Item__Content | null>(null)
   const [open, setOpen] = useState(false)
   const [reviewOrder, setReviewOrder] = useState(false)
-  const [sendOrderMutation] = useMutation(sendOrder)
+  const [sendOrderMutation] = useMutation(sendOrder, {
+    onSuccess({ clearingUrl }) {
+      if (clearingUrl) {
+        window.location.replace(clearingUrl)
+      }
+    },
+  })
 
   const handleShowOrderModal = (item: Item__Content) => {
     setItem(item)
@@ -51,9 +57,14 @@ export default function Menu(props: InferGetStaticPropsType<typeof getStaticProp
 
   const handleOrder = () => {
     sendOrderMutation({
-      table,
-      restaurantId: restaurant.id,
-      orderItems: order.items,
+      locale,
+      venueId: restaurant.id,
+      orderItems: order.items.map((it) => ({
+        comment: it.comment,
+        amount: it.amount,
+        price: it.item.price,
+        item: it.item.id,
+      })),
     })
   }
 
@@ -173,9 +184,9 @@ const Query = z
   .default({ restaurant: "none", table: "bar" })
 
 export const getStaticProps = async (context: GetStaticPropsContext) => {
-  const { restaurant: slug } = Query.parse(context.params)
-  const restaurant = await db.restaurant.findUnique({
-    where: { slug },
+  const { restaurant: identifier } = Query.parse(context.params)
+  const restaurant = await db.venue.findUnique({
+    where: { identifier },
     include: {
       content: true,
       categories: {
@@ -184,7 +195,7 @@ export const getStaticProps = async (context: GetStaticPropsContext) => {
           items: {
             where: {
               deleted: null,
-              image: { not: slug.startsWith("on-the-water") ? "gibbrish" : "" },
+              image: { not: identifier.startsWith("on-the-water") ? "gibbrish" : "" },
             },
             include: {
               content: true,
