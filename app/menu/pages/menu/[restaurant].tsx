@@ -165,13 +165,13 @@ export default function Menu(props: InferGetStaticPropsType<typeof getStaticProp
 }
 
 export const getStaticPaths: GetStaticPaths = async () => {
-  const restaurants = await db.restaurant.findMany()
+  const venues = await db.venue.findMany()
 
   const locales = Object.values(Locale)
   return {
     fallback: "blocking",
     paths: locales.flatMap((locale) =>
-      restaurants.map((it) => ({ params: { restaurant: it.slug }, locale }))
+      venues.map((it) => ({ params: { restaurant: it.identifier }, locale }))
     ),
   }
 }
