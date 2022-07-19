@@ -1,5 +1,5 @@
+import Image from "next/image"
 import { useScroll } from "@use-gesture/react"
-import { Image } from "blitz"
 import { Item__Content, OrderMeta } from "../types/item"
 import { useLocale } from "app/core/hooks/useLocale"
 import { clamp } from "app/core/helpers/number"

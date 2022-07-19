@@ -1,10 +1,6 @@
-import {
-  GetStaticPaths,
-  GetStaticPropsContext,
-  InferGetStaticPropsType,
-  NotFoundError,
-  useMutation,
-} from "blitz"
+import { gSP } from "app/blitz-server"
+import { useMutation } from "@blitzjs/rpc"
+import { GetStaticPaths, GetStaticPropsContext, InferGetStaticPropsType } from "blitz"
 import type { Item__Content, OrderMeta } from "app/menu/types/item"
 
 import clsx from "clsx"
@@ -183,7 +179,7 @@ const Query = z
   })
   .default({ restaurant: "none", table: "bar" })
 
-export const getStaticProps = async (context: GetStaticPropsContext) => {
+export const getStaticProps = gSP(async (context: GetStaticPropsContext) => {
   const { restaurant: identifier } = Query.parse(context.params)
   const restaurant = await db.venue.findUnique({
     where: { identifier },
@@ -212,4 +208,4 @@ export const getStaticProps = async (context: GetStaticPropsContext) => {
     props: { restaurant, messages: await import(`app/core/messages/${context.locale}.json`) },
     revalidate: 10,
   }
-}
+})

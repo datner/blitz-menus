@@ -1,4 +1,5 @@
-import { useMutation, PromiseReturnType } from "blitz"
+import { useMutation } from "@blitzjs/rpc"
+import { PromiseReturnType } from "blitz"
 import LabeledTextField from "app/core/components/LabeledTextField"
 import { toShekel } from "app/core/helpers/content"
 import { useZodForm } from "app/core/hooks/useZodForm"

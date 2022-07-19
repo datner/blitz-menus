@@ -1,4 +1,4 @@
-import { BlitzLayout } from "blitz"
+import { BlitzLayout } from "@blitzjs/next"
 import clsx from "clsx"
 import { Dialog, Transition } from "@headlessui/react"
 import { createContext, Fragment, ReactNode, Suspense, useContext, useReducer } from "react"

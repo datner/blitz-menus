@@ -1,5 +1,5 @@
+import Document, { Html, Head, Main, NextScript } from "next/document"
 import { Locale } from "db"
-import { Document, Html, DocumentHead, Main, BlitzScript /* DocumentContext */ } from "blitz"
 
 class MyDocument extends Document {
   // static async getInitialProps(ctx: DocumentContext) {
@@ -12,10 +12,10 @@ class MyDocument extends Document {
     const dir = locale === Locale.he ? "rtl" : "ltr"
     return (
       <Html lang={locale} dir={dir} className="h-full bg-white">
-        <DocumentHead />
+        <Head />
         <body className="h-full">
           <Main />
-          <BlitzScript />
+          <NextScript />
         </body>
       </Html>
     )

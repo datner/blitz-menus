@@ -1,4 +1,4 @@
-import { Image } from "blitz"
+import Image from "next/image"
 import { useEvent } from "app/core/hooks/useEvent"
 import { useDropzone } from "react-dropzone"
 import { useTranslations } from "next-intl"

@@ -1,6 +1,8 @@
+import { useRouter } from "next/router"
+import { Routes } from "@blitzjs/next"
+import { getQueryClient, useMutation } from "@blitzjs/rpc"
 import LabeledTextField from "app/core/components/LabeledTextField"
 import { useZodForm } from "app/core/hooks/useZodForm"
-import { queryClient, Routes, useMutation, useRouter } from "blitz"
 import { FormProvider } from "react-hook-form"
 import { z } from "zod"
 import impersonateUser from "../mutations/impersonateUser"
@@ -15,7 +17,7 @@ const ImpersonateUserForm = () => {
   const onSubmit = handleSubmit(async (data) => {
     try {
       await impersonateUserMutation(data)
-      queryClient.clear()
+      getQueryClient().clear()
       router.push(Routes.AdminHome())
     } catch (error: any) {
       setFormError("Sorry, we had an unexpected error. Please try again. - " + error.toString())

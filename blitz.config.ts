@@ -9,12 +9,6 @@ const withBundleAnalyzer = bundleAnalyzer({
 })
 
 const config: BlitzConfig = {
-  middleware: [
-    sessionMiddleware({
-      cookiePrefix: "menus-blitz",
-      isAuthorized: simpleRolesIsAuthorized,
-    }),
-  ],
   i18n: {
     locales: Object.values(Locale),
     defaultLocale: Locale.en,

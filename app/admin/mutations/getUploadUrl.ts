@@ -1,4 +1,4 @@
-import { resolver } from "blitz"
+import { resolver } from "@blitzjs/rpc"
 import { z } from "zod"
 import { getUserRestaurant } from "app/auth/helpers/getUserRestaurant"
 import { Slug } from "app/auth/validations"

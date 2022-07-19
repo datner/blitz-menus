@@ -1,4 +1,4 @@
-import { Image } from "blitz"
+import Image from "next/image"
 import { a, useSpring } from "@react-spring/web"
 import { useLocale } from "app/core/hooks/useLocale"
 import { pipe } from "fp-ts/function"
