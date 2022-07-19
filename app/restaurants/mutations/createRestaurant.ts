@@ -1,6 +1,6 @@
+import { resolver } from "@blitzjs/rpc"
 import affiliateRestaurant from "app/auth/mutations/affiliateRestaurant"
 import { CreateRestaurant } from "app/auth/validations"
-import { resolver } from "blitz"
 import db, { Locale } from "db"
 import { z } from "zod"
 

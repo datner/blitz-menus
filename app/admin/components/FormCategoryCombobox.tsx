@@ -1,4 +1,4 @@
-import { useQuery } from "blitz"
+import { useQuery } from "@blitzjs/rpc"
 import { match } from "ts-pattern"
 import getCategories from "app/categories/queries/getCategories"
 import { Prisma } from "db"

@@ -1,4 +1,5 @@
-import { SessionContext, Ctx } from "blitz"
+import { SessionContext } from "@blitzjs/auth"
+import { Ctx } from "blitz"
 
 export type ExistsQueryResponse = [{ exists: boolean }]
 

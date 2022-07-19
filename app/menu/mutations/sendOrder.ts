@@ -1,4 +1,4 @@
-import { NotFoundError, resolver } from "blitz"
+import { resolver } from "@blitzjs/rpc"
 import db from "db"
 import { clearCreditGuard } from "../integrations/creditGuard"
 import { SendOrder } from "../validations/order"

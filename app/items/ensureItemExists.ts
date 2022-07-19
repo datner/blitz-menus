@@ -1,4 +1,4 @@
-import { NotFoundError, SessionContext } from "blitz"
+import { SessionContext } from "@blitzjs/auth"
 import db from "db"
 import { ExistsQueryResponse, OwnershipValidator } from "app/auth/helpers/validateOwnership"
 

@@ -1,6 +1,6 @@
+import { resolver } from "@blitzjs/rpc"
 import { enforceSuperAdminIfNotCurrentOrganization } from "app/auth/helpers/enforceSuperAdminIfNoCurrentOrganization"
 import { setDefaultOrganizationId } from "app/auth/helpers/setDefaultOrganizationId"
-import { resolver } from "blitz"
 import db from "db"
 import { z } from "zod"
 

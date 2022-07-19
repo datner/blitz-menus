@@ -1,4 +1,6 @@
-import { useRouter, BlitzPage, Routes, PromiseReturnType } from "blitz"
+import { BlitzPage, Routes } from "@blitzjs/next"
+import { useRouter } from "next/router"
+import { PromiseReturnType } from "blitz"
 import Layout from "app/core/layouts/Layout"
 import { LoginForm } from "app/auth/components/LoginForm"
 import login from "../mutations/login"

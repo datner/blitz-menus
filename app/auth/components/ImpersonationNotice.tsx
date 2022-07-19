@@ -1,4 +1,5 @@
-import { invoke, queryClient, useSession } from "blitz"
+import { useSession } from "@blitzjs/auth"
+import { invoke, getQueryClient } from "@blitzjs/rpc"
 import stopImpersonating from "../mutations/stopImpersonating"
 
 export const ImpersonationNotice = () => {
@@ -12,7 +13,7 @@ export const ImpersonationNotice = () => {
         className="appearance-none bg-transparent text-black uppercase ml-2"
         onClick={async () => {
           await invoke(stopImpersonating, {})
-          queryClient.clear()
+          getQueryClient().clear()
         }}
       >
         Exit
