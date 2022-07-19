@@ -1,4 +1,5 @@
-import { resolver, SecurePassword, AuthenticationError, NotFoundError } from "blitz"
+import { SecurePassword } from "@blitzjs/auth"
+import { resolver } from "@blitzjs/rpc"
 import db from "db"
 import { isNonEmpty } from "fp-ts/Array"
 import { head } from "fp-ts/NonEmptyArray"

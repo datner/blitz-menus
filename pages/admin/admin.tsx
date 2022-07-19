@@ -1,6 +1,9 @@
+import { gSSP } from "app/blitz-server"
+import { GetServerSidePropsContext } from "next"
+import { getSession } from "@blitzjs/auth"
+import { BlitzPage, Routes } from "@blitzjs/next"
 import { useZodParams } from "app/core/hooks/useParams"
 import { AdminLayout } from "app/core/layouts/AdminLayout"
-import { BlitzPage, Routes, getSession, GetServerSidePropsContext } from "blitz"
 import { Suspense } from "react"
 import { z } from "zod"
 import { Aside } from "../components/Aside"
@@ -31,7 +34,7 @@ const AdminHome: BlitzPage = () => {
 
 AdminHome.getLayout = (page) => <AdminLayout>{page}</AdminLayout>
 
-export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
+export const getServerSideProps = gSSP(async (ctx: GetServerSidePropsContext) => {
   const { req, res, locale } = ctx
   const session = await getSession(req, res)
   if (!session.restaurantId) {
@@ -45,7 +48,7 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
   return {
     props: { messages: await import(`app/core/messages/${locale}.json`) },
   }
-}
+})
 
 AdminHome.authenticate = {
   redirectTo: Routes.LoginPage({ next: Routes.AdminHome().pathname }),

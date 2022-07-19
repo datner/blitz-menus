@@ -1,7 +1,10 @@
+import Link from "next/link"
+import Image from "next/image"
+import { Routes } from "@blitzjs/next"
+import { useQuery } from "@blitzjs/rpc"
 import getCategories from "app/categories/queries/getCategories"
 import { priceShekel, titleFor } from "app/core/helpers/content"
 import { useLocale } from "app/core/hooks/useLocale"
-import { useQuery, Image, Link, Routes } from "blitz"
 import { Prisma } from "db"
 import { useTranslations } from "next-intl"
 

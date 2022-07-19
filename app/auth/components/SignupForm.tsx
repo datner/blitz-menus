@@ -1,4 +1,4 @@
-import { useMutation } from "blitz"
+import { useMutation } from "@blitzjs/rpc"
 import { LabeledTextField } from "app/core/components/LabeledTextField"
 import signup from "app/auth/mutations/signup"
 import { Signup } from "app/auth/validations"

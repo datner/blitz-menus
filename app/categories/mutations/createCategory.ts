@@ -1,5 +1,5 @@
+import { resolver } from "@blitzjs/rpc"
 import { getUserRestaurant } from "app/auth/helpers/getUserRestaurant"
-import { resolver } from "blitz"
 import db from "db"
 import { CreateCategory } from "../validations"
 

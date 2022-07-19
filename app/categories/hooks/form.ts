@@ -1,4 +1,6 @@
-import { invalidateQuery, Routes, setQueryData, useMutation, useRouter } from "blitz"
+import { useRouter } from "next/router"
+import { Routes } from "@blitzjs/next"
+import { invalidateQuery, setQueryData, useMutation } from "@blitzjs/rpc"
 import { SubmitHandler } from "react-hook-form"
 import createCategory from "../mutations/createCategory"
 import getCategories from "../queries/getCategories"

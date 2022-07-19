@@ -1,7 +1,7 @@
+import { resolver } from "@blitzjs/rpc"
 import { enforceSuperAdminIfNotCurrentOrganization } from "app/auth/helpers/enforceSuperAdminIfNoCurrentOrganization"
 import { setDefaultOrganizationId } from "app/auth/helpers/setDefaultOrganizationId"
 import { IdOrSlug } from "app/core/helpers/zod"
-import { resolver, NotFoundError } from "blitz"
 import db from "db"
 
 export default resolver.pipe(

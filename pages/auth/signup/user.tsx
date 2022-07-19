@@ -1,4 +1,5 @@
-import { useRouter, BlitzPage, Routes } from "blitz"
+import { BlitzPage, Routes } from "@blitzjs/next"
+import { useRouter } from "next/router"
 import Layout from "app/core/layouts/Layout"
 import { SignupForm } from "app/auth/components/SignupForm"
 

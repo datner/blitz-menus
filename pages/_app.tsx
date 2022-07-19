@@ -1,13 +1,7 @@
-import {
-  AppProps,
-  ErrorBoundary,
-  ErrorComponent,
-  AuthenticationError,
-  AuthorizationError,
-  ErrorFallbackProps,
-  useQueryErrorResetBoundary,
-  Router,
-} from "blitz"
+import { withBlitz } from "app/blitz-client"
+import { Router } from "next/router"
+import { useQueryErrorResetBoundary } from "@blitzjs/rpc"
+import { AppProps, ErrorBoundary, ErrorComponent, ErrorFallbackProps } from "@blitzjs/next"
 import { LoginForm } from "app/auth/components/LoginForm"
 import "app/core/styles/index.css"
 import { NextIntlProvider } from "next-intl"
@@ -21,7 +15,7 @@ Router.events.on("routeChangeStart", () => NProgress.start())
 Router.events.on("routeChangeComplete", () => NProgress.done())
 Router.events.on("routeChangeError", () => NProgress.done())
 
-export default function App({ Component, pageProps }: AppProps) {
+export default withBlitz(function App({ Component, pageProps }: AppProps) {
   const getLayout = Component.getLayout || ((page) => page)
   const locale = useLocale()
 
@@ -40,7 +34,7 @@ export default function App({ Component, pageProps }: AppProps) {
       </ErrorBoundary>
     </NextIntlProvider>
   )
-}
+})
 
 function RootErrorFallback({ error, resetErrorBoundary }: ErrorFallbackProps) {
   if (error instanceof AuthenticationError) {

@@ -1,4 +1,4 @@
-import { NotFoundError, resolver } from "blitz"
+import { resolver } from "@blitzjs/rpc"
 import { isNonEmpty } from "fp-ts/Array"
 import { head } from "fp-ts/NonEmptyArray"
 import db from "db"

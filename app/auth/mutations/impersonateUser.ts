@@ -1,5 +1,5 @@
+import { resolver } from "@blitzjs/rpc"
 import db, { GlobalRole } from "db"
-import { NotFoundError, resolver } from "blitz"
 import { z } from "zod"
 import { head } from "fp-ts/NonEmptyArray"
 import { isNonEmpty } from "fp-ts/Array"

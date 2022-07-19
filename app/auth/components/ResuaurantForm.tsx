@@ -1,4 +1,5 @@
-import { useMutation, Image } from "blitz"
+import Image from "next/image"
+import { useMutation } from "@blitzjs/rpc"
 import { LabeledTextField } from "app/core/components/LabeledTextField"
 import { CreateRestaurant } from "app/auth/validations"
 import { useZodForm } from "app/core/hooks/useZodForm"
