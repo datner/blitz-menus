@@ -3,7 +3,7 @@ import { useRouter } from "next/router"
 import { PromiseReturnType } from "blitz"
 import Layout from "app/core/layouts/Layout"
 import { LoginForm } from "app/auth/components/LoginForm"
-import login from "../mutations/login"
+import login from "app/auth/mutations/login"
 
 function getRoute(user: PromiseReturnType<typeof login>) {
   if (user.restaurant) return Routes.AdminHome({ restaurant: user.restaurant.slug })

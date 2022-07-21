@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { Routes } from "@blitzjs/next"
 import { useMutation } from "@blitzjs/rpc"
-import { PromiseReturnType } from "blitz"
+import { AuthenticationError, PromiseReturnType } from "blitz"
 import { LabeledTextField } from "app/core/components/LabeledTextField"
 import login from "app/auth/mutations/login"
 import { Login } from "app/auth/validations"

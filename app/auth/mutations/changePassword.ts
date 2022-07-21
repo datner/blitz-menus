@@ -3,6 +3,7 @@ import { SecurePassword } from "@blitzjs/auth"
 import db from "db"
 import { authenticateUser } from "./login"
 import { ChangePassword } from "../validations"
+import { NotFoundError } from "blitz"
 
 export default resolver.pipe(
   resolver.zod(ChangePassword),

@@ -5,7 +5,7 @@ import { useQuery } from "@blitzjs/rpc"
 import getCategories from "app/categories/queries/getCategories"
 import { priceShekel, titleFor } from "app/core/helpers/content"
 import { useLocale } from "app/core/hooks/useLocale"
-import { Prisma } from "db"
+import { Prisma } from "@prisma/client"
 import { useTranslations } from "next-intl"
 
 function AsideDirectory() {

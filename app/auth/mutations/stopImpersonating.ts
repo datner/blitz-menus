@@ -2,6 +2,7 @@ import { resolver } from "@blitzjs/rpc"
 import { isNonEmpty } from "fp-ts/Array"
 import { head } from "fp-ts/NonEmptyArray"
 import db from "db"
+import { NotFoundError } from "blitz"
 
 export default resolver.pipe(resolver.authorize(), async (_, ctx) => {
   const userId = ctx.session.$publicData.impersonatingFromUserId
@@ -20,7 +21,6 @@ export default resolver.pipe(resolver.authorize(), async (_, ctx) => {
 
   await ctx.session.$create({
     userId: user.id,
-    role: user.role,
     roles: [user.role, membership.role],
     restaurantId: user.restaurantId ?? undefined,
     impersonatingFromUserId: undefined,

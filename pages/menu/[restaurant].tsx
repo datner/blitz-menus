@@ -1,12 +1,11 @@
 import { gSP } from "app/blitz-server"
 import { useMutation } from "@blitzjs/rpc"
-import { GetStaticPaths, GetStaticPropsContext, InferGetStaticPropsType } from "blitz"
+import { GetStaticPaths, GetStaticPropsContext, InferGetStaticPropsType } from "next"
 import type { Item__Content, OrderMeta } from "app/menu/types/item"
-
 import clsx from "clsx"
 import db, { Locale } from "db"
 import * as Op from "fp-ts/Option"
-import { lazy, Suspense, useState } from "react"
+import { Suspense, useState } from "react"
 import { z } from "zod"
 import { useLocale } from "app/core/hooks/useLocale"
 import { titleFor } from "app/core/helpers/content"
@@ -18,10 +17,14 @@ import { useNavBar } from "app/menu/hooks/useNavBar"
 import sendOrder from "app/menu/mutations/sendOrder"
 import { useZodParams } from "app/core/hooks/useParams"
 import { decrement, flow, increment, pipe } from "fp-ts/function"
+import { NotFoundError } from "blitz"
+import dynamic from "next/dynamic"
 
-const LazyViewOrderButton = lazy(() => import("app/menu/components/ViewOrderButton"))
-const LazyItemModal = lazy(() => import("app/menu/components/ItemModal"))
-const LazyOrderModal = lazy(() => import("app/menu/components/OrderModal"))
+const LazyViewOrderButton = dynamic(() => import("app/menu/components/ViewOrderButton"), {
+  suspense: true,
+})
+const LazyItemModal = dynamic(() => import("app/menu/components/ItemModal"), { suspense: true })
+const LazyOrderModal = dynamic(() => import("app/menu/components/OrderModal"), { suspense: true })
 
 export default function Menu(props: InferGetStaticPropsType<typeof getStaticProps>) {
   const { restaurant } = props
@@ -36,7 +39,7 @@ export default function Menu(props: InferGetStaticPropsType<typeof getStaticProp
   const [sendOrderMutation] = useMutation(sendOrder, {
     onSuccess({ clearingUrl }) {
       if (clearingUrl) {
-        window.location.replace(clearingUrl)
+        window.location.assign(clearingUrl)
       }
     },
   })
@@ -205,7 +208,10 @@ export const getStaticProps = gSP(async (context: GetStaticPropsContext) => {
   if (!restaurant) throw new NotFoundError()
 
   return {
-    props: { restaurant, messages: await import(`app/core/messages/${context.locale}.json`) },
+    props: {
+      restaurant,
+      messages: (await import(`app/core/messages/${context.locale}.json`)).default,
+    },
     revalidate: 10,
   }
 })

@@ -1,5 +1,4 @@
-import { useRouter } from "next/router"
-import { useParams } from "blitz"
+import { useParams } from "@blitzjs/next"
 import type * as z from "zod"
 
 export const useZodParams = <Zod extends z.ZodSchema>(schema: Zod) =>

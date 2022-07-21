@@ -2,11 +2,21 @@ import { gSSP } from "app/blitz-server"
 import { GetServerSidePropsContext } from "next"
 import { getSession } from "@blitzjs/auth"
 import { BlitzPage, Routes, useParam } from "@blitzjs/next"
-import { Aside } from "app/admin/components/Aside"
 import { Content } from "app/admin/components/Content"
-import { UpdateItemForm } from "app/admin/components/UpdateItemForm"
 import { AdminLayout } from "app/core/layouts/AdminLayout"
 import { Suspense } from "react"
+import dynamic from "next/dynamic"
+
+const UpdateItemForm = dynamic(
+  async () => (await import("app/admin/components/UpdateItemForm")).UpdateItemForm,
+  {
+    suspense: true,
+  }
+)
+
+const Aside = dynamic(async () => (await import("app/admin/components/Aside")).Aside.Directory, {
+  suspense: true,
+})
 
 const AdminItemsItem: BlitzPage = () => {
   const identifier = useParam("identifier", "string")
@@ -19,7 +29,7 @@ const AdminItemsItem: BlitzPage = () => {
       }
       aside={
         <Suspense fallback={<>...fallback</>}>
-          <Aside.Directory />
+          <Aside />
         </Suspense>
       }
     />
@@ -35,11 +45,12 @@ export const getServerSideProps = gSSP(async (ctx: GetServerSidePropsContext) =>
         destination: Routes.LoginPage(),
         permanent: false,
       },
+      props: {},
     }
   }
 
   return {
-    props: { messages: await import(`app/core/messages/${locale}.json`) },
+    props: { messages: (await import(`app/core/messages/${locale}.json`)).default },
   }
 })
 
