@@ -1,5 +1,6 @@
 import { resolver } from "@blitzjs/rpc"
 import { Id } from "app/core/helpers/zod"
+import { NotFoundError } from "blitz"
 import db from "db"
 import { z } from "zod"
 

@@ -1,1 +1,1 @@
-export { default, getStaticPaths, getStaticProps } from "app/menu/pages/menu/[restaurant]"
+export { default, getStaticPaths, getStaticProps } from "pages/menu/[restaurant]"

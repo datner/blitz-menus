@@ -1,4 +1,4 @@
-import { useParams } from "blitz"
+import { useParams } from "@blitzjs/next"
 
 export default function Success() {
   console.log(useParams())

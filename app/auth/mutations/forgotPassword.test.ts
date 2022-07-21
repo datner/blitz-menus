@@ -3,17 +3,18 @@ import { Ctx } from "blitz"
 import forgotPassword from "./forgotPassword"
 import db from "db"
 import previewEmail from "preview-email"
+import { beforeEach, describe, vi, it, expect } from "vitest"
 
 beforeEach(async () => {
   await db.$reset()
 })
 
 const generatedToken = "plain-token"
-jest.mock("blitz", () => ({
-  ...jest.requireActual<Record<string, unknown>>("blitz")!,
+vi.mock("blitz", async () => ({
+  ...(await vi.importActual<Record<string, unknown>>("blitz")),
   generateToken: () => generatedToken,
 }))
-jest.mock("preview-email", () => jest.fn())
+vi.mock("preview-email", () => vi.fn())
 
 describe.skip("forgotPassword mutation", () => {
   it("does not throw error if user doesn't exist", async () => {

@@ -5,7 +5,7 @@ import LabeledTextField from "app/core/components/LabeledTextField"
 import { useZodForm } from "app/core/hooks/useZodForm"
 import { FormProvider } from "react-hook-form"
 import { z } from "zod"
-import impersonateUser from "../mutations/impersonateUser"
+import impersonateUser from "app/auth/mutations/impersonateUser"
 
 const ImpersonateUserForm = () => {
   const [impersonateUserMutation] = useMutation(impersonateUser)

@@ -1,5 +1,6 @@
 import { resolver } from "@blitzjs/rpc"
 import { IdOrSlug } from "app/core/helpers/zod"
+import { NotFoundError } from "blitz"
 import db from "db"
 
 export default resolver.pipe(
