@@ -6,9 +6,9 @@ import { useZodParams } from "app/core/hooks/useParams"
 import { AdminLayout } from "app/core/layouts/AdminLayout"
 import { Suspense } from "react"
 import { z } from "zod"
-import { Aside } from "../components/Aside"
-import { Content } from "../components/Content"
-import { UpdateItemForm } from "../components/UpdateItemForm"
+import { Content } from "app/admin/components/Content"
+import { UpdateItemForm } from "app/admin/components/UpdateItemForm"
+import { Aside } from "app/admin/components/Aside"
 
 const Params = z.object({
   item: z.string().optional(),
@@ -34,7 +34,7 @@ const AdminHome: BlitzPage = () => {
 
 AdminHome.getLayout = (page) => <AdminLayout>{page}</AdminLayout>
 
-export const getServerSideProps = gSSP(async (ctx: GetServerSidePropsContext) => {
+export const getServerSideProps = gSSP(async (ctx) => {
   const { req, res, locale } = ctx
   const session = await getSession(req, res)
   if (!session.restaurantId) {
@@ -43,10 +43,11 @@ export const getServerSideProps = gSSP(async (ctx: GetServerSidePropsContext) =>
         destination: Routes.LoginPage(),
         permanent: false,
       },
+      props: {},
     }
   }
   return {
-    props: { messages: await import(`app/core/messages/${locale}.json`) },
+    props: { messages: (await import(`app/core/messages/${locale}.json`)).default },
   }
 })
 

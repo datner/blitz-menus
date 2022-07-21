@@ -1,4 +1,4 @@
-import { Item, ItemI18L } from "db"
+import type { Item, ItemI18L } from "db"
 
 export interface OrderMeta {
   amount: number

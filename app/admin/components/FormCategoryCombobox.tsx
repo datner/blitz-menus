@@ -1,7 +1,7 @@
 import { useQuery } from "@blitzjs/rpc"
 import { match } from "ts-pattern"
 import getCategories from "app/categories/queries/getCategories"
-import { Prisma } from "db"
+import { Prisma } from "@prisma/client"
 import { Combobox } from "@headlessui/react"
 import { useLocale } from "app/core/hooks/useLocale"
 import { titleFor } from "app/core/helpers/content"

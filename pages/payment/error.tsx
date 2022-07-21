@@ -1,5 +1,5 @@
+import { useParams } from "@blitzjs/next"
 import { useRouter } from "next/router"
-import { useParams } from "blitz"
 
 export default function PaymentError() {
   console.log(useParams())

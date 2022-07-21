@@ -6,10 +6,11 @@ import { LoginForm } from "app/auth/components/LoginForm"
 import "app/core/styles/index.css"
 import { NextIntlProvider } from "next-intl"
 import { useLocale } from "app/core/hooks/useLocale"
-import { Locale } from "db"
+import { Locale } from "@prisma/client"
+import { useIsomorphicLayoutEffect } from "app/core/hooks/useIsomorphicLayoutEffect"
+import { AuthenticationError, AuthorizationError } from "blitz"
 import NProgress from "nprogress"
 import "app/core/styles/nprogress.css"
-import { useIsomorphicLayoutEffect } from "app/core/hooks/useIsomorphicLayoutEffect"
 
 Router.events.on("routeChangeStart", () => NProgress.start())
 Router.events.on("routeChangeComplete", () => NProgress.done())

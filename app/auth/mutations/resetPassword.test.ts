@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach, vi } from "vitest"
 import { hash256, SecurePassword } from "@blitzjs/auth"
 import resetPassword from "./resetPassword"
 import db from "db"
@@ -8,7 +9,7 @@ beforeEach(async () => {
 
 const mockCtx: any = {
   session: {
-    $create: jest.fn,
+    $create: vi.fn,
   },
 }
 

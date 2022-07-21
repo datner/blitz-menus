@@ -1,5 +1,6 @@
 import { SecurePassword } from "@blitzjs/auth"
 import { resolver } from "@blitzjs/rpc"
+import { AuthenticationError, NotFoundError } from "blitz"
 import db from "db"
 import { isNonEmpty } from "fp-ts/Array"
 import { head } from "fp-ts/NonEmptyArray"
@@ -40,7 +41,6 @@ export default resolver.pipe(resolver.zod(Login), async ({ email, password }, ct
 
   await ctx.session.$create({
     userId: user.id,
-    role: user.role,
     roles: [user.role, membership.role],
     orgId: membership.organizationId,
     restaurantId: user.restaurantId ?? undefined,

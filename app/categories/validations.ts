@@ -1,4 +1,4 @@
-import { Locale } from "db"
+import { Locale } from "@prisma/client"
 import { Slug } from "app/auth/validations"
 import { z } from "zod"
 

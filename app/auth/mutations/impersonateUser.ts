@@ -3,6 +3,7 @@ import db, { GlobalRole } from "db"
 import { z } from "zod"
 import { head } from "fp-ts/NonEmptyArray"
 import { isNonEmpty } from "fp-ts/Array"
+import { NotFoundError } from "blitz"
 
 export const ImpersonateUserInput = z.object({
   userId: z.number().int().nonnegative(),
@@ -22,7 +23,6 @@ export default resolver.pipe(
 
     await ctx.session.$create({
       userId: user.id,
-      role: user.role,
       roles: [user.role, membership.role],
       restaurantId: user.restaurantId ?? undefined,
       orgId: membership.organizationId,

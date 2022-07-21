@@ -4,6 +4,7 @@ import { enforceSuperAdminIfNotCurrentOrganization } from "app/auth/helpers/enfo
 import { setDefaultOrganizationId } from "app/auth/helpers/setDefaultOrganizationId"
 import { getBlurDataUrl } from "app/core/helpers/plaiceholder"
 import { UpdateItem } from "../validations"
+import { NotFoundError } from "blitz"
 
 export default resolver.pipe(
   resolver.zod(UpdateItem),

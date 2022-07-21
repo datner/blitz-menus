@@ -1,5 +1,5 @@
 import { resolver } from "@blitzjs/rpc"
-import { Ctx } from "blitz"
+import { Ctx, paginate } from "blitz"
 import db, { Prisma } from "db"
 
 interface GetCategoriesArgs
