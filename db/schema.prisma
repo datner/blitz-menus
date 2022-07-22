@@ -234,6 +234,11 @@ model ItemI18L {
   item        Item   @relation(fields: [itemId], references: [id])
 }
 
+model ShortenedUrl {
+  slug        String @id @unique
+  destination String
+}
+
 enum TokenType {
   RESET_PASSWORD
 }
