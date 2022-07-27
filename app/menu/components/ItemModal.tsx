@@ -109,8 +109,8 @@ export function ItemModal(props: Props) {
             price={price(item)}
             meta={meta}
             onSubmit={(meta) => {
-              onAddToOrder(meta)
               onClose()
+              setTimeout(() => onAddToOrder(meta), 200)
             }}
           />
         </div>

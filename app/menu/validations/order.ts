@@ -1,3 +1,4 @@
+import { Slug } from "app/auth/validations"
 import { Id } from "app/core/helpers/zod"
 import { zLocale } from "app/core/hooks/useLocale"
 import { z } from "zod"
@@ -16,7 +17,7 @@ export type SendOrderItem = z.infer<typeof SendOrderItem>
 export const SendOrder = z
   .object({
     locale: zLocale,
-    venueId: Id,
+    venueIdentifier: Slug,
     orderItems: SendOrderItem.array(),
   })
   .transform((it) => ({ ...it, sumTotal: it.orderItems.reduce((acc, curr) => acc + curr.sum, 0) }))

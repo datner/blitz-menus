@@ -985,10 +985,10 @@
     "@babel/helper-validator-identifier" "^7.18.6"
     to-fast-properties "^2.0.0"
 
-"@blitzjs/auth@2.0.0-alpha.56":
-  version "2.0.0-alpha.56"
-  resolved "https://registry.yarnpkg.com/@blitzjs/auth/-/auth-2.0.0-alpha.56.tgz#d9517e165f17b1ed67e174863e19ce89dfcdd731"
-  integrity sha512-dkCMR/Z9YbkMSIQIX6V3ctpZX+CcsKCcOZKD1kPv+4Z2dAR+/Yw9C7xnHiSJBkPs2GqSIn6X0yWDCLA7KZzQ0w==
+"@blitzjs/auth@2.0.0-alpha.58":
+  version "2.0.0-alpha.58"
+  resolved "https://registry.yarnpkg.com/@blitzjs/auth/-/auth-2.0.0-alpha.58.tgz#26e5c80dda065f24ff22294a0360f987154e387d"
+  integrity sha512-vLBLAxGqRfSTvIDryUJBe3/QhilMAZdDJKaNXDN+LgeXzkP3RLKGGNR19MT4W1z3f28ikkicrh8XhkELFjDKsA==
   dependencies:
     "@types/b64-lite" "1.3.0"
     "@types/cookie-session" "2.0.44"
@@ -996,7 +996,7 @@
     "@types/secure-password" "3.1.1"
     b64-lite "1.4.0"
     bad-behavior "1.0.1"
-    blitz "2.0.0-alpha.56"
+    blitz "2.0.0-alpha.58"
     cookie "0.4.1"
     cookie-session "2.0.0"
     debug "4.3.3"
@@ -1008,10 +1008,10 @@
     secure-password "4.0.0"
     url "0.11.0"
 
-"@blitzjs/generator@2.0.0-alpha.56":
-  version "2.0.0-alpha.56"
-  resolved "https://registry.yarnpkg.com/@blitzjs/generator/-/generator-2.0.0-alpha.56.tgz#1b98081c23815a59dfead7508cb1fd7e219e99e1"
-  integrity sha512-4R+DkfAJ7iPseI1w7NKBMHzqjHmDjh4gr5624qu74z+B0Gcge+p0fKKn5tJtMLIh03FhQrhI/zaBBpDukIoEgg==
+"@blitzjs/generator@2.0.0-alpha.58":
+  version "2.0.0-alpha.58"
+  resolved "https://registry.yarnpkg.com/@blitzjs/generator/-/generator-2.0.0-alpha.58.tgz#3ac9ab61b50021500712987f15f63582ab6aa944"
+  integrity sha512-iEuB2KtrL3MoWr25hVlxgw4hVMzM1IofjT1ffpLwY6mCLsR5m+PKZZR0zTN0IMTAM59m9xRys9CkuSHiAHOPFA==
   dependencies:
     "@babel/core" "7.12.10"
     "@babel/plugin-transform-typescript" "7.12.1"
@@ -1037,12 +1037,12 @@
     username "5.1.0"
     vinyl "2.2.1"
 
-"@blitzjs/next@2.0.0-alpha.56":
-  version "2.0.0-alpha.56"
-  resolved "https://registry.yarnpkg.com/@blitzjs/next/-/next-2.0.0-alpha.56.tgz#fbab0c9d7ddbc7587350d3a3f7407acdf956d08b"
-  integrity sha512-kcOi/jqbFjEOXvTZvim0CoBRjYaUzeo/tuCizp9sjUkdQlV29q60ACfA8Ew2cTL6TrrRT/VQVtkbl5+4mOI21w==
+"@blitzjs/next@2.0.0-alpha.58":
+  version "2.0.0-alpha.58"
+  resolved "https://registry.yarnpkg.com/@blitzjs/next/-/next-2.0.0-alpha.58.tgz#2db9166915604b8bd024b45c6847994acdd8caec"
+  integrity sha512-JVbNq45sJwMdbRzrZWJqs4PguUuRbUHtxPmjTaLXCrLL36WzryzE+iM+YW7HFWgDwI/Xz+WEiDz7CtLvzg/96g==
   dependencies:
-    "@blitzjs/rpc" "2.0.0-alpha.56"
+    "@blitzjs/rpc" "2.0.0-alpha.58"
     "@types/hoist-non-react-statics" "3.3.1"
     debug "4.3.3"
     fs-extra "10.0.1"
@@ -1050,12 +1050,12 @@
     react-query "3.39.0"
     superjson "1.8.0"
 
-"@blitzjs/rpc@2.0.0-alpha.56":
-  version "2.0.0-alpha.56"
-  resolved "https://registry.yarnpkg.com/@blitzjs/rpc/-/rpc-2.0.0-alpha.56.tgz#d3e6a2f8d25a21f7633fb4af3bc00b11ca56487c"
-  integrity sha512-0OiIfwpVcBa8es80X3fEtepzq1XE1yiiTkS3xwvEuRWeOJG1+jwo1GdVr6Oo5MH9pURqRQZLhdxDJwiK0nRT6w==
+"@blitzjs/rpc@2.0.0-alpha.58":
+  version "2.0.0-alpha.58"
+  resolved "https://registry.yarnpkg.com/@blitzjs/rpc/-/rpc-2.0.0-alpha.58.tgz#4daea4b4f0809c23918f345c1d0762371f6669a0"
+  integrity sha512-r8+k0x0A3K0zlkm9yzESq7PB22IWTuMnupTJFm44GALPB4NUtlmegumFm4Jclvp5BsdYuQHDCBalVeBrtlqRMw==
   dependencies:
-    "@blitzjs/auth" "2.0.0-alpha.56"
+    "@blitzjs/auth" "2.0.0-alpha.58"
     b64-lite "1.4.0"
     bad-behavior "1.0.1"
     chalk "^4.1.0"
@@ -2266,12 +2266,12 @@ bl@^4.0.3:
     inherits "^2.0.4"
     readable-stream "^3.4.0"
 
-blitz@2.0.0-alpha.56:
-  version "2.0.0-alpha.56"
-  resolved "https://registry.yarnpkg.com/blitz/-/blitz-2.0.0-alpha.56.tgz#071c989d3f734fffd0477b4c7c3d16f6b2b1f7d5"
-  integrity sha512-A7xNxWBlRnRDReF91AEeFtIWqy2FesJAjd8T00itR2+LiYJxaYHw0cE/H4tLNyp/echmSrznpLpurtoLeDJdYQ==
+blitz@2.0.0-alpha.58:
+  version "2.0.0-alpha.58"
+  resolved "https://registry.yarnpkg.com/blitz/-/blitz-2.0.0-alpha.58.tgz#1ff8d88f6d771801deef0c3a9f292672c3a76363"
+  integrity sha512-dC+FBgJrbFugviXVkhA/eQA3A41KGlPpNq+nrFgROjxhJkiNTltEbde685GfFDhIjgFRnmOK2qEEkOjp5X2u1g==
   dependencies:
-    "@blitzjs/generator" "2.0.0-alpha.56"
+    "@blitzjs/generator" "2.0.0-alpha.58"
     arg "5.0.1"
     boxen "7.0.0"
     chalk "^4.1.0"
