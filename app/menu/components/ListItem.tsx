@@ -24,7 +24,7 @@ export const ListItem = memo(function ListItem(props: Props) {
   const isRtl = useIsRtl()
   const content = item.content.find((it) => it.locale === locale)
   const isInOrder = O.isSome(amountOption)
-  const hideIndicator = isRtl ? 140 : -140
+  const hideIndicator = isRtl ? 40 : -40
   const [{ x, scale }, api] = useSpring(() => ({
     x: 0,
     scale: 1,

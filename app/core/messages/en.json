@@ -65,7 +65,8 @@
       },
       "OrderModal": {
         "yourOrder": "Your Order",
-        "order": "Order!"
+        "order": "Order!",
+        "loading": "Redirecting..."
       },
       "OrderModalItem": {
         "comment": "Comment"

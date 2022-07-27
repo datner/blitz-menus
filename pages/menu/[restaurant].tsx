@@ -1,12 +1,10 @@
 import { gSP } from "app/blitz-server"
-import { useMutation } from "@blitzjs/rpc"
 import { GetStaticPaths, GetStaticPropsContext, InferGetStaticPropsType } from "next"
 import type { Item__Content, OrderMeta } from "app/menu/types/item"
 import clsx from "clsx"
 import db, { Locale } from "db"
 import * as Op from "fp-ts/Option"
 import { Suspense, useState } from "react"
-import { z } from "zod"
 import { useLocale } from "app/core/hooks/useLocale"
 import { titleFor } from "app/core/helpers/content"
 import { max } from "app/core/helpers/number"
@@ -14,11 +12,11 @@ import { ListItem } from "app/menu/components/ListItem"
 import { CategoryHeader } from "app/menu/components/CategoryHeader"
 import { useOrder } from "app/menu/hooks/useOrder"
 import { useNavBar } from "app/menu/hooks/useNavBar"
-import sendOrder from "app/menu/mutations/sendOrder"
 import { useZodParams } from "app/core/hooks/useParams"
 import { decrement, flow, increment, pipe } from "fp-ts/function"
 import { NotFoundError } from "blitz"
 import dynamic from "next/dynamic"
+import { Query } from "app/menu/validations/page"
 
 const LazyViewOrderButton = dynamic(() => import("app/menu/components/ViewOrderButton"), {
   suspense: true,
@@ -36,13 +34,6 @@ export default function Menu(props: InferGetStaticPropsType<typeof getStaticProp
   const [item, setItem] = useState<Item__Content | null>(null)
   const [open, setOpen] = useState(false)
   const [reviewOrder, setReviewOrder] = useState(false)
-  const [sendOrderMutation] = useMutation(sendOrder, {
-    onSuccess({ clearingUrl }) {
-      if (clearingUrl) {
-        window.location.assign(clearingUrl)
-      }
-    },
-  })
 
   const handleShowOrderModal = (item: Item__Content) => {
     setItem(item)
@@ -52,19 +43,9 @@ export default function Menu(props: InferGetStaticPropsType<typeof getStaticProp
   const handleChangeOrder = (meta: OrderMeta) => {
     if (!item) return
     order.change(item, meta)
-  }
-
-  const handleOrder = () => {
-    sendOrderMutation({
-      locale,
-      venueId: restaurant.id,
-      orderItems: order.items.map((it) => ({
-        comment: it.comment,
-        amount: it.amount,
-        price: it.item.price,
-        item: it.item.id,
-      })),
-    })
+    if (order.items.length === 0) {
+      setReviewOrder(false)
+    }
   }
 
   if (!categories) return <>:()</>
@@ -152,12 +133,7 @@ export default function Menu(props: InferGetStaticPropsType<typeof getStaticProp
         />
       </Suspense>
       <Suspense>
-        <LazyOrderModal
-          {...order}
-          open={reviewOrder}
-          onClose={() => setReviewOrder(false)}
-          onOrder={handleOrder}
-        />
+        <LazyOrderModal {...order} open={reviewOrder} onClose={() => setReviewOrder(false)} />
       </Suspense>
     </div>
   )
@@ -174,13 +150,6 @@ export const getStaticPaths: GetStaticPaths = async () => {
     ),
   }
 }
-
-const Query = z
-  .object({
-    restaurant: z.string(),
-    table: z.string().default("bar"),
-  })
-  .default({ restaurant: "none", table: "bar" })
 
 export const getStaticProps = gSP(async (context: GetStaticPropsContext) => {
   const { restaurant: identifier } = Query.parse(context.params)

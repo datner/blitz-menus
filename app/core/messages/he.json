@@ -65,7 +65,8 @@
       },
       "OrderModal": {
         "yourOrder": "ההזמנה שלך",
-        "order": "הזמן!"
+        "order": "הזמן!",
+        "loading": "מעביר לעמוד תשלום..."
       },
       "OrderModalItem": {
         "comment": "הערות"
