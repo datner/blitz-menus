@@ -5,18 +5,8 @@ import { BlitzPage, Routes, useParam } from "@blitzjs/next"
 import { Content } from "app/admin/components/Content"
 import { AdminLayout } from "app/core/layouts/AdminLayout"
 import { Suspense } from "react"
-import dynamic from "next/dynamic"
-
-const UpdateItemForm = dynamic(
-  async () => (await import("app/admin/components/UpdateItemForm")).UpdateItemForm,
-  {
-    suspense: true,
-  }
-)
-
-const Aside = dynamic(async () => (await import("app/admin/components/Aside")).Aside.Directory, {
-  suspense: true,
-})
+import { Aside } from "app/admin/components/Aside"
+import { UpdateItemForm } from "app/admin/components/UpdateItemForm"
 
 const AdminItemsItem: BlitzPage = () => {
   const identifier = useParam("identifier", "string")
@@ -29,7 +19,7 @@ const AdminItemsItem: BlitzPage = () => {
       }
       aside={
         <Suspense fallback={<>...fallback</>}>
-          <Aside />
+          <Aside.Directory />
         </Suspense>
       }
     />
