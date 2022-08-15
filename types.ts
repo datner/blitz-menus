@@ -18,3 +18,17 @@ declare module "@blitzjs/auth" {
     }
   }
 }
+
+declare global {
+  namespace NodeJS {
+    interface ProcessEnv {
+      DATABASE_URL: string
+      IMGIX_API_KEY: string
+      IMGIX_SOURCE_ID: string
+      DORIX_API_URL: string
+      DORIX_API_KEY: string
+      TELEGRAM_BOT_TOKEN: string
+      TELEGRAM_CHAT_ID: string
+    }
+  }
+}

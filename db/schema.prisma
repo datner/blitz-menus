@@ -111,12 +111,14 @@ model Venue {
 }
 
 model ClearingIntegration {
-  id       Int              @id @default(autoincrement())
-  provider ClearingProvider
+  id         Int              @id @default(autoincrement())
+  provider   ClearingProvider
   // it'll be unique, but no reason to enforce that, I think..
-  terminal String
-  Venue    Venue            @relation(fields: [venueId], references: [id])
-  venueId  Int              @unique
+  terminal   String
+  // This will probably change between providers, so have to keep it opaque
+  vendorData Json
+  Venue      Venue            @relation(fields: [venueId], references: [id])
+  venueId    Int              @unique
 }
 
 model ClearingProfile {
@@ -126,10 +128,12 @@ model ClearingProfile {
 }
 
 model ManagementIntegration {
-  id       Int                @id @default(autoincrement())
-  provider ManagementProvider
-  Venue    Venue              @relation(fields: [venueId], references: [id])
-  venueId  Int                @unique
+  id         Int                @id @default(autoincrement())
+  provider   ManagementProvider
+  // This will probably change between providers, so have to keep it opaque
+  vendorData Json
+  Venue      Venue              @relation(fields: [venueId], references: [id])
+  venueId    Int                @unique
 }
 
 model ManagementProfile {
@@ -237,6 +241,23 @@ model ItemI18L {
 model ShortenedUrl {
   slug        String @id @unique
   destination String
+}
+
+model Order {
+  id      Int         @id @default(autoincrement())
+  venueId Int
+  items   OrderItem[]
+}
+
+model OrderItem {
+  id       Int    @id @default(autoincrement())
+  itemId   Int
+  price    Int
+  quantity Int
+  comment  String
+  name     String
+  order    Order  @relation(fields: [orderId], references: [id])
+  orderId  Int
 }
 
 enum TokenType {

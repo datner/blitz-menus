@@ -3,7 +3,7 @@ import { useTranslations } from "next-intl"
 import { OrderModalItem } from "./OrderModalItem"
 import { Modal } from "./Modal"
 import { useEvent } from "app/core/hooks/useEvent"
-import { toShekel } from "app/core/helpers/content"
+import { titleFor, toShekel } from "app/core/helpers/content"
 import { useMutation } from "@blitzjs/rpc"
 import sendOrder from "../mutations/sendOrder"
 import { useLocale } from "app/core/hooks/useLocale"
@@ -12,6 +12,7 @@ import { Query } from "app/menu/validations/page"
 import useMeasure from "react-use-measure"
 import { usePrevious } from "app/core/hooks/usePrevious"
 import { useSpring, a } from "@react-spring/web"
+import { Locale } from "@prisma/client"
 
 type Props = {
   open?: boolean
@@ -22,6 +23,7 @@ type Props = {
   onClose(): void
 }
 
+const title = titleFor(Locale.he)
 export function OrderModal(props: Props) {
   const { onClose, open, items, change, price: overallPrice, amount } = props
   const t = useTranslations("menu.Components.OrderModal")
@@ -54,6 +56,7 @@ export function OrderModal(props: Props) {
         amount: it.amount,
         price: it.item.price,
         item: it.item.id,
+        name: title(it.item),
       })),
     })
   }

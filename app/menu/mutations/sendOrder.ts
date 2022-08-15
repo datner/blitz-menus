@@ -1,38 +1,47 @@
 import { resolver } from "@blitzjs/rpc"
 import { NotFoundError } from "blitz"
 import db from "db"
-import { clearCreditGuard } from "../integrations/creditGuard"
-import { SendOrder } from "../validations/order"
+import { clearCreditGuard, CreditGuardIntegrationData } from "app/menu/integrations/creditGuard"
+import { SendOrder } from "app/menu/validations/order"
 
 export default resolver.pipe(resolver.zod(SendOrder), async (input) => {
-  const { venueIdentifier: identifier, sumTotal, locale } = input
+  const { venueIdentifier: identifier, sumTotal, locale, orderItems } = input
   const venue = await db.venue.findUnique({
     where: { identifier },
     include: { clearingIntegration: true, managementIntegration: true },
   })
 
-  if (!venue) throw new NotFoundError()
+  if (!venue || !venue.clearingIntegration) throw new NotFoundError()
 
-  if (venue.clearingIntegration) {
-    const { /* provider, */ terminal } = venue.clearingIntegration
-    // TODO: add more clearing providers
+  const { /* provider, */ terminal, vendorData } = venue.clearingIntegration
+  const integration = CreditGuardIntegrationData.parse(vendorData)
+  // TODO: add more clearing providers
 
-    return {
-      clearingUrl: await clearCreditGuard({
+  const order = await db.order.create({
+    data: {
+      venueId: venue.id,
+      items: {
+        createMany: {
+          data: orderItems.map(({ item, amount, sum, ...rest }) => ({
+            itemId: item,
+            quantity: amount,
+            ...rest,
+          })),
+        },
+      },
+    },
+  })
+
+  return {
+    clearingUrl: await clearCreditGuard({
+      venue: {
+        ...integration,
         terminal,
-        orgId: venue.organizationId,
-        venueId: venue.id,
-        total: sumTotal,
-        locale,
-        host: "http://localhost:3000",
-      }),
-    }
+        id: venue.id,
+      },
+      orderId: order.id,
+      total: sumTotal,
+      locale,
+    }),
   }
-
-  // if theres no clearing integration, then we should report directly to the management, without transaction information
-  if (venue.managementIntegration) {
-    // TODO: Implement this behavior ahahahahhaa
-  }
-
-  return { smile: ":)", input }
 })
