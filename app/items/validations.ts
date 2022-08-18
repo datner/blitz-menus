@@ -5,7 +5,7 @@ import { Id } from "app/core/helpers/zod"
 import { isExists } from "app/core/helpers/common"
 
 export const Content = z.object({
-  name: z.string().nonempty(),
+  name: z.string().min(1),
   description: z.string().default(""),
 })
 
