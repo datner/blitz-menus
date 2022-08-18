@@ -24,9 +24,9 @@
     ]
   },
   "dependencies": {
-    "@blitzjs/auth": "2.0.0-alpha.67",
-    "@blitzjs/next": "2.0.0-alpha.67",
-    "@blitzjs/rpc": "2.0.0-alpha.67",
+    "@blitzjs/auth": "2.0.0-beta.2",
+    "@blitzjs/next": "2.0.0-beta.2",
+    "@blitzjs/rpc": "2.0.0-beta.2",
     "@dnd-kit/core": "5.0.3",
     "@dnd-kit/sortable": "6.0.1",
     "@ebay/nice-modal-react": "1.2.6",
@@ -46,7 +46,7 @@
     "@types/react-dom": "18.0.3",
     "@use-gesture/react": "10.2.11",
     "autoprefixer": "10.4.7",
-    "blitz": "2.0.0-alpha.67",
+    "blitz": "2.0.0-beta.2",
     "cheerio": "1.0.0-rc.12",
     "clsx": "1.1.1",
     "date-fns": "2.28.0",
