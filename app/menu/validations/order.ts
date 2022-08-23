@@ -1,7 +1,7 @@
 import { Slug } from "app/auth/validations"
 import { Id } from "app/core/helpers/zod"
 import { zLocale } from "app/core/hooks/useLocale"
-import { Dorix } from "integrations/dorix"
+import * as Dorix from "integrations/dorix/types"
 import { z } from "zod"
 
 export const SendOrderItem = z
