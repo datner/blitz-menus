@@ -16,6 +16,6 @@ export namespace OrderUtils {
   export const total = (o: Order & { items: OrderItem[] }) =>
     pipe(
       T.getAll(o)(items),
-      R.foldMap(N.MonoidSum)((it) => it.price + it.quantity)
+      R.foldMap(N.MonoidSum)((it) => it.price * it.quantity)
     )
 }
