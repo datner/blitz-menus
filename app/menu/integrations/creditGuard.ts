@@ -134,7 +134,7 @@ export async function clearCreditGuard(input: CreditCreditGuardOptions) {
   return $("mpiHostedPageUrl").text()
 }
 
-interface CreditGuardValidateOptions {
+export interface CreditGuardValidateOptions {
   venue: CreditGuardVenue
   txId: string
 }
