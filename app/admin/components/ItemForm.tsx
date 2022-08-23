@@ -48,7 +48,7 @@ export function ItemForm(props: Props) {
 
   const onSubmit = handleSubmit(async (data) => {
     const { image } = data
-    const file = image.file as File | undefined
+    const file = image.file
     try {
       if (file) {
         const { url, headers: h } = await getAssetUrl({
