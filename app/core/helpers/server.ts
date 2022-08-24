@@ -1,13 +1,16 @@
+import * as IO from "fp-ts/IO"
 import { log as blitzLog } from "blitz"
+import { identity } from "fp-ts/lib/function"
 
+identity
 type Logger<A> = (msg: A) => void
 
 export const trace =
   <V>(log: Logger<V>) =>
-  (val: V) =>
-  <A>(a: A) => {
+  <A extends V>(val: A): IO.IO<A> =>
+  () => {
     log(val)
-    return a
+    return val
   }
 
 export const fpLog = {
