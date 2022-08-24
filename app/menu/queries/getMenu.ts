@@ -1,15 +1,15 @@
 import { resolver } from "@blitzjs/rpc"
+import { Slug } from "app/auth/validations"
 import db from "db"
 import { z } from "zod"
 
 const GetMenu = z.object({
-  slug: z.string(),
+  slug: Slug,
 })
 
 export default resolver.pipe(resolver.zod(GetMenu), ({ slug }) =>
-  db.restaurant.findUnique({
-    where: { slug },
-    rejectOnNotFound: true,
+  db.venue.findUniqueOrThrow({
+    where: { identifier: slug },
     include: {
       content: true,
       categories: {
