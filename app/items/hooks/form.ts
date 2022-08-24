@@ -3,13 +3,16 @@ import { Routes } from "@blitzjs/next"
 import { invalidateQuery, setQueryData, useMutation, useQuery } from "@blitzjs/rpc"
 import getCategories from "app/categories/queries/getCategories"
 import { PromiseReturnType } from "blitz"
-import { Locale } from "@prisma/client"
+import { Locale, Prisma } from "@prisma/client"
 import { SubmitHandler } from "react-hook-form"
 import createItem from "../mutations/createItem"
 import updateItem from "../mutations/updateItem"
 import getItem from "../queries/getItem"
 import getItems from "../queries/getItems"
 import { Content, ItemSchema } from "../validations"
+import { pipe } from "fp-ts/function"
+import * as TE from "fp-ts/TaskEither"
+import * as T from "fp-ts/Task"
 
 interface CreateOptions {
   redirect?: boolean
@@ -42,13 +45,24 @@ export const item = {
     const [createItemMutation] = useMutation(createItem)
     const router = useRouter()
 
-    const onSubmit: SubmitHandler<ItemSchema> = async (data) => {
-      const newItem = await createItemMutation(data)
-      setQueryData(getItem, { identifier: newItem.identifier }, newItem)
-      invalidateQuery(getItems)
-      invalidateQuery(getCategories)
-      if (redirect) router.push(Routes.AdminItemsItem({ identifier: newItem.identifier }))
-    }
+    const onSubmit: SubmitHandler<ItemSchema> = (data) =>
+      pipe(
+        () => createItemMutation(data),
+        TE.chainFirstIOK(
+          (item) => () => setQueryData(getItem, { identifier: item.identifier }, item)
+        ),
+        TE.apFirst(TE.of(invalidateQuery(getItems))),
+        TE.apFirst(
+          TE.of(
+            invalidateQuery(getCategories, {
+              orderBy: { identifier: Prisma.SortOrder.asc },
+            })
+          )
+        ),
+        TE.match(console.error, ({ identifier }) => {
+          if (redirect) router.push(Routes.AdminItemsItem({ identifier }))
+        })
+      )()
 
     return { onSubmit }
   },
