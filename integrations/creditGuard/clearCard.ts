@@ -48,7 +48,7 @@ const getDoDealXml = ({ locale, terminal, total, venueId, mid, orderId }: ClearC
 </ashrait>
 `
 
-interface ClearCardParams {
+export interface ClearCardParams {
   locale: Locale
   total: number
   orderId: number

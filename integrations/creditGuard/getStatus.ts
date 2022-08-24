@@ -24,7 +24,7 @@ const getInquireTransactionsXml = ({ terminal, txId, mid }: GetInquireTransactio
 </ashrait>
 `
 
-interface GetStatusParams {
+export interface GetStatusParams {
   txId: string
   terminal: string
   password: string
@@ -33,7 +33,7 @@ interface GetStatusParams {
   venueId: number
 }
 
-export const clearCard = (input: GetStatusParams) =>
+export const getStatus = (input: GetStatusParams) =>
   pipe(
     TE.right(getInquireTransactionsXml(input)),
     TE.chainW((xmlStr) =>
