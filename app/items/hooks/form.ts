@@ -51,17 +51,20 @@ export const item = {
         TE.chainFirstIOK(
           (item) => () => setQueryData(getItem, { identifier: item.identifier }, item)
         ),
-        TE.apFirst(TE.of(invalidateQuery(getItems))),
-        TE.apFirst(
-          TE.of(
+        TE.match(
+          (e) =>
+            e.tag === "prismaValidationError" ? console.error(e.error.message) : console.log(e),
+          ({ identifier }) => {
+            if (redirect) router.push(Routes.AdminItemsItem({ identifier }))
+          }
+        ),
+        T.chain(() => () => invalidateQuery(getItems)),
+        T.chain(
+          () => () =>
             invalidateQuery(getCategories, {
               orderBy: { identifier: Prisma.SortOrder.asc },
             })
-          )
-        ),
-        TE.match(console.error, ({ identifier }) => {
-          if (redirect) router.push(Routes.AdminItemsItem({ identifier }))
-        })
+        )
       )()
 
     return { onSubmit }

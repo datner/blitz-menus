@@ -1,7 +1,6 @@
 import { Ctx } from "@blitzjs/next"
 import { resolver } from "@blitzjs/rpc"
 import * as TE from "fp-ts/TaskEither"
-import * as T from "fp-ts/Task"
 import * as E from "fp-ts/Either"
 import * as A from "fp-ts/Array"
 import * as NEA from "fp-ts/NonEmptyArray"
@@ -54,7 +53,7 @@ const createItem = ({ input, orgId, venue }: CreateItemContext) =>
   TE.tryCatch(
     () =>
       db.item.create({
-        data: { ...input, organizationId: orgId, venueId: venue.id, restaurantId: -1 },
+        data: { ...input, organizationId: orgId, Venue: { connect: { id: venue.id } } },
         include: {
           content: true,
         },
@@ -74,6 +73,7 @@ export default resolver.pipe(
       getFirstVenue(ctx),
       TE.bind("input", () => TE.of(input)),
       TE.chainW(createItem),
+      TE.orElseFirstW((e) => TE.of(fpLog.log(e)())),
       TE.chainFirstIOK(fpLog.log)
     )()
 )

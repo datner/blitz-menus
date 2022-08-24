@@ -32,8 +32,9 @@ export const ItemSchema = z.object({
 
 const ItemSchemaImgTransform = ItemSchema.extend({ image: Image.transform((it) => it.src) })
 
-export const CreateItem = ItemSchemaImgTransform.transform(({ en, he, ...rest }) => ({
+export const CreateItem = ItemSchemaImgTransform.transform(({ en, he, categoryId, ...rest }) => ({
   ...rest,
+  category: { connect: { id: categoryId } },
   content: { createMany: { data: [en, he] } },
 }))
 

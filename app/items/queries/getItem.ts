@@ -6,9 +6,9 @@ import db from "db"
 export default resolver.pipe(
   resolver.authorize(),
   resolver.zod(IdOrSlug),
-  async (input, { session: { restaurantId } }) => {
+  async (input, { session: { orgId, restaurantId } }) => {
     const item = await db.item.findFirst({
-      where: { ...input, restaurantId },
+      where: { ...input, OR: [{ organizationId: orgId }, { restaurantId }] },
       include: { content: true },
     })
 
