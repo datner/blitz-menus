@@ -231,7 +231,7 @@ model ItemI18L {
   locale      Locale
   name        String
   description String
-  item        Item   @relation(fields: [itemId], references: [id])
+  item        Item   @relation(fields: [itemId], references: [id], onDelete: Cascade)
 }
 
 model ShortenedUrl {
