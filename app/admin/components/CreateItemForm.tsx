@@ -6,7 +6,7 @@ type Props = {
 }
 
 export function CreateItemForm(props: Props) {
-  const form = item.useCreate(props)
+  const form = item.useCreate(props.redirect)
 
   return <ItemForm {...form} />
 }

@@ -7,7 +7,7 @@ type Props = {
 
 export function UpdateItemForm(props: Props) {
   const { identifier } = props
-  const form = item.useUpdate({ identifier })
+  const form = item.useUpdate(identifier)
 
   return <ItemForm {...form} />
 }

@@ -1,37 +1,63 @@
 import { useMutation } from "@blitzjs/rpc"
-import { PromiseReturnType } from "blitz"
 import LabeledTextField from "app/core/components/LabeledTextField"
 import { toShekel } from "app/core/helpers/content"
 import { useZodForm } from "app/core/hooks/useZodForm"
 import { ItemSchema } from "app/items/validations"
 import { useTranslations } from "next-intl"
-import { DefaultValues, FormProvider, SubmitHandler } from "react-hook-form"
+import { DefaultValues, FormProvider } from "react-hook-form"
 import getUploadUrl from "../mutations/getUploadUrl"
 import { FormDropzone } from "./FormDropzone"
-import getItem from "app/items/queries/getItem"
 import { useEffect, useReducer } from "react"
 import { match } from "ts-pattern"
 import { FormCategoryCombobox } from "./FormCategoryCombobox"
 import { DeleteButton } from "./DeleteButton"
 import LabeledTextArea from "app/core/components/LabeledTextArea"
+import { pipe, constant, constNull, flow, constTrue } from "fp-ts/function"
+import * as TE from "fp-ts/TaskEither"
+import * as O from "fp-ts/Option"
+import * as Eq from "fp-ts/Eq"
+import { PromiseReturnType } from "blitz"
+import getItem from "app/items/queries/getItem"
+import { Content } from "app/items/validations"
+import { Locale } from "@prisma/client"
+import { useStableEffect } from "fp-ts-react-stable-hooks"
+import { eqItem } from "app/items/helpers/eqItem"
+
+type _Item = PromiseReturnType<typeof getItem>
 
 type Props = {
-  item?: PromiseReturnType<typeof getItem>
-  onSubmit: SubmitHandler<ItemSchema>
-  defaultValues?: DefaultValues<ItemSchema>
+  item: O.Option<_Item>
+  onSubmit(data: ItemSchema): TE.TaskEither<string, _Item>
 }
 
-const DEFAULT_VALUES: DefaultValues<ItemSchema> = {
+const getDefaultValues = constant<DefaultValues<ItemSchema>>({
   identifier: "",
   price: 0,
   en: { name: "", description: "" },
   he: { name: "", description: "" },
   image: { src: "" },
-}
+})
+
+const toDefaults = O.match<_Item, DefaultValues<ItemSchema>>(
+  getDefaultValues,
+  ({ identifier, categoryId, price, content, image, blurDataUrl }): DefaultValues<ItemSchema> => ({
+    identifier,
+    categoryId,
+    price,
+    en: Content.parse(content.find((it) => it.locale === Locale.en)),
+    he: Content.parse(content.find((it) => it.locale === Locale.he)),
+    image: {
+      src: image,
+      blur: blurDataUrl ?? undefined,
+    },
+  })
+)
 
 export function ItemForm(props: Props) {
-  const { defaultValues = DEFAULT_VALUES, onSubmit: onSubmit_ } = props
+  const { onSubmit: onSubmit_, item } = props
   const t = useTranslations("admin.Components.ItemForm")
+  const isEdit = O.isSome(item)
+  const defaultValues = toDefaults(item)
   const form = useZodForm({
     schema: ItemSchema,
     defaultValues,
@@ -42,9 +68,14 @@ export function ItemForm(props: Props) {
   const { handleSubmit, setFormError, watch, formState, reset } = form
   const { isSubmitting } = formState
 
-  useEffect(() => {
-    reset(defaultValues)
-  }, [reset, defaultValues])
+  useStableEffect(
+    () => {
+      pipe(item, toDefaults, reset)
+    },
+    [item, reset],
+    Eq.tuple(O.getEq(eqItem), { equals: constTrue })
+  )
+  useEffect(() => {}, [reset, item])
 
   const onSubmit = handleSubmit(async (data) => {
     const { image } = data
@@ -68,15 +99,14 @@ export function ItemForm(props: Props) {
         }).then((res) => res.json())
         image.src = origin_path
       }
-      await onSubmit_(data)
-      reset(DEFAULT_VALUES)
+      await pipe(onSubmit_(data), TE.match(setFormError, flow(O.some, toDefaults, reset)))()
     } catch (error: any) {
       setFormError(error.toString())
     }
   })
 
   const result = {
-    defaultValues: Boolean(props.defaultValues),
+    isEdit,
     isSubmitting,
   }
 
@@ -84,25 +114,34 @@ export function ItemForm(props: Props) {
     .with(true, () => t("upload"))
     .otherwise(() =>
       match(result)
-        .with({ defaultValues: false, isSubmitting: true }, () => t("create.item"))
-        .with({ defaultValues: true, isSubmitting: true }, () => t("update.item"))
-        .with({ defaultValues: false }, () => t("create.initial"))
-        .with({ defaultValues: true }, () => t("update.initial"))
+        .with({ isEdit: false, isSubmitting: true }, () => t("create.item"))
+        .with({ isEdit: true, isSubmitting: true }, () => t("update.item"))
+        .with({ isEdit: false }, () => t("create.initial"))
+        .with({ isEdit: true }, () => t("update.initial"))
         .exhaustive()
     )
+
+  const title = pipe(
+    item,
+    O.match(
+      () => t("title.new"),
+      () => t("title.edit")
+    )
+  )
+
+  const deleteButton = pipe(
+    item,
+    O.matchW(constNull, (it) => <DeleteButton identifier={it.identifier!} onRemove={remove} />)
+  )
 
   return (
     <FormProvider {...form}>
       <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
         <div className="pb-4 h-20 flex">
           <h1 className="text-xl text-gray-700 font-semibold underline underline-offset-1 decoration-indigo-600 grow">
-            {props.defaultValues ? t("title.edit") : t("title.new")}
+            {title}
           </h1>
-          <div>
-            {props.defaultValues?.identifier && (
-              <DeleteButton identifier={props.defaultValues.identifier} onRemove={remove} />
-            )}
-          </div>
+          <div>{deleteButton}</div>
         </div>
         <form className="space-y-6" onSubmit={onSubmit}>
           <div className="flex gap-4">
