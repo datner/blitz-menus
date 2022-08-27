@@ -4186,6 +4186,11 @@ formdata-polyfill@^4.0.10:
   dependencies:
     fetch-blob "^3.1.2"
 
+fp-ts-react-stable-hooks@1.5.0:
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/fp-ts-react-stable-hooks/-/fp-ts-react-stable-hooks-1.5.0.tgz#366b2e6602e9f894876f2d15d2eca537330f05bb"
+  integrity sha512-EKcXNB7JQXAKUhH9ciFdotC7rqcSMTI5BO8UOIphzbea1NmAivm98VkAl/fRlLGksJrHuJAN9cULDUXhphn/hA==
+
 fp-ts@2.11.10:
   version "2.11.10"
   resolved "https://registry.yarnpkg.com/fp-ts/-/fp-ts-2.11.10.tgz#59f57d37242a4b7dfdf13945f27b768a665eed52"
