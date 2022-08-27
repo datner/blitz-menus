@@ -1,26 +1,43 @@
-import * as IO from "fp-ts/IO"
-import { log as blitzLog } from "blitz"
-import { identity } from "fp-ts/lib/function"
+import { log as bLog } from "blitz"
+import { IO } from "fp-ts/IO"
 
-identity
-type Logger<A> = (msg: A) => void
+export const success =
+  (a: string): IO<void> =>
+  () =>
+    bLog.success(a)
 
-export const trace =
-  <V>(log: Logger<V>) =>
-  <A extends V>(val: A): IO.IO<A> =>
-  () => {
-    log(val)
-    return val
-  }
+export const error =
+  (a: string): IO<void> =>
+  () =>
+    bLog.error(a)
 
-export const fpLog = {
-  log: trace(console.log),
-  error: trace(blitzLog.error),
-  debug: trace(blitzLog.debug),
-  success: trace(blitzLog.success),
-  variable: trace(blitzLog.variable),
-  branded: trace(blitzLog.branded),
-  spinner: trace(blitzLog.spinner),
-  progress: trace(blitzLog.progress),
-  clearConsole: trace(blitzLog.clearConsole),
-}
+export const debug =
+  (a: string): IO<void> =>
+  () =>
+    bLog.debug(a)
+
+export const progress =
+  (a: string): IO<void> =>
+  () =>
+    bLog.progress(a)
+
+export const spinner =
+  (a: string): IO<void> =>
+  () =>
+    bLog.spinner(a)
+
+export const branded =
+  (a: string): IO<void> =>
+  () =>
+    bLog.branded(a)
+
+export const clearLine =
+  (a?: string | undefined): IO<void> =>
+  () =>
+    bLog.clearLine(a)
+
+export const clearConsole = bLog.clearConsole
+export const variable: <A>(a: A) => string = bLog.variable
+export const greenText = bLog.greenText
+export const withBrand = bLog.withBrand
+export const withCaret = bLog.withCaret
