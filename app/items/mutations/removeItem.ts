@@ -14,5 +14,5 @@ export default resolver.pipe(
   resolver.zod(IdOrSlug),
   setDefaultOrganizationId,
   enforceSuperAdminIfNotCurrentOrganization,
-  (input) => db.item.delete({ where: input })
+  (input) => db.item.deleteMany({ where: input })
 )
