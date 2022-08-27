@@ -1,19 +1,20 @@
-import { Ctx } from "@blitzjs/next"
-import { resolver } from "@blitzjs/rpc"
+import { AuthenticatedMiddlewareCtx, resolver } from "@blitzjs/rpc"
 import * as TE from "fp-ts/TaskEither"
+import * as T from "fp-ts/Task"
 import * as E from "fp-ts/Either"
 import * as A from "fp-ts/Array"
-import * as NEA from "fp-ts/NonEmptyArray"
 import { getBlurDataUrl } from "app/core/helpers/plaiceholder"
 import db, { Prisma, Venue } from "db"
 import { CreateItem } from "../validations"
-import { pipe, constant } from "fp-ts/function"
+import { pipe, flow } from "fp-ts/function"
 import { PrismaValidationError } from "app/core/type/prisma"
-import { fpLog } from "app/core/helpers/server"
+import * as L from "app/core/helpers/server"
 import { z } from "zod"
+import { match } from "ts-pattern"
 
 type NoOrgIdError = {
   tag: "noOrgIdError"
+  userId: number
 }
 
 type NoVenuesError = {
@@ -21,39 +22,31 @@ type NoVenuesError = {
   orgId: number
 }
 
-const constNoOrg = constant<NoOrgIdError>({ tag: "noOrgIdError" })
+const getOrgId = (ctx: AuthenticatedMiddlewareCtx) =>
+  E.fromNullable<NoOrgIdError>({ tag: "noOrgIdError", userId: ctx.session.userId })(
+    ctx.session.orgId
+  )
 
-const headFromArray =
-  <E>(err: E) =>
-  <V>(arr: V[]): E.Either<E, V> =>
-    A.isNonEmpty(arr) ? E.right(NEA.head(arr)) : E.left(err)
-
-const getFirstVenue = (ctx: Ctx) =>
+const getFirstVenue = (orgId: number) =>
   pipe(
-    ctx.session.orgId,
-    E.fromNullable(constNoOrg()),
-    E.bindTo("orgId"),
-    TE.fromEither,
-    TE.bind("venues", ({ orgId }) =>
-      TE.fromTask(() => db.venue.findMany({ where: { organizationId: orgId } }))
-    ),
-    TE.bindW("venue", ({ venues, orgId }) =>
-      TE.fromEither(headFromArray<NoVenuesError>({ tag: "noVenuesError", orgId })(venues))
+    () => db.venue.findMany({ where: { organizationId: orgId } }),
+    T.chain(
+      flow(
+        A.head,
+        TE.fromOption((): NoVenuesError => ({ tag: "noVenuesError", orgId }))
+      )
     )
   )
 
-interface CreateItemContext {
-  venues: Venue[]
-  venue: Venue
-  orgId: number
-  input: z.infer<typeof CreateItem>
-}
-
-const createItem = ({ input, orgId, venue }: CreateItemContext) =>
+const createItem = (input: z.infer<typeof CreateItem>) => (venue: Venue) =>
   TE.tryCatch(
     () =>
       db.item.create({
-        data: { ...input, organizationId: orgId, Venue: { connect: { id: venue.id } } },
+        data: {
+          ...input,
+          organizationId: venue.organizationId,
+          Venue: { connect: { id: venue.id } },
+        },
         include: {
           content: true,
         },
@@ -70,10 +63,22 @@ export default resolver.pipe(
   async (input) => ({ ...input, blurDataUrl: await getBlurDataUrl(input.image) }),
   (input, ctx) =>
     pipe(
-      getFirstVenue(ctx),
-      TE.bind("input", () => TE.of(input)),
-      TE.chainW(createItem),
-      TE.orElseFirstW((e) => TE.of(fpLog.log(e)())),
-      TE.chainFirstIOK(fpLog.log)
+      getOrgId(ctx),
+      TE.fromEither,
+      TE.chainW(getFirstVenue),
+      TE.chainW(createItem(input)),
+      TE.orElseFirstW((e) =>
+        TE.of(
+          match(e)
+            .with({ tag: "noOrgIdError" }, ({ userId }) =>
+              L.error(`User ${userId} is not associated with any user`)
+            )
+            .with({ tag: "noVenuesError" }, ({ orgId }) =>
+              L.error(`Org ${orgId} is not associated with any venues`)
+            )
+            .with({ tag: "prismaValidationError" }, ({ error }) => pipe(error, L.variable, L.error))
+            .exhaustive()
+        )
+      )
     )()
 )
