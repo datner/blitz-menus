@@ -6,6 +6,7 @@ import { creditGuardService } from "./client"
 import { fp } from "integrations/telegram"
 import { log } from "blitz"
 import { match } from "ts-pattern"
+import { Reader } from "fp-ts/lib/Reader"
 
 // not gonna change any time soon tbh
 const CURRENCY = "ILS"
@@ -17,7 +18,14 @@ const LOCALE_TO_LANGUAGE: Record<Locale, string> = {
 
 const host = process.env.NODE_ENV === "production" ? "https://renu.menu" : "http://localhost:3000"
 
-const getDoDealXml = ({ locale, terminal, total, venueId, mid, orderId }: ClearCardParams) => `
+const getDoDealXml: Reader<ClearCardParams, string> = ({
+  locale,
+  terminal,
+  total,
+  venueId,
+  mid,
+  orderId,
+}: ClearCardParams) => `
 <ashrait>
 	<request>
 		<version>2000</version>
@@ -59,18 +67,19 @@ export interface ClearCardParams {
   venueId: number
 }
 
+const toSearchParams = (input: ClearCardParams) => (xmlStr: string) =>
+  new URLSearchParams([
+    ["int_in", xmlStr],
+    ["user", input.username],
+    ["password", input.password],
+  ])
+
 export const clearCard = (input: ClearCardParams) =>
   pipe(
-    TE.right(getDoDealXml(input)),
-    TE.chain((xmlStr) =>
-      creditGuardService.clearCard(
-        new URLSearchParams([
-          ["int_in", xmlStr],
-          ["user", input.username],
-          ["password", input.password],
-        ])
-      )
-    ),
+    input,
+    getDoDealXml,
+    toSearchParams(input),
+    creditGuardService.clearCard,
     TE.getOrElse((err) =>
       pipe(
         fp.sendMessage(`clear card fucking failed for ${input.orderId} with tag ${err.tag}`)(),
