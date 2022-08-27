@@ -1,6 +1,5 @@
 import { constVoid, pipe } from "fp-ts/function"
 import * as TE from "fp-ts/TaskEither"
-import * as T from "fp-ts/Task"
 import { match } from "ts-pattern"
 import { dorixService, GetStatusParams } from "./client"
 import {
@@ -21,7 +20,6 @@ export const getStatus = (params: GetStatusParams) =>
           .with({ tag: "zodParseError" }, reportStatusZodError(params))
           .with({ tag: "httpRequestError" }, ({ error }) => reportGenericError(error.message))
           .exhaustive(),
-      () => T.of(constVoid())
-    ),
-    T.flatten
+      constVoid
+    )
   )
