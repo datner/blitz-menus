@@ -20,16 +20,18 @@ declare module "@blitzjs/auth" {
 }
 
 declare global {
+  interface ProcessEnvVars {
+    readonly NODE_ENV: "development" | "production" | "test"
+    readonly DATABASE_URL: string
+    readonly IMGIX_API_KEY: string
+    readonly IMGIX_SOURCE_ID: string
+    readonly DORIX_API_URL: string
+    readonly DORIX_API_KEY: string
+    readonly TELEGRAM_BOT_TOKEN: string
+    readonly TELEGRAM_CHAT_ID: string
+    readonly CREDIT_GUARD_API_URL: string
+  }
   namespace NodeJS {
-    interface ProcessEnv {
-      DATABASE_URL: string
-      IMGIX_API_KEY: string
-      IMGIX_SOURCE_ID: string
-      DORIX_API_URL: string
-      DORIX_API_KEY: string
-      TELEGRAM_BOT_TOKEN: string
-      TELEGRAM_CHAT_ID: string
-      CREDIT_GUARD_API_URL: string
-    }
+    interface ProcessEnv extends ProcessEnvVars {}
   }
 }
