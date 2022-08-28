@@ -50,7 +50,7 @@ export const createHttpClient = (global?: AxiosRequestConfig): HttpClient => ({
         // TODO: match against all error types in AxiosError
         E.fromPredicate(axios.isAxiosError, identity),
         E.matchW(
-          (error: Error): HttpRequestError => ({ tag: "httpRequestError", error }),
+          (error): HttpRequestError => ({ tag: "httpRequestError", error }),
           (error): AxiosRequestError => ({ tag: "axiosRequestError", error })
         )
       )
