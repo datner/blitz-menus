@@ -14,6 +14,7 @@ import {
   toTyped,
   ZodParseError,
 } from "integrations/httpClient"
+import { getEnvVar } from "app/core/helpers/env"
 
 type PostOrderError = HttpError | DorixResponseError | ZodParseError
 
@@ -31,14 +32,20 @@ export type DorixResponseError = {
   message: string
 }
 
-const dorixHttpClient = createHttpClient({
-  baseURL: process.env.DORIX_API_URL,
-  headers: {
-    Authorization: `Bearer ${process.env.DORIX_API_KEY}`,
-    "Content-Type": "application/json",
-  },
-})
-
+const dorixHttpClient = pipe(
+  E.Do,
+  E.apS("baseURL", getEnvVar("DORIX_API_URL")),
+  E.apS("apiKey", getEnvVar("DORIX_API_KEY")),
+  E.map(({ baseURL, apiKey }) =>
+    createHttpClient({
+      baseURL,
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+    })
+  )
+)
 const parseOrderResponse = (
   orderResponse: z.infer<typeof OrderResponse>
 ): E.Either<DorixResponseError, true> =>
@@ -104,4 +111,7 @@ const OrderResponse = z.discriminatedUnion("ack", [
   z.object({ ack: z.literal(false), message: z.string() }),
 ])
 
-export const dorixService = createDorixService({ httpClient: dorixHttpClient })
+export const dorixService = pipe(
+  dorixHttpClient,
+  E.map((httpClient) => createDorixService({ httpClient }))
+)

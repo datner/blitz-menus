@@ -35,11 +35,11 @@ export interface GetStatusParams {
 
 export const getStatus = (input: GetStatusParams) =>
   pipe(
-    TE.right(getInquireTransactionsXml(input)),
-    TE.chainW((xmlStr) =>
-      creditGuardService.getStatus(
+    TE.fromEither(creditGuardService),
+    TE.chainW((service) =>
+      service.getStatus(
         new URLSearchParams([
-          ["int_in", xmlStr],
+          ["int_in", getInquireTransactionsXml(input)],
           ["user", input.username],
           ["password", input.password],
         ])

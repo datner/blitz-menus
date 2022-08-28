@@ -76,13 +76,12 @@ const toSearchParams = (input: ClearCardParams) => (xmlStr: string) =>
 
 export const clearCard = (input: ClearCardParams) =>
   pipe(
-    input,
-    getDoDealXml,
-    toSearchParams(input),
-    creditGuardService.clearCard,
+    TE.fromEither(creditGuardService),
+    TE.chainW((service) => pipe(getDoDealXml(input), toSearchParams(input), service.clearCard)),
     TE.getOrElse((err) =>
       pipe(
-        fp.sendMessage(`clear card fucking failed for ${input.orderId} with tag ${err.tag}`)(),
+        () =>
+          fp.sendMessage(`clear card fucking failed for ${input.orderId} with tag ${err.tag}`)(),
         () => {
           match(err)
             .with({ tag: "axiosRequestError" }, ({ error }) => log.error(error.message))

@@ -15,6 +15,7 @@ import {
   reportOrderResponseStatusError,
   reportOrderSuccess,
   reportGenericError,
+  reportEnvVarError,
 } from "./messages"
 
 export type RequestVariables = Pick<Dorix.Request, "externalId" | "payment" | "items">
@@ -48,22 +49,26 @@ const getDesiredTime = flow(now, addMinutes(10), formatISO)
 
 export const sendOrder = (order: Order & { items: OrderItem[] }) =>
   pipe(
-    dorixService.postOrder({
-      externalId: String(order.id),
-      payment: pipe(order, toTransaction, toPayment),
-      items: toItems(order.items),
-      source: "RENU",
-      branchId: "6021287cad8b0de9a3a8d09e",
-      notes: "Sent from Renu",
-      desiredTime: getDesiredTime(),
-      type: "PICKUP",
-      customer: { firstName: "", lastName: "", email: "", phone: "" },
-      discounts: [],
-      metadata: {},
-    }),
+    TE.fromEither(dorixService),
+    TE.chainW((service) =>
+      service.postOrder({
+        externalId: String(order.id),
+        payment: pipe(order, toTransaction, toPayment),
+        items: toItems(order.items),
+        source: "RENU",
+        branchId: "6021287cad8b0de9a3a8d09e",
+        notes: "Sent from Renu",
+        desiredTime: getDesiredTime(),
+        type: "PICKUP",
+        customer: { firstName: "", lastName: "", email: "", phone: "" },
+        discounts: [],
+        metadata: {},
+      })
+    ),
     TE.match(
       (e) =>
         match(e)
+          .with({ tag: "NoEnvVarError" }, reportEnvVarError)
           .with({ tag: "axiosRequestError" }, reportOrderAxiosError(order))
           .with({ tag: "httpResponseStatusError" }, reportOrderResponseStatusError(order))
           .with({ tag: "zodParseError" }, reportOrderZodError(order))

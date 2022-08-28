@@ -13,6 +13,7 @@ import {
   request,
 } from "integrations/httpClient"
 import { JSDOM } from "jsdom"
+import { getEnvVar } from "app/core/helpers/env"
 
 type ClearCardError = HttpError | HttpResponseContentTypeError | CreditGuardResponseMalformedError
 
@@ -109,10 +110,18 @@ const createCreditGuardService: R.Reader<HttpClientEnv, CreditGuardService> = pi
   )
 )
 
-const creditGuardHttpClient = createHttpClient({
-  baseURL: process.env.CREDIT_GUARD_API_URL,
-  maxRedirects: 20,
-  responseType: "document",
-})
+const creditGuardHttpClient = pipe(
+  getEnvVar("CREDIT_GUARD_API_URL"),
+  E.map((baseURL) =>
+    createHttpClient({
+      baseURL,
+      maxRedirects: 20,
+      responseType: "document",
+    })
+  )
+)
 
-export const creditGuardService = createCreditGuardService({ httpClient: creditGuardHttpClient })
+export const creditGuardService = pipe(
+  creditGuardHttpClient,
+  E.map((httpClient) => createCreditGuardService({ httpClient }))
+)

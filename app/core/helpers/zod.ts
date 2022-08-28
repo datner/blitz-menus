@@ -26,14 +26,16 @@ export const IdOrSlug = z.union([
   BaseEntity.pick({ identifier: true }),
 ])
 
-type ZodError = {
-  tag: "zodError"
-  error: z.ZodError
+export type ZodParseError<T> = {
+  tag: "zodParseError"
+  error: z.ZodError<T>
 }
 
 export const zodParse =
   <Schema extends z.ZodTypeAny>(schema: Schema) =>
-  (data: unknown): E.Either<ZodError, z.output<Schema>> =>
+  (data: unknown): E.Either<ZodParseError<Schema>, z.output<Schema>> =>
     pipe(schema.safeParse(data), (result) =>
-      result.success ? E.right(result.data) : E.left({ tag: "zodError", error: result.error })
+      result.success
+        ? E.right(result.data as z.output<Schema>)
+        : E.left({ tag: "zodParseError", error: result.error })
     )

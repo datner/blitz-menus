@@ -7,14 +7,17 @@ import {
   reportStatusAxiosError,
   reportStatusResponseStatusError,
   reportGenericError,
+  reportEnvVarError,
 } from "./messages"
 
 export const getStatus = (params: GetStatusParams) =>
   pipe(
-    dorixService.getStatus(params),
+    TE.fromEither(dorixService),
+    TE.chainW((service) => service.getStatus(params)),
     TE.match(
       (e) =>
         match(e)
+          .with({ tag: "NoEnvVarError" }, reportEnvVarError)
           .with({ tag: "axiosRequestError" }, reportStatusAxiosError(params))
           .with({ tag: "httpResponseStatusError" }, reportStatusResponseStatusError(params))
           .with({ tag: "zodParseError" }, reportStatusZodError(params))
