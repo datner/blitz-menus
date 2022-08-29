@@ -1,22 +1,22 @@
 import { resolver } from "@blitzjs/rpc"
 import { NotFoundError } from "blitz"
-import db from "db"
-import { CreditGuardIntegrationData } from "app/menu/integrations/creditGuard"
+import db, { ClearingProvider as ClearingKind } from "db"
 import { SendOrder } from "app/menu/validations/order"
-import { clearCard } from "integrations/creditGuard/clearCard"
+import { ClearingProvider } from "integrations/clearingProvider"
+import * as T from "fp-ts/Task"
+
+const moduleTasks: Record<ClearingKind, T.Task<{ default: ClearingProvider }>> = {
+  [ClearingKind.PAY_PLUS]: () => import("integrations/payplus/provider"),
+  [ClearingKind.CREDIT_GUARD]: () => import("integrations/creditGuard/provider"),
+}
 
 export default resolver.pipe(resolver.zod(SendOrder), async (input) => {
   const { venueIdentifier: identifier, sumTotal, locale, orderItems } = input
   const venue = await db.venue.findUnique({
     where: { identifier },
-    include: { clearingIntegration: true, managementIntegration: true },
   })
 
-  if (!venue || !venue.clearingIntegration) throw new NotFoundError()
-
-  const { /* provider, */ terminal, vendorData } = venue.clearingIntegration
-  const integration = CreditGuardIntegrationData.parse(vendorData)
-  // TODO: add more clearing providers
+  if (!venue) throw new NotFoundError()
 
   const order = await db.order.create({
     data: {
@@ -31,18 +31,13 @@ export default resolver.pipe(resolver.zod(SendOrder), async (input) => {
         },
       },
     },
+    include: { items: true },
   })
 
-  const getUrl = clearCard({
-    ...integration,
-    terminal,
-    venueId: venue.id,
-    orderId: order.id,
-    total: sumTotal,
-    locale,
-  })
+  const { default: provider } = await moduleTasks[venue.clearingProvider]()
+  const getLink = provider.getLink(order)
 
   return {
-    clearingUrl: await getUrl(),
+    clearingUrl: await getLink(),
   }
 })
