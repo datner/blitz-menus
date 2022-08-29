@@ -99,6 +99,7 @@ model Venue {
   organizationId        Int
   organization          Organization           @relation(fields: [organizationId], references: [id])
   categories            Category[]
+  clearingProvider      ClearingProvider       @default(PAY_PLUS)
   clearingIntegration   ClearingIntegration?
   inventory             Item[]
   managementIntegration ManagementIntegration?
@@ -242,6 +243,7 @@ model ShortenedUrl {
 model Order {
   id      Int         @id @default(autoincrement())
   venueId Int
+  txId    String?     @unique
   items   OrderItem[]
 }
 
@@ -273,6 +275,7 @@ enum MembershipRole {
 
 enum ClearingProvider {
   CREDIT_GUARD
+  PAY_PLUS
 }
 
 enum ManagementProvider {
