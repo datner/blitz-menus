@@ -15,7 +15,7 @@ import { constant, pipe } from "fp-ts/function"
 import { Venue } from "@prisma/client"
 import { zodParse } from "app/core/helpers/zod"
 import { getVenueById, prismaNotFound } from "app/core/helpers/prisma"
-import { getStatus, GetStatusParams } from "integrations/creditGuard/getStatus"
+import { creditGuardProvider } from "integrations/creditGuard/provider"
 
 const OrderSuccess = z
   .object({
@@ -79,41 +79,43 @@ const getVenueWithIntegrations = getVenueById({
   managementIntegration: true,
 })
 
-export default resolver.pipe(resolver.zod(OrderSuccess), ({ id, txId }) =>
-  pipe(
-    getVenueWithIntegrations(id),
-    TE.chainEitherKW((venue) =>
-      pipe(
-        venue.clearingIntegration,
-        E.fromNullable<IntegrationNotFoundError>({ tag: "integrationNotFoundError", venue }),
-        E.chainW((integration) =>
-          pipe(
-            integration.vendorData,
-            zodParse(CreditGuardIntegrationData),
-            E.map(
-              (vd): GetStatusParams => ({
-                ...vd,
-                terminal: integration.terminal,
-                venueId: integration.venueId,
-                txId,
-              })
-            )
-          )
-        )
-      )
-    ),
-    TE.chainW(getStatus),
-    TE.chainEitherKW(creditGuardOrderNotFound(txId)),
-    TE.chainW((orderId) =>
-      TE.tryCatch(
-        () => db.order.findUniqueOrThrow({ where: { id: orderId }, include: { items: true } }),
-        prismaNotFound
-      )
-    ),
-    TE.chainTaskK(sendOrder),
-    TE.match(
-      ({ tag }) => "oh no, " + tag,
-      () => "oh yeah"
-    )
-  )()
-)
+export default resolver.pipe(resolver.zod(OrderSuccess), ({ id, txId }) => true)
+
+// export default resolver.pipe(resolver.zod(OrderSuccess), ({ id, txId }) =>
+//   pipe(
+//     getVenueWithIntegrations(id),
+//     TE.chainEitherKW((venue) =>
+//       pipe(
+//         venue.clearingIntegration,
+//         E.fromNullable<IntegrationNotFoundError>({ tag: "integrationNotFoundError", venue }),
+//         E.chainW((integration) =>
+//           pipe(
+//             integration.vendorData,
+//             zodParse(CreditGuardIntegrationData),
+//             E.map(
+//               (vd): GetStatusParams => ({
+//                 ...vd,
+//                 terminal: integration.terminal,
+//                 venueId: integration.venueId,
+//                 txId,
+//               })
+//             )
+//           )
+//         )
+//       )
+//     ),
+//     TE.chainW(getStatus),
+//     TE.chainEitherKW(creditGuardOrderNotFound(txId)),
+//     TE.chainW((orderId) =>
+//       TE.tryCatch(
+//         () => db.order.findUniqueOrThrow({ where: { id: orderId }, include: { items: true } }),
+//         prismaNotFound
+//       )
+//     ),
+//     TE.chainTaskK(sendOrder),
+//     TE.match(
+//       ({ tag }) => "oh no, " + tag,
+//       () => "oh yeah"
+//     )
+//   )()
+// )
