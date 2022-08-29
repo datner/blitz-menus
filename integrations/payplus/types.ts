@@ -1,5 +1,4 @@
-import * as A from "fp-ts/Array"
-import * as N from "fp-ts/number"
+import { getAmount } from "integrations/helpers"
 import { z } from "zod"
 
 export const PaymentItem = z
@@ -19,12 +18,14 @@ export const GeneratePaymentLinkBody = z
     refURL_success: z.string(),
     refURL_failure: z.string(),
     refURL_callback: z.string(),
-    customer: z.object({
-      customer_name: z.string().default(""),
-      email: z.string().email().default(""),
-      phone: z.string().default(""),
-      vat_number: z.string().default(""),
-    }),
+    customer: z
+      .object({
+        customer_name: z.string(),
+        email: z.string(),
+        phone: z.string(),
+        vat_number: z.number(),
+      })
+      .default({ vat_number: 0, customer_name: "", phone: "", email: "" }),
     items: PaymentItem.array(),
   })
   .transform((it) => ({
@@ -38,9 +39,6 @@ export const GeneratePaymentLinkBody = z
   }))
 
 export type GeneratePaymentLinkInput = z.input<typeof GeneratePaymentLinkBody>
-
-type GetAmount = (items: z.infer<typeof PaymentItem>[]) => number
-const getAmount: GetAmount = A.foldMap(N.MonoidSum)((it) => it.quantity * it.price)
 
 const Status = z.enum(["success"])
 
@@ -78,8 +76,8 @@ export const GetStatusResponse = z.object({
 export type GetStatusResponse = z.infer<typeof GetStatusResponse>
 
 export const Authorization = z.object({
-  api_key: z.string().url(),
-  secret_key: z.string().url(),
+  api_key: z.string(),
+  secret_key: z.string(),
 })
 
 export type Authorization = z.infer<typeof Authorization>

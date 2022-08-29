@@ -37,7 +37,7 @@ interface PayPlusService {
 const api = ([url]: TemplateStringsArray) => "/api/v1.0" + url
 
 const payPlusHttpClient = pipe(
-  getEnvVar("PAY_PLUS_URL"),
+  getEnvVar("PAY_PLUS_API_URL"),
   E.map((baseURL) =>
     createHttpClient({
       baseURL,

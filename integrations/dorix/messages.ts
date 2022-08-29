@@ -80,5 +80,5 @@ ${e.error.message}
 
 export const reportEnvVarError = (e: NoEnvVarError) =>
   sendMessage(`
-Dorix request failed prematurely due to a missing env var \`${e.key}\`!
+Dorix request failed prematurely due to a missing env var \`${e.key}\`\\!
 `)

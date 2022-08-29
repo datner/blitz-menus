@@ -8,7 +8,7 @@ import { InvoiceStatusError } from "./types"
 
 export const reportPageLinkAxiosError = (order: Order) => (e: AxiosRequestError) =>
   sendMessage(`
-Oh no, we couldn't reach PayPlus to generate a page for order ${order.id} of venue ${order.venueId}.
+Oh no, we couldn't reach PayPlus to generate a page for order ${order.id} of venue ${order.venueId}\\.
 
 Error details:
 \`\`\`
@@ -18,12 +18,12 @@ ${e.error.message}
 
 export const reportPageLinkResponseStatusError = (order: Order) => (e: HttpResponseStatusError) =>
   sendMessage(`
-Oh no, PayPlus returned \`${e.status}\` for our request to update order ${order.id} of venue ${order.venueId}.
+Oh no, PayPlus returned \`${e.status}\` for our request to update order ${order.id} of venue ${order.venueId}\\.
 `)
 
 export const reportPageLinkZodError = (order: Order) => (e: ZodParseError) =>
   sendMessage(`
-Thats weird. PayPlus payload came back malformed for our request to update order ${order.id} of venue ${order.venueId}.
+Thats weird\\. PayPlus payload came back malformed for our request to update order ${order.id} of venue ${order.venueId}\\.
 
 Error details:
 \`\`\`
@@ -33,7 +33,7 @@ ${e.error.message}
 
 export const reportGenericError = (details: Json) =>
   sendMessage(`
-Generic Error Caught, details below. I hope it's not long..
+Generic Error Caught, details below. I hope it's not long\\.\\.
 
 \`\`\`
 ${JSON.stringify(details, null, 2)}
@@ -57,7 +57,7 @@ Oh no, PayPlus returned \`${e.status}\` for our request to get status for transa
 
 export const reportStatusZodError = (tx: string) => (e: ZodParseError) =>
   sendMessage(`
-Thats weird. PayPlus payload came back malformed for our request to get status for transaction \`${tx}\`
+Thats weird\\. PayPlus payload came back malformed for our request to get status for transaction \`${tx}\`
 
 Error details:
 \`\`\`
@@ -83,5 +83,5 @@ Getting status from PayPlus returned a non-success status for the following
 
 export const reportEnvVarError = (e: NoEnvVarError) =>
   sendMessage(`
-PayPlus request failed prematurely due to a missing env var \`${e.key}\`!
+PayPlus request failed prematurely due to a missing env var \`${e.key}\`\!
 `)
