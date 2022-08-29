@@ -32,7 +32,7 @@ declare global {
     readonly CREDIT_GUARD_API_URL: string
     readonly PAY_PLUS_API_KEY: string
     readonly PAY_PLUS_SECRET_KEY: string
-    readonly PAY_PLUS_URL: string
+    readonly PAY_PLUS_API_URL: string
   }
   namespace NodeJS {
     interface ProcessEnv extends ProcessEnvVars {}
