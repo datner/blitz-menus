@@ -21,7 +21,7 @@ export const getCreditGuardProvider = () =>
   import("integrations/creditGuard/provider").then((mod) => mod.default)
 
 export const getPayPlusProvider = () =>
-  import("integrations/creditGuard/provider").then((mod) => mod.default)
+  import("integrations/payplus/provider").then((mod) => mod.default)
 
 export const getClearingProvider: ReaderTask<ClearingKind, ClearingProvider> = (clearing) => () =>
   match(clearing)

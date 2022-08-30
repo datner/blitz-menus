@@ -46,7 +46,7 @@ const createNewOrder: CreateNewOrder =
       })
     )
 
-const getVenue = getVenueByIdentifier({})
+const getVenue = getVenueByIdentifier()
 
 const sendOrder = pipe(
   SRTE.asks<State, SendOrder, string>((input) => input.venueIdentifier),

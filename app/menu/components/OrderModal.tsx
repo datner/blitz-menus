@@ -13,6 +13,7 @@ import useMeasure from "react-use-measure"
 import { usePrevious } from "app/core/hooks/usePrevious"
 import { useSpring, a } from "@react-spring/web"
 import { Locale } from "@prisma/client"
+import * as E from "fp-ts/Either"
 
 type Props = {
   open?: boolean
@@ -33,11 +34,10 @@ export function OrderModal(props: Props) {
   const isNoHeight = usePrevious(height) === 0
   const { h } = useSpring({ h: height, immediate: isNoHeight })
   const [sendOrderMutation, { isIdle }] = useMutation(sendOrder, {
-    onSuccess({ clearingUrl }) {
-      if (clearingUrl) {
-        window.location.assign(clearingUrl)
-      }
-    },
+    onSuccess: E.match(
+      (e) => console.log(e.error.message),
+      (url) => window.location.assign(url)
+    ),
   })
 
   const handleChange = useEvent(({ item, ...meta }: FullOrderItem) => {
