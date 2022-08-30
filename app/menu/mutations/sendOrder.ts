@@ -1,43 +1,61 @@
 import { resolver } from "@blitzjs/rpc"
-import { NotFoundError } from "blitz"
-import db, { ClearingProvider as ClearingKind } from "db"
+import db, { Order, OrderItem, Prisma } from "db"
 import { SendOrder } from "app/menu/validations/order"
-import { ClearingProvider } from "integrations/clearingProvider"
-import * as T from "fp-ts/Task"
+import * as TE from "fp-ts/TaskEither"
+import * as RTE from "fp-ts/ReaderTaskEither"
+import * as SRTE from "fp-ts/StateReaderTaskEither"
+import { z } from "zod"
+import { pipe } from "fp-ts/function"
+import { PrismaValidationError } from "app/core/type/prisma"
+import { getClearingProvider } from "integrations/helpers"
+import { getVenueByIdentifier } from "app/core/helpers/prisma"
 
-const moduleTasks: Record<ClearingKind, T.Task<{ default: ClearingProvider }>> = {
-  [ClearingKind.PAY_PLUS]: () => import("integrations/payplus/provider"),
-  [ClearingKind.CREDIT_GUARD]: () => import("integrations/creditGuard/provider"),
+type State = {
+  logs: string[]
 }
 
-export default resolver.pipe(resolver.zod(SendOrder), async (input) => {
-  const { venueIdentifier: identifier, sumTotal, locale, orderItems } = input
-  const venue = await db.venue.findUnique({
-    where: { identifier },
-  })
+type SendOrder = z.infer<typeof SendOrder>
 
-  if (!venue) throw new NotFoundError()
+type CreateNewOrder = (
+  venueId: number
+) => RTE.ReaderTaskEither<SendOrder, PrismaValidationError, Order & { items: OrderItem[] }>
 
-  const order = await db.order.create({
-    data: {
-      venueId: venue.id,
-      items: {
-        createMany: {
-          data: orderItems.map(({ item, amount, sum, ...rest }) => ({
-            itemId: item,
-            quantity: amount,
-            ...rest,
-          })),
-        },
-      },
-    },
-    include: { items: true },
-  })
+const createNewOrder: CreateNewOrder =
+  (venueId) =>
+  ({ orderItems }) =>
+    TE.tryCatch(
+      () =>
+        db.order.create({
+          data: {
+            venueId,
+            items: {
+              createMany: {
+                data: orderItems.map(({ item, amount, ...rest }) => ({
+                  itemId: item,
+                  quantity: amount,
+                  ...rest,
+                })),
+              },
+            },
+          },
+          include: { items: true },
+        }),
+      (e) => ({
+        tag: "prismaValidationError",
+        error: e as Prisma.PrismaClientValidationError,
+      })
+    )
 
-  const { default: provider } = await moduleTasks[venue.clearingProvider]()
-  const getLink = provider.getLink(order)
+const getVenue = getVenueByIdentifier({})
 
-  return {
-    clearingUrl: await getLink(),
-  }
-})
+const sendOrder = pipe(
+  SRTE.asks<State, SendOrder, string>((input) => input.venueIdentifier),
+  SRTE.chainTaskEitherKW(getVenue),
+  SRTE.bindTo("venue"),
+  SRTE.bindW("order", ({ venue }) => SRTE.fromReaderTaskEither(createNewOrder(venue.id))),
+  SRTE.bind("provider", ({ venue }) => SRTE.fromTask(getClearingProvider(venue.clearingProvider))),
+  SRTE.chainTaskK(({ provider, order }) => provider.getLink(order)),
+  SRTE.evaluate({ logs: [] as string[] })
+)
+
+export default resolver.pipe(resolver.zod(SendOrder), sendOrder, (task) => task())
