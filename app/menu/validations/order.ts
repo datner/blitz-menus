@@ -4,15 +4,13 @@ import { zLocale } from "app/core/hooks/useLocale"
 import * as Dorix from "integrations/dorix/types"
 import { z } from "zod"
 
-export const SendOrderItem = z
-  .object({
-    amount: z.number().int().positive(),
-    price: z.number().int().positive().multipleOf(50),
-    comment: z.string().default(""),
-    item: Id,
-    name: z.string(),
-  })
-  .transform((it) => ({ ...it, sum: it.price * it.amount }))
+export const SendOrderItem = z.object({
+  amount: z.number().int().positive(),
+  price: z.number().int().positive().multipleOf(50),
+  comment: z.string().default(""),
+  item: Id,
+  name: z.string(),
+})
 
 export type SendOrderItem = z.infer<typeof SendOrderItem>
 
@@ -29,10 +27,8 @@ export const UpdateManagement = z.object({
   transaction: Transaction,
 })
 
-export const SendOrder = z
-  .object({
-    locale: zLocale,
-    venueIdentifier: Slug,
-    orderItems: SendOrderItem.array(),
-  })
-  .transform((it) => ({ ...it, sumTotal: it.orderItems.reduce((acc, curr) => acc + curr.sum, 0) }))
+export const SendOrder = z.object({
+  locale: zLocale,
+  venueIdentifier: Slug,
+  orderItems: SendOrderItem.array(),
+})
