@@ -9,8 +9,9 @@ import { match } from "ts-pattern"
 import { Reader } from "fp-ts/lib/Reader"
 import { getClearingIntegration, GetLink } from "integrations/clearingProvider"
 import { zodParse } from "app/core/helpers/zod"
-import { getAmount } from "integrations/helpers"
+import { cancelCallback, errorCallback, getAmount, successCallback } from "integrations/helpers"
 import { Credentials } from "./lib"
+import { host } from "app/core/helpers/env"
 
 // not gonna change any time soon tbh
 const CURRENCY = "ILS"
@@ -19,8 +20,6 @@ const CURRENCY = "ILS"
 //   [Locale.en]: "ENG",
 //   [Locale.he]: "HEB",
 // }
-
-const host = process.env.NODE_ENV === "production" ? "https://renu.menu" : "http://localhost:3000"
 
 const getDoDealXml =
   (order: Order & { items: OrderItem[] }): Reader<ClearCardParams, string> =>
@@ -45,9 +44,9 @@ const getDoDealXml =
 			<total>${getAmount(order.items)}</total>
 			<mid>${mid}</mid>
 			<uniqueid>${order.id}</uniqueid>
-      <successUrl>${host}/payment/success</successUrl>
-      <errorUrl>${host}/payment/error</errorUrl>
-      <cancelUrl>${host}/payment/cancel</cancelUrl>
+      <successUrl>${successCallback()}</successUrl>
+      <errorUrl>${errorCallback()}</errorUrl>
+      <cancelUrl>${cancelCallback()}</cancelUrl>
       <customerData>
 				<userData1>${order.venueId}</userData1>
 			</customerData>

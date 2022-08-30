@@ -6,6 +6,7 @@ import { prismaNotFound } from "app/core/helpers/prisma"
 import { match } from "ts-pattern"
 import { ClearingProvider } from "./clearingProvider"
 import { ReaderTask } from "fp-ts/ReaderTask"
+import { host } from "app/core/helpers/env"
 
 export type ReduceableItem = {
   price: number
@@ -28,3 +29,8 @@ export const getClearingProvider: ReaderTask<ClearingKind, ClearingProvider> = (
     .with(ClearingKind.CREDIT_GUARD, getCreditGuardProvider)
     .with(ClearingKind.PAY_PLUS, getPayPlusProvider)
     .exhaustive()
+
+export const successUrl = () => `${host()}/payments/success`
+export const errorUrl = () => `${host()}/payments/error`
+export const cancelUrl = () => `${host()}/payments/cancel`
+export const callbackUrl = () => `${host()}/payments/callback`
