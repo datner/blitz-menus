@@ -21,7 +21,7 @@ export const getVenueById =
     )
 
 export const getVenueByIdentifier =
-  <Include extends Prisma.VenueInclude>(include: Include) =>
+  <Include extends Prisma.VenueInclude>(include?: Include) =>
   (identifier: string) =>
     tryCatch(
       () =>
