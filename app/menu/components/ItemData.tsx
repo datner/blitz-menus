@@ -3,10 +3,11 @@ import { toShekel } from "app/core/helpers/content"
 import { ItemI18L } from "db"
 import * as O from "fp-ts/Option"
 import { useTranslations } from "next-intl"
-import { memo, useEffect, useRef } from "react"
+import { memo } from "react"
 import { ResizeObserver } from "@juggle/resize-observer"
-import useMeasure from "react-use-measure"
 import { useIsRtl } from "app/core/hooks/useIsRtl"
+import { usePrevious } from "app/core/hooks/usePrevious"
+import useMeasure from "react-use-measure"
 
 type Props = {
   price: number
@@ -26,12 +27,8 @@ export const ItemData = memo(function ItemData(props: Props) {
     x: O.isSome(amount) ? 0 : rtlWidth,
   })
   const t = useTranslations("menu.Components.ItemData")
-  const amountRef = useRef(1)
-  useEffect(() => {
-    amountRef.current = orOne(amount)
-  }, [amount])
-
-  const orPrev = O.getOrElse(() => amountRef.current)
+  const prevAmount = usePrevious(orOne(amount))
+  const orPrev = O.getOrElseW(() => prevAmount)
 
   return (
     <dl className="z-10 flex h-full flex-col p-3">
