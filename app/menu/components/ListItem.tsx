@@ -3,12 +3,15 @@ import { a, useSpring } from "@react-spring/web"
 import { useLocale } from "app/core/hooks/useLocale"
 import { pipe } from "fp-ts/function"
 import * as O from "fp-ts/Option"
+import { gt } from "fp-ts/Ord"
+import { Ord as ordNumber } from "fp-ts/number"
 import { ItemData } from "./ItemData"
 import { Item__Content } from "../types/item"
 import { memo } from "react"
 import { useDrag } from "@use-gesture/react"
-import { PlusCircleIcon, MinusCircleIcon } from "@heroicons/react/outline"
+import { PlusCircleIcon, MinusCircleIcon, XCircleIcon } from "@heroicons/react/outline"
 import { useIsRtl } from "app/core/hooks/useIsRtl"
+import { clamp } from "app/core/helpers/number"
 
 type Props = {
   item: Item__Content
@@ -17,6 +20,12 @@ type Props = {
   onAdd(): void
   onRemove(): void
 }
+
+const PlusCircle = a(PlusCircleIcon)
+const MinusCircle = a(MinusCircleIcon)
+const XCircle = a(XCircleIcon)
+
+const ordNumberO = pipe(ordNumber, O.getOrd, gt)
 
 export const ListItem = memo(function ListItem(props: Props) {
   const { item, amountOption, onClick, onAdd, onRemove } = props
@@ -31,8 +40,9 @@ export const ListItem = memo(function ListItem(props: Props) {
   }))
   const bind = useDrag(
     ({ active, movement: [mx] }) => {
+      const getX = clamp(-70, 70)
       api.start({
-        x: active ? mx : 0,
+        x: active ? getX(mx) : 0,
         scale: active ? 1.02 : 1,
         immediate: (name) => active && name === "x",
       })
@@ -56,18 +66,29 @@ export const ListItem = memo(function ListItem(props: Props) {
 
   if (!content) return null
 
+  const opacity = x.to({ range: [-70, -40, 40, 70], output: [1, 0, 0, 1] })
   return (
     <a.li {...bind()} onClick={onClick} className="relative touch-pan-y px-2 sm:px-6">
-      <a.div className="absolute rtl:bg-gradient-to-r bg-gradient-to-l from-red-300 to-green-200 flex items-center h-36 inset-x-2 sm:inset-x-6 rounded-lg">
+      <a.div
+        className={`absolute rtl:bg-gradient-to-r bg-gradient-to-l ${
+          isInOrder ? "from-red-300" : "from-gray-300"
+        } to-green-200 flex items-center h-36 inset-x-2 sm:inset-x-6 transition-all rounded-lg`}
+      >
         <div className="flex-1 flex text-green-800">
-          <PlusCircleIcon className="w-10 h-10 mx-3" />
+          <PlusCircle style={{ opacity }} className="w-10 h-10 mx-3" />
         </div>
-        <div className="flex-1 flex flex-row-reverse text-red-700">
-          <MinusCircleIcon className="w-10 h-10 mx-3" />
+        <div
+          className={`flex-1 flex flex-row-reverse ${isInOrder ? "text-red-700" : "text-gray-700"}`}
+        >
+          {ordNumberO(amountOption, O.some(1)) ? (
+            <MinusCircle style={{ opacity }} className="w-10 h-10 mx-3" />
+          ) : (
+            <XCircle style={{ opacity }} className="w-10 h-10 mx-3" />
+          )}
         </div>
       </a.div>
       <a.div
-        style={{ x: x.to({ range: [-70, 70], output: [-70, 70], extrapolate: "clamp" }), scale }}
+        style={{ x, scale }}
         className="relative flex flex-1 pointer-events-none h-36 overflow-hidden rounded-lg bg-white shadow"
       >
         <a.div style={styles} className="inset-y-0 absolute ltr:left-0 rtl:right-0">
