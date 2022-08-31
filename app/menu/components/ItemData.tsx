@@ -41,7 +41,7 @@ export const ItemData = memo(function ItemData(props: Props) {
           <animated.span
             ref={ref}
             style={{ opacity }}
-            className="font-semibold ltr:pr-1.5 rtl:pl-1.5 text-indigo-600"
+            className="font-semibold ltr:pr-1.5 px-1 rtl:pl-1.5 text-indigo-600"
           >
             x{orPrev(amount)}
           </animated.span>
