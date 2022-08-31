@@ -1,7 +1,6 @@
 import { animated, useSpring } from "@react-spring/web"
 import { toShekel } from "app/core/helpers/content"
 import { ItemI18L } from "db"
-import { flow } from "fp-ts/function"
 import * as O from "fp-ts/Option"
 import { useTranslations } from "next-intl"
 import { memo, useEffect, useRef } from "react"
