@@ -1,50 +1,62 @@
-import { useRef, useState } from "react"
-import { Nullish, Unarray } from "../types/utils"
+import { useRef } from "react"
+import { Option, some, map, match, chain, fromNullable } from "fp-ts/Option"
+import { findLast, last } from "fp-ts/Array"
+import { useStableO } from "fp-ts-react-stable-hooks"
+import { pipe } from "fp-ts/function"
 
 interface NavigationRefs {
   container: HTMLDivElement | null
   sections: HTMLDivElement[]
-  buttons: HTMLButtonElement[]
+  buttons: Record<string, HTMLButtonElement>
 }
 
 interface UseNavBarProps {
-  initialActive?: string
+  initialActive: Option<string>
 }
 
 const STICKY_BAR_HEIGHT = 52
+
+const fromTop = (el: HTMLDivElement) => el.scrollTop + STICKY_BAR_HEIGHT + 1
+
+const active = (els: HTMLDivElement[]) => (container: HTMLDivElement) =>
+  pipe(
+    els,
+    findLast((el: HTMLDivElement) => fromTop(container) > el.offsetTop),
+    match(() => last(els), some)
+  )
 
 export function useNavBar(props: UseNavBarProps) {
   const { initialActive } = props
   const refs = useRef<NavigationRefs>({
     container: null,
-    buttons: [],
+    buttons: {},
     sections: [],
   })
 
-  const [section, set] = useState(initialActive)
+  const [section, set] = useStableO(initialActive)
 
-  const setRef =
-    <T extends "buttons" | "sections">(ref: T) =>
-    (index: number) =>
-    (el: Unarray<NavigationRefs[T]>) => {
-      if (!el) return
-      refs.current
-      refs.current[ref][index] = el
-    }
-
-  const onScroll = () => {
-    const nextSection = refs.current.sections.findIndex(
-      (it) => it.getBoundingClientRect().top > STICKY_BAR_HEIGHT
+  const setButton = (id: string) => (e: HTMLButtonElement | null) =>
+    pipe(
+      fromNullable(e),
+      map((el) => (refs.current.buttons[id] = el))
     )
-    const activeIndex =
-      nextSection === -1 ? refs.current.sections.length - 1 : Math.max(nextSection, 1) - 1
-    const activeSection = refs.current.sections[activeIndex]
-    const activeButton = refs.current.buttons[activeIndex]
-    if (activeSection && section !== activeSection.id) {
-      set(activeSection.id)
-      activeButton?.scrollIntoView({ inline: "start", behavior: "smooth" })
-    }
-  }
+
+  const setSection = (e: HTMLDivElement | null) =>
+    pipe(
+      fromNullable(e),
+      map((el) => refs.current.sections.push(el))
+    )
+
+  const onScroll = () =>
+    pipe(
+      fromNullable(refs.current.container),
+      chain(active(refs.current.sections)),
+      chain((el) => {
+        set(some(el.id))
+        return fromNullable(refs.current.buttons[el.id])
+      }),
+      map((el) => el.scrollIntoView({ inline: "start", behavior: "smooth" }))
+    )
 
   const onClick = (index: number) => () => {
     const el = refs.current.sections[index]
@@ -55,9 +67,9 @@ export function useNavBar(props: UseNavBarProps) {
   }
 
   return {
-    sectionRef: setRef("sections"),
-    buttonRef: setRef("buttons"),
-    containerRef: (el: HTMLDivElement) => (refs.current.container = el),
+    setSection,
+    setButton,
+    setContainer: (el: HTMLDivElement) => (refs.current.container = el),
     onScroll,
     onClick,
     section,

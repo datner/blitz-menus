@@ -12,8 +12,10 @@ import { ListItem } from "app/menu/components/ListItem"
 import { CategoryHeader } from "app/menu/components/CategoryHeader"
 import { useOrder } from "app/menu/hooks/useOrder"
 import { useNavBar } from "app/menu/hooks/useNavBar"
-import { useZodParams } from "app/core/hooks/useParams"
+// import { useZodParams } from "app/core/hooks/useParams"
 import { decrement, flow, increment, pipe } from "fp-ts/function"
+import { fromNullable, getEq, some } from "fp-ts/Option"
+import { Eq as eqStr } from "fp-ts/string"
 import { NotFoundError } from "blitz"
 import dynamic from "next/dynamic"
 import { Query } from "app/menu/validations/page"
@@ -24,11 +26,13 @@ const LazyViewOrderButton = dynamic(() => import("app/menu/components/ViewOrderB
 const LazyItemModal = dynamic(() => import("app/menu/components/ItemModal"), { suspense: true })
 const LazyOrderModal = dynamic(() => import("app/menu/components/OrderModal"), { suspense: true })
 
+const eqOptionStr = getEq(eqStr)
+
 export default function Menu(props: InferGetStaticPropsType<typeof getStaticProps>) {
   const { restaurant } = props
   const { categories } = restaurant
-  const navbar = useNavBar({ initialActive: categories?.[0]?.identifier })
-  const { table } = useZodParams(Query)
+  const navbar = useNavBar({ initialActive: fromNullable(categories[0]?.identifier) })
+  // const { table } = useZodParams(Query)
   const locale = useLocale()
   const order = useOrder()
   const [item, setItem] = useState<Item__Content | null>(null)
@@ -48,8 +52,6 @@ export default function Menu(props: InferGetStaticPropsType<typeof getStaticProp
     }
   }
 
-  if (!categories) return <>:()</>
-
   const getTitle = titleFor(locale)
   const getMeta = flow(
     order.get,
@@ -59,7 +61,7 @@ export default function Menu(props: InferGetStaticPropsType<typeof getStaticProp
 
   return (
     <div
-      ref={navbar.containerRef}
+      ref={navbar.setContainer}
       onScroll={navbar.onScroll}
       className={clsx(
         "relative h-full bg-gray-50 scroll-smooth",
@@ -73,10 +75,10 @@ export default function Menu(props: InferGetStaticPropsType<typeof getStaticProp
         {categories?.map((it, index) => (
           <button
             key={it.id}
-            ref={navbar.buttonRef(index)}
+            ref={navbar.setButton(String(it.id))}
             onClick={navbar.onClick(index)}
             className={clsx(
-              it.identifier === navbar.section
+              eqOptionStr.equals(some(it.identifier), navbar.section)
                 ? "bg-indigo-100 text-indigo-700 ring-1 ring-indigo-400"
                 : "border-transparent text-gray-500 hover:text-gray-700",
               "block flex-shrink-0 rounded-md snap-start scroll-m-2 px-3 py-2 text-sm font-medium"
@@ -87,9 +89,9 @@ export default function Menu(props: InferGetStaticPropsType<typeof getStaticProp
         ))}
       </nav>
       <div className="space-y-8">
-        {categories?.map((category, index) => (
+        {categories?.map((category) => (
           <div key={category.id} className="group">
-            <CategoryHeader ref={navbar.sectionRef(index)} category={category} />
+            <CategoryHeader ref={navbar.setSection} category={category} />
             <ul role="list" className="flex flex-col gap-2 group-last:min-h-screen">
               {category.items?.map((item) => {
                 const { amount, comment } = getMeta(item)
