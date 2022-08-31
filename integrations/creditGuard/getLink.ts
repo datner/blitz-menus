@@ -9,7 +9,7 @@ import { match } from "ts-pattern"
 import { Reader } from "fp-ts/lib/Reader"
 import { getClearingIntegration, GetLink } from "integrations/clearingProvider"
 import { zodParse } from "app/core/helpers/zod"
-import { cancelCallback, errorCallback, getAmount, successCallback } from "integrations/helpers"
+import { cancelUrl, errorUrl, getAmount, successUrl } from "integrations/helpers"
 import { Credentials } from "./lib"
 import { host } from "app/core/helpers/env"
 
@@ -44,9 +44,9 @@ const getDoDealXml =
 			<total>${getAmount(order.items)}</total>
 			<mid>${mid}</mid>
 			<uniqueid>${order.id}</uniqueid>
-      <successUrl>${successCallback()}</successUrl>
-      <errorUrl>${errorCallback()}</errorUrl>
-      <cancelUrl>${cancelCallback()}</cancelUrl>
+      <successUrl>${successUrl()}</successUrl>
+      <errorUrl>${errorUrl()}</errorUrl>
+      <cancelUrl>${cancelUrl()}</cancelUrl>
       <customerData>
 				<userData1>${order.venueId}</userData1>
 			</customerData>
