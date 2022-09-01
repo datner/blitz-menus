@@ -1,3 +1,4 @@
+import { useEvent } from "app/core/hooks/useEvent"
 import { useRef, useState } from "react"
 import type { FullOrderItem, Item__Content, OrderMeta } from "../types/item"
 
@@ -9,7 +10,7 @@ export function useOrder() {
   })
   const [orderItems, setItems] = useState<FullOrderItem[]>([])
 
-  const changeOrder = (item: Item__Content, meta: OrderMeta) => {
+  const changeOrder = useEvent((item: Item__Content, meta: OrderMeta) => {
     meta.amount === 0 ? itemsRef.current.delete(item) : itemsRef.current.set(item, meta)
 
     const itemTuples = Array.from(itemsRef.current.entries())
@@ -24,7 +25,7 @@ export function useOrder() {
         item,
       }))
     )
-  }
+  })
 
   return {
     change: changeOrder,

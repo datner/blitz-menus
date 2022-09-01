@@ -66,7 +66,11 @@ export const ListItem = memo(function ListItem(props: Props) {
 
   if (!content) return null
 
-  const opacity = x.to({ range: [-70, -40, 40, 70], output: [1, 0, 0, 1] })
+  const opacity = x.to({
+    range: [-70, -60, 60, 70],
+    output: [1, 0, 0, 1],
+  })
+
   return (
     <a.li {...bind()} onClick={onClick} className="relative touch-pan-y px-2 sm:px-6">
       <a.div
