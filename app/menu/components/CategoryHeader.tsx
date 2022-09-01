@@ -22,3 +22,5 @@ export const CategoryHeader = memo(
     )
   })
 )
+
+CategoryHeader.displayName = "CategoryHeader"

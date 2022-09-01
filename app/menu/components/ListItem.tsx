@@ -39,10 +39,10 @@ export const ListItem = memo(function ListItem(props: Props) {
     scale: 1,
   }))
   const bind = useDrag(
-    ({ active, movement: [mx] }) => {
+    ({ down: active, offset: [ox] }) => {
       const getX = clamp(-70, 70)
       api.start({
-        x: active ? getX(mx) : 0,
+        x: active ? getX(ox) : 0,
         scale: active ? 1.02 : 1,
         immediate: (name) => active && name === "x",
       })
@@ -52,7 +52,7 @@ export const ListItem = memo(function ListItem(props: Props) {
         if (current <= -70) onRemove()
       }
     },
-    { axis: "x", from: [100, 0] }
+    { axis: "x", from: () => [x.get(), 0] }
   )
   const styles = useSpring({
     x: isInOrder ? 0 : hideIndicator,
@@ -66,9 +66,10 @@ export const ListItem = memo(function ListItem(props: Props) {
 
   if (!content) return null
 
+  const output = [isInOrder ? 1 : 0.1, 0.1, 0.1, 1]
   const opacity = x.to({
     range: [-70, -60, 60, 70],
-    output: [1, 0, 0, 1],
+    output: isRtl ? output.reverse() : output,
   })
 
   return (

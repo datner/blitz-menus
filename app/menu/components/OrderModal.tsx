@@ -25,6 +25,7 @@ type Props = {
 }
 
 const title = titleFor(Locale.he)
+
 export function OrderModal(props: Props) {
   const { onClose, open, items, change, price: overallPrice, amount } = props
   const t = useTranslations("menu.Components.OrderModal")
