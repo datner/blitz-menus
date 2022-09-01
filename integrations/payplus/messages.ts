@@ -4,6 +4,7 @@ import { PrismaNotFoundError } from "app/core/type/prisma"
 import { Json } from "fp-ts/Json"
 import { AxiosRequestError, HttpResponseStatusError, ZodParseError } from "integrations/httpClient"
 import { sendMessage } from "integrations/telegram/sendMessage"
+import { PayPlusNotFound } from "./client"
 import { InvoiceStatusError } from "./types"
 
 export const reportPageLinkAxiosError = (order: Order) => (e: AxiosRequestError) =>
@@ -77,7 +78,15 @@ ${e.error.message}
 export const reportStatusResponseError = (e: InvoiceStatusError) =>
   sendMessage(`
 Getting status from PayPlus returned a non-success status for the following 
-[document](${e.tag})
+[document](${e.docUrl})
+
+`)
+
+export const reportPayPlusNotFound = (e: PayPlusNotFound) =>
+  sendMessage(`
+Payplus reported an unknown transaction\\.\\.
+
+txId: \`${e.txId}\`
 
 `)
 

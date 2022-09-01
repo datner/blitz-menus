@@ -2,7 +2,6 @@ import * as TE from "fp-ts/TaskEither"
 import * as RTE from "fp-ts/ReaderTaskEither"
 import * as E from "fp-ts/Either"
 import * as R from "fp-ts/Reader"
-import * as IO from "fp-ts/IO"
 import {
   Authorization,
   GeneratePaymentLinkInput,
@@ -21,17 +20,21 @@ import {
 } from "integrations/httpClient"
 import { getEnvVar } from "app/core/helpers/env"
 import { now } from "fp-ts/Date"
-import { addDays, subDays } from "date-fns/fp"
+import { addDays, subDays, format } from "date-fns/fp"
+import { z } from "zod"
+import { AxiosResponse } from "axios"
 
 type GeneratePageLinkError = HttpError | ZodParseError
 
-type GetStatusError = HttpError | ZodParseError
+type GetStatusError = HttpError | ZodParseError | PayPlusNotFound
 
 interface PayPlusService {
   generatePageLink(
     data: [Authorization, GeneratePaymentLinkInput]
   ): TE.TaskEither<GeneratePageLinkError, GeneratePaymentLinkResponse>
-  getStatus(transaction_uid: string): TE.TaskEither<GetStatusError, GetStatusResponse>
+  getStatus(
+    transactionTuple: [Authorization, string]
+  ): TE.TaskEither<GetStatusError, GetStatusResponse>
 }
 
 const api = ([url]: TemplateStringsArray) => "/api/v1.0" + url
@@ -62,26 +65,54 @@ const generatePageLink = ([Authorization, data]: [Authorization, GeneratePayment
     RTE.chainEitherKW(toTyped(GeneratePaymentLinkResponse))
   )
 
-const yesterday = flow(now, subDays(1))
+const formatDate = format("yyyy-MM-dd")
 
-const tomorrow = flow(now, addDays(1))
+const yesterday = flow(now, subDays(1), formatDate)
 
-const getStatusBody = (transaction_uid: string) =>
-  IO.of({
-    transaction_uid,
-    filter: {
-      fromDate: yesterday(),
-      untilDate: tomorrow(),
-    },
-  })
+const tomorrow = flow(now, addDays(1), formatDate)
 
-const getStatus = flow(
-  getStatusBody,
-  RTE.fromIO,
-  RTE.chain((data) => request({ method: "POST", url: api`Invoice/GetDocuments`, data })),
-  RTE.chainEitherKW(ensureStatus(200, 300)),
-  RTE.chainEitherKW(toTyped(GetStatusResponse))
-)
+const getStatusBody = (transaction_uid: string) => () => ({
+  transaction_uid,
+  filter: {
+    fromDate: yesterday(),
+    untilDate: tomorrow(),
+  },
+})
+
+export type PayPlusNotFound = {
+  tag: "payPlusNotFound"
+  txId: string
+}
+
+const ensureNotFailure =
+  (txId: string) =>
+  <R extends AxiosResponse<any, any>>(res: R): E.Either<PayPlusNotFound, R> => {
+    const e = toTyped(z.literal("cannot-find-invoice-for-this-transaction"))(res)
+    if (E.isRight(e)) {
+      return E.left({ tag: "payPlusNotFound", txId })
+    }
+    return E.right(res)
+  }
+
+const getStatus = ([Authorization, txId]: [Authorization, string]) =>
+  pipe(
+    getStatusBody(txId),
+    RTE.fromIO,
+    RTE.chain((data) =>
+      request({
+        method: "POST",
+        url: api`/Invoice/GetDocuments`,
+
+        headers: {
+          Authorization: JSON.stringify(Authorization),
+        },
+        data,
+      })
+    ),
+    RTE.chainEitherKW(ensureStatus(200, 300)),
+    RTE.chainEitherKW(ensureNotFailure(txId)),
+    RTE.chainEitherKW(toTyped(GetStatusResponse))
+  )
 
 const createPayPlusService = pipe(
   R.ask<HttpClientEnv>(),

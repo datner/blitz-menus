@@ -14,7 +14,7 @@ import {
 } from "./messages"
 import { service, toItems } from "./lib"
 import { getClearingIntegration, GetLink } from "integrations/clearingProvider"
-import { callbackUrl, errorUrl, successUrl } from "integrations/helpers"
+import { errorUrl, successUrl } from "integrations/helpers"
 
 interface PayloadProps {
   payment_page_uid: string
@@ -23,10 +23,10 @@ interface PayloadProps {
 
 const toPayload = (order: Order) => (props: PayloadProps) =>
   GeneratePaymentLinkBody.parse({
-    more_info: String(order.venueId),
-    refURL_failure: errorUrl(),
-    refURL_success: successUrl(),
-    refURL_callback: callbackUrl(),
+    more_info: String(order.id),
+    more_info_1: String(order.venueId),
+    refURL_failure: errorUrl("PAY_PLUS"),
+    refURL_success: successUrl("PAY_PLUS"),
     ...props,
   })
 

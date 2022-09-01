@@ -44,10 +44,10 @@ export interface GetStatusParams {
 
 const service = TE.fromEither(creditGuardService)
 
-export const validateTransaction: ValidateTransaction = (txId) =>
+export const validateTransaction: ValidateTransaction = (txId) => (orderId) =>
   pipe(
     TE.Do,
-    TE.apS("order", getOrder(txId)),
+    TE.apS("order", getOrder(orderId)),
     TE.apSW("service", service),
     TE.bindW("clearing", ({ order }) => getClearingIntegration(order.venueId)),
     TE.bindW("credentials", ({ clearing }) =>

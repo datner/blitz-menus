@@ -15,9 +15,14 @@ export const GeneratePaymentLinkBody = z
   .object({
     payment_page_uid: z.string().uuid(),
     more_info: z.string(),
-    refURL_success: z.string(),
-    refURL_failure: z.string(),
-    refURL_callback: z.string(),
+    more_info_1: z.string().optional(),
+    more_info_2: z.string().optional(),
+    more_info_3: z.string().optional(),
+    more_info_4: z.string().optional(),
+    more_info_5: z.string().optional(),
+    refURL_success: z.string().optional(),
+    refURL_failure: z.string().optional(),
+    refURL_callback: z.string().optional(),
     customer: z
       .object({
         customer_name: z.string(),

@@ -44,9 +44,9 @@ const getDoDealXml =
 			<total>${getAmount(order.items)}</total>
 			<mid>${mid}</mid>
 			<uniqueid>${order.id}</uniqueid>
-      <successUrl>${successUrl()}</successUrl>
-      <errorUrl>${errorUrl()}</errorUrl>
-      <cancelUrl>${cancelUrl()}</cancelUrl>
+      <successUrl>${successUrl("CREDIT_GUARD")}</successUrl>
+      <errorUrl>${errorUrl("CREDIT_GUARD")}</errorUrl>
+      <cancelUrl>${cancelUrl("CREDIT_GUARD")}</cancelUrl>
       <customerData>
 				<userData1>${order.venueId}</userData1>
 			</customerData>

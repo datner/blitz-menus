@@ -6,10 +6,12 @@ import { tryCatch } from "fp-ts/TaskEither"
 import db from "db"
 import { prismaNotFound } from "app/core/helpers/prisma"
 import { constant } from "fp-ts/lib/function"
+import { ReaderTask } from "fp-ts/lib/ReaderTask"
 
 export type GetLink = (order: Order & { items: OrderItem[] }) => Task<string>
 
-export type ValidateTransaction = (txId: string) => Task<"VALID" | "INVALID">
+export type OrderId = number
+export type ValidateTransaction = (txId: string) => ReaderTask<OrderId, "VALID" | "INVALID">
 
 export const constValid = constant("VALID" as const)
 export const constInvalid = constant("INVALID" as const)

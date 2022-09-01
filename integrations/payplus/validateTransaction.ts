@@ -3,18 +3,25 @@ import { match } from "ts-pattern"
 import * as TE from "fp-ts/TaskEither"
 import * as E from "fp-ts/Either"
 import * as RA from "fp-ts/ReadonlyArray"
-import { Invoice, InvoiceStatusError } from "./types"
+import { Authorization, Invoice, InvoiceStatusError } from "./types"
 import { service } from "./lib"
 import {
   reportEnvVarError,
   reportGenericError,
+  reportPayPlusNotFound,
   reportStatusAxiosError,
   reportStatusResponseError,
   reportStatusResponseStatusError,
   reportStatusZodError,
 } from "./messages"
 import { getOrder } from "integrations/helpers"
-import { constInvalid, constValid } from "integrations/clearingProvider"
+import {
+  constInvalid,
+  constValid,
+  getClearingIntegration,
+  ValidateTransaction,
+} from "integrations/clearingProvider"
+import { zodParse } from "app/core/helpers/zod"
 
 const checkStatus = pipe(
   E.fromPredicate(
@@ -24,11 +31,16 @@ const checkStatus = pipe(
   E.traverseArray
 )
 
-export const validateTransaction = (txId: string) =>
+export const validateTransaction: ValidateTransaction = (txId) => (orderId) =>
   pipe(
-    getOrder(txId),
-    TE.chainW(() => service),
-    TE.chainW((service) => service.getStatus(txId)),
+    TE.Do,
+    TE.apSW("service", service),
+    TE.apSW("order", getOrder(orderId)),
+    TE.bindW("clearing", ({ order }) => getClearingIntegration(order.venueId)),
+    TE.bindW("authorization", ({ clearing }) =>
+      pipe(clearing.vendorData, zodParse(Authorization), TE.fromEither)
+    ),
+    TE.chainW(({ service, authorization }) => service.getStatus([authorization, txId])),
     TE.map((r) => r.invoices),
     TE.map(RA.fromArray),
     TE.chainEitherKW(checkStatus),
@@ -39,9 +51,10 @@ export const validateTransaction = (txId: string) =>
         .with({ tag: "httpResponseStatusError" }, reportStatusResponseStatusError(txId))
         .with({ tag: "zodParseError" }, reportStatusZodError(txId))
         .with({ tag: "invoiceStatusError" }, reportStatusResponseError)
+        .with({ tag: "payPlusNotFound" }, reportPayPlusNotFound)
         .with({ tag: "prismaNotFoundError" }, ({ error }) => reportGenericError(error.message))
         .with({ tag: "httpRequestError" }, ({ error }) => reportGenericError(error.message))
-        .exhaustive()
+        .exhaustive()()
     ),
-    TE.match(constInvalid, constValid)
+    TE.matchW(constInvalid, constValid)
   )

@@ -1,45 +1,24 @@
-import { useRouterQuery } from "@blitzjs/next"
-import { useMutation } from "@blitzjs/rpc"
+import { useParam } from "@blitzjs/next"
+import { useRouter } from "next/router"
+import { useQuery } from "@blitzjs/rpc"
 import { CheckIcon, DotsHorizontalIcon, XIcon } from "@heroicons/react/solid"
-import orderSuccess from "app/menu/mutations/orderSuccess"
-import { toLowerCase } from "fp-ts/string"
+import orderSuccess from "app/menu/queries/orderSuccess"
+import { ClearingProvider } from "@prisma/client"
 import { match } from "ts-pattern"
-import { useEffect } from "react"
-import { z } from "zod"
-
-const CreditGuardSuccessParams = z
-  .object({
-    uniqueID: z.string(),
-    userData1: z.string(),
-    lang: z.enum(["HE", "EN"]).transform(toLowerCase),
-    cardToken: z.string().length(16),
-    cardExp: z.string().length(4),
-    personalId: z.string().length(9),
-    cardMask: z.string(),
-    txId: z.string().length(36),
-    authNumber: z.string().min(3).max(7),
-    numberOfPayments: z.number(),
-    firstPayment: z.number(),
-    periodicalPayment: z.number(),
-    responseMAC: z.string(),
-  })
-  .pick({ userData1: true, txId: true })
 
 export default function Success() {
-  const params = useRouterQuery()
-  const [update, { isIdle, status }] = useMutation(orderSuccess)
-
-  useEffect(() => {
-    const result = CreditGuardSuccessParams.safeParse(params)
-    if (result.success && isIdle) {
-      update(result.data)
-    }
-  }, [isIdle, update, params])
+  const provider = useParam("provider") as ClearingProvider
+  const params = useRouter().query
+  const [update] = useQuery(orderSuccess, { provider, params } as unknown as any, {
+    enabled: Boolean(provider),
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+  })
 
   return (
     <div className="h-full flex items-center">
-      {match(status)
-        .with("success", () => (
+      {match(update)
+        .with({ right: "VALID" }, () => (
           <div>
             <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
               <CheckIcon className="h-6 w-6 text-green-600" aria-hidden="true" />
@@ -55,7 +34,7 @@ export default function Success() {
             </div>
           </div>
         ))
-        .with("error", () => (
+        .with({ right: "INVALID" }, () => (
           <div>
             <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
               <XIcon className="h-6 w-6 text-red-600" aria-hidden="true" />
