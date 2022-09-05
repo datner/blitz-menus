@@ -9,8 +9,10 @@ import { OrderMeta } from "../types/item"
 import { Nullish } from "../types/utils"
 import { ItemForm } from "../validations/item"
 import { AmountButtons } from "./AmountButtons"
+import { SideDishExtra } from "./SideDishExtra"
 
 interface ItemModalFormProps {
+  options?: boolean
   price: number
   meta: Nullish<OrderMeta>
   // Note on containerEl: this is a filthy dirty hack because I can't find a fuck to do it right
@@ -32,7 +34,7 @@ const DefaultValues = ItemForm.default({
 })
 
 export function ItemModalForm(props: ItemModalFormProps) {
-  const { price, meta, onSubmit, containerEl } = props
+  const { price, meta, options = false, onSubmit, containerEl } = props
   const defaultValues = DefaultValues.parse(meta)
   const t = useTranslations("menu.Components.ItemModal")
 
@@ -60,7 +62,10 @@ export function ItemModalForm(props: ItemModalFormProps) {
   return (
     <form id="item-form" onSubmit={submitOrRemove}>
       <FormProvider {...form}>
-        <LabeledTextArea label={t("comment")} name="comment" rows={4} />
+        {options && <SideDishExtra />}
+        <div className="mt-4">
+          <LabeledTextArea label={t("comment")} name="comment" rows={4} />
+        </div>
       </FormProvider>
       {containerEl &&
         createPortal(

@@ -105,6 +105,7 @@ export function ItemModal(props: Props) {
         </div>
         <div className="flex flex-col p-4">
           <ItemModalForm
+            options={item?.categoryId === 3}
             containerEl={containerEl}
             price={price(item)}
             meta={meta}
