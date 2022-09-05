@@ -159,18 +159,38 @@ model RestaurantI18L {
 }
 
 model Menu {
-  id             Int        @id @default(autoincrement())
-  restaurantId   Int        @unique
+  id             Int            @id @default(autoincrement())
+  restaurantId   Int            @unique
   identifier     String
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @default(now()) @updatedAt
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @default(now()) @updatedAt
   deleted        DateTime?
-  organizationId Int        @default(0)
-  restaurant     Restaurant @relation(fields: [restaurantId], references: [id])
+  organizationId Int            @default(0)
+  restaurant     Restaurant     @relation(fields: [restaurantId], references: [id])
   categories     Category[]
+  menuCategories MenuCategory[]
   Venue          Venue[]
 
   @@unique([restaurantId, identifier])
+}
+
+model MenuCategory {
+  id         Int      @id @default(autoincrement())
+  menu       Menu     @relation(fields: [menuId], references: [id])
+  menuId     Int
+  Category   Category @relation(fields: [categoryId], references: [id])
+  categoryId Int
+
+  position Int
+}
+
+model CategoryItem {
+  id         Int      @id @default(autoincrement())
+  position   Int
+  Category   Category @relation(fields: [categoryId], references: [id])
+  categoryId Int
+  Item       Item     @relation(fields: [itemId], references: [id])
+  itemId     Int
 }
 
 model Category {
@@ -188,6 +208,8 @@ model Category {
   Venue          Venue?         @relation(fields: [venueId], references: [id])
   content        CategoryI18L[]
   items          Item[]
+  menuCategories MenuCategory[]
+  categoryItems  CategoryItem[]
 
   @@unique([restaurantId, identifier])
 }
@@ -216,6 +238,8 @@ model Item {
 
   category   Category @relation(fields: [categoryId], references: [id])
   categoryId Int
+
+  categoryItems CategoryItem[]
 
   restaurant   Restaurant? @relation(fields: [restaurantId], references: [id])
   restaurantId Int?
