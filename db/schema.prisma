@@ -226,7 +226,7 @@ model CategoryI18L {
 model Item {
   id             Int       @id @default(autoincrement())
   price          Int
-  identifier     String    @unique
+  identifier     String
   image          String
   organizationId Int       @default(0)
   createdAt      DateTime  @default(now())
@@ -244,10 +244,20 @@ model Item {
   restaurant   Restaurant? @relation(fields: [restaurantId], references: [id])
   restaurantId Int?
 
+  modifiers ItemModifier[]
+
   Venue   Venue? @relation(fields: [venueId], references: [id])
   venueId Int?
 
   @@unique([restaurantId, identifier])
+}
+
+model ItemModifier {
+  id    Int @id @default(autoincrement())
+  price Int
+
+  Item   Item @relation(fields: [itemId], references: [id])
+  itemId Int
 }
 
 model ItemI18L {
