@@ -1,7 +1,7 @@
 import { RadioGroup } from "@headlessui/react"
 import { toShekel } from "app/core/helpers/content"
 import clsx from "clsx"
-import { constNull } from "fp-ts/lib/function"
+import { constNull } from "fp-ts/function"
 import { none, some, matchW } from "fp-ts/Option"
 import { useState } from "react"
 

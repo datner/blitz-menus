@@ -2,7 +2,6 @@ import { FullOrderItem, Item__Content, OrderMeta } from "../types/item"
 import { useTranslations } from "next-intl"
 import { OrderModalItem } from "./OrderModalItem"
 import { Modal } from "./Modal"
-import { useEvent } from "app/core/hooks/useEvent"
 import { titleFor, toShekel } from "app/core/helpers/content"
 import { useMutation } from "@blitzjs/rpc"
 import sendOrder from "../mutations/sendOrder"
@@ -14,6 +13,15 @@ import { usePrevious } from "app/core/hooks/usePrevious"
 import { useSpring, a } from "@react-spring/web"
 import { Locale } from "@prisma/client"
 import * as E from "fp-ts/Either"
+import { useAtomValue } from "jotai"
+import {
+  amountAtom,
+  orderAtom,
+  orderAtomFamily,
+  orderAtomsAtom,
+  orderItemsAtom,
+  priceAtom,
+} from "app/menu/jotai/order"
 
 type Props = {
   open?: boolean
@@ -27,7 +35,10 @@ type Props = {
 const title = titleFor(Locale.he)
 
 export function OrderModal(props: Props) {
-  const { onClose, open, items, change, price: overallPrice, amount } = props
+  const { onClose, open } = props
+  const items = useAtomValue(orderItemsAtom)
+  const amount = useAtomValue(amountAtom)
+  const overallPrice = useAtomValue(priceAtom)
   const t = useTranslations("menu.Components.OrderModal")
   const locale = useLocale()
   const { restaurant } = useZodParams(Query)
@@ -39,13 +50,6 @@ export function OrderModal(props: Props) {
       (e) => console.log(e.error.message),
       (url) => window.location.assign(url)
     ),
-  })
-
-  const handleChange = useEvent(({ item, ...meta }: FullOrderItem) => {
-    change(item, meta)
-    if (meta.amount === 0 && amount === 1) {
-      onClose()
-    }
   })
 
   const handleOrder = () => {
@@ -70,19 +74,15 @@ export function OrderModal(props: Props) {
         <div>
           <a.div style={{ height: h }}>
             <ul ref={ref} className="divide-y divide-indigo-400">
-              {items.map(({ item, amount, comment }) => (
-                <OrderModalItem
-                  key={item.id}
-                  orderItem={{ item, amount, comment }}
-                  onChange={handleChange}
-                />
+              {items.map(({ item }) => (
+                <OrderModalItem key={item.identifier} itemAtom={orderAtomFamily(item)} />
               ))}
             </ul>
           </a.div>
           <div className="h-8" />
           <button
             onClick={handleOrder}
-            disabled={!isIdle}
+            disabled={!isIdle || amount === 0}
             className="inline-flex w-full justify-center items-center rounded-md border border-transparent shadow-lg shadow-indigo-300 px-4 py-2 bg-indigo-600 text-base text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm"
           >
             <span className="bg-indigo-100 border text-xs border-indigo-500 text-indigo-800 rounded-full h-6 w-6 flex justify-center items-center">

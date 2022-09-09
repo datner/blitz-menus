@@ -5,19 +5,22 @@ import { price, titleFor, toShekel } from "app/core/helpers/content"
 import { useLocale } from "app/core/hooks/useLocale"
 import { useState } from "react"
 import useMeasure from "react-use-measure"
-import { FullOrderItem } from "../types/item"
 import { ResizeObserver } from "@juggle/resize-observer"
 import { AmountButtons, AmountButtonsProps } from "./AmountButtons"
 import { useTranslations } from "next-intl"
 import LabeledTextAreaNoForm from "app/core/components/LabeledTextAreaNoForm"
+import { PrimitiveAtom, useAtomValue } from "jotai"
+import { OrderItem } from "app/menu/jotai/order"
+import { useUpdateOrderItem } from "../hooks/useUpdateOrderItem"
 
 type Props = {
-  readonly orderItem: FullOrderItem
-  onChange(order: FullOrderItem): void
+  itemAtom: PrimitiveAtom<OrderItem>
 }
 
 export function OrderModalItem(props: Props) {
-  const { orderItem, onChange } = props
+  const { itemAtom } = props
+  const orderItem = useAtomValue(itemAtom)
+  const setOrderitem = useUpdateOrderItem(itemAtom)
   const t = useTranslations("menu.Components.OrderModalItem")
   const { item, amount, comment } = orderItem
   const [isOpen, setOpen] = useState(false)
@@ -51,7 +54,7 @@ export function OrderModalItem(props: Props) {
           <Thing
             minimum={0}
             amount={amount}
-            onChange={(newAmount) => onChange({ item, amount: newAmount, comment })}
+            onChange={(newAmount) => setOrderitem((it) => ({ ...it, amount: newAmount }))}
           />
         </div>
       </div>
@@ -63,7 +66,7 @@ export function OrderModalItem(props: Props) {
           <LabeledTextAreaNoForm
             name="comment"
             value={comment}
-            onChange={(event) => onChange({ item, amount, comment: event.target.value })}
+            onChange={(event) => setOrderitem((it) => ({ ...it, comment: event.target.value }))}
             label={t("comment")}
           />
         </a.div>

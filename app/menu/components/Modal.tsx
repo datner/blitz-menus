@@ -5,15 +5,17 @@ import { PropsWithChildren } from "react"
 type Props = PropsWithChildren<{
   readonly open?: boolean
   onClose(): void
+  onDestroyed?(): void
 }>
 
 export function Modal(props: Props) {
-  const { open, onClose, children } = props
+  const { open, onClose, onDestroyed, children } = props
 
   const transition = useTransition(open, {
     from: { y: 200, opacity: 0 },
     enter: { y: 0, opacity: 1 },
     leave: { y: 200, opacity: 0 },
+    onDestroyed,
     config: config.stiff,
     reverse: open,
   })

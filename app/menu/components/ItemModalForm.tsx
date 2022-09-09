@@ -1,5 +1,6 @@
 import { LabeledTextArea } from "app/core/components/LabeledTextArea"
 import { toShekel } from "app/core/helpers/content"
+import { max, min, clamp } from "app/core/helpers/number"
 import { useZodForm } from "app/core/hooks/useZodForm"
 import clsx from "clsx"
 import { useTranslations } from "next-intl"
@@ -14,7 +15,7 @@ import { SideDishExtra } from "./SideDishExtra"
 interface ItemModalFormProps {
   options?: boolean
   price: number
-  meta: Nullish<OrderMeta>
+  meta: OrderMeta
   // Note on containerEl: this is a filthy dirty hack because I can't find a fuck to do it right
   containerEl: HTMLElement | null
   onSubmit(data: ItemForm): void
@@ -40,7 +41,10 @@ export function ItemModalForm(props: ItemModalFormProps) {
 
   const form = useZodForm({
     schema: ItemForm,
-    defaultValues,
+    defaultValues: {
+      comment: meta.comment,
+      amount: max(1)(meta.amount),
+    },
   })
   const { control, handleSubmit, formState } = form
 
@@ -49,11 +53,12 @@ export function ItemModalForm(props: ItemModalFormProps) {
   const { field } = useController({ control, name: "amount" })
   const amount = field.value
 
-  const orderState = meta
-    ? amount === 0 || !isDirty
-      ? OrderState.REMOVE
-      : OrderState.UPDATE
-    : OrderState.NEW
+  const orderState =
+    meta.amount > 0
+      ? amount === 0 || !isDirty
+        ? OrderState.REMOVE
+        : OrderState.UPDATE
+      : OrderState.NEW
 
   const submitOrRemove = handleSubmit((data) => {
     onSubmit(orderState === OrderState.REMOVE ? { amount: 0, comment: "" } : data)
@@ -71,7 +76,11 @@ export function ItemModalForm(props: ItemModalFormProps) {
         createPortal(
           <div className="mt-6 sticky bottom-4 mx-2 flex gap-2">
             <div className="basis-32">
-              <AmountButtons minimum={meta ? 0 : 1} amount={amount} onChange={field.onChange} />
+              <AmountButtons
+                minimum={meta.amount > 0 ? 0 : 1}
+                amount={amount}
+                onChange={field.onChange}
+              />
             </div>
             <button
               form="item-form"
@@ -85,7 +94,7 @@ export function ItemModalForm(props: ItemModalFormProps) {
             >
               <CallToActionText
                 price={price * amount}
-                multi={defaultValues.amount > 1}
+                multi={meta.amount > 1}
                 orderState={orderState}
               />
             </button>

@@ -1,24 +1,24 @@
 import { gSP } from "app/blitz-server"
 import { GetStaticPaths, GetStaticPropsContext, InferGetStaticPropsType } from "next"
-import type { Item__Content, OrderMeta } from "app/menu/types/item"
 import clsx from "clsx"
 import db, { Locale } from "db"
-import * as Op from "fp-ts/Option"
 import { Suspense, useState } from "react"
 import { useLocale } from "app/core/hooks/useLocale"
 import { titleFor } from "app/core/helpers/content"
-import { max } from "app/core/helpers/number"
 import { ListItem } from "app/menu/components/ListItem"
 import { CategoryHeader } from "app/menu/components/CategoryHeader"
 import { useOrder } from "app/menu/hooks/useOrder"
 import { useNavBar } from "app/menu/hooks/useNavBar"
 // import { useZodParams } from "app/core/hooks/useParams"
-import { decrement, flow, increment, pipe } from "fp-ts/function"
 import { fromNullable, getEq, some } from "fp-ts/Option"
 import { Eq as eqStr } from "fp-ts/string"
 import { NotFoundError } from "blitz"
 import dynamic from "next/dynamic"
 import { Query } from "app/menu/validations/page"
+import Head from "next/head"
+import { BlitzPage } from "@blitzjs/auth"
+import MenuLayout from "app/core/layouts/MenuLayout"
+import { OrderItem, orderAtomFamily } from "app/menu/jotai/order"
 
 const LazyViewOrderButton = dynamic(() => import("app/menu/components/ViewOrderButton"), {
   suspense: true,
@@ -28,118 +28,101 @@ const LazyOrderModal = dynamic(() => import("app/menu/components/OrderModal"), {
 
 const eqOptionStr = getEq(eqStr)
 
-export default function Menu(props: InferGetStaticPropsType<typeof getStaticProps>) {
+export const Menu: BlitzPage<InferGetStaticPropsType<typeof getStaticProps>> = (props) => {
   const { restaurant } = props
   const { categories } = restaurant
   const navbar = useNavBar({ initialActive: fromNullable(categories[0]?.identifier) })
   // const { table } = useZodParams(Query)
   const locale = useLocale()
   const order = useOrder()
-  const [item, setItem] = useState<Item__Content | null>(null)
+  const [item, setItem] = useState<OrderItem["item"] | null>(null)
   const [open, setOpen] = useState(false)
   const [reviewOrder, setReviewOrder] = useState(false)
 
-  const handleShowOrderModal = (item: Item__Content) => {
+  const handleShowOrderModal = (item: OrderItem["item"]) => {
     setItem(item)
     setOpen(true)
   }
 
-  const handleChangeOrder = (meta: OrderMeta) => {
-    if (!item) return
-    order.change(item, meta)
-    if (order.items.length === 0) {
-      setReviewOrder(false)
-    }
-  }
-
   const getTitle = titleFor(locale)
-  const getMeta = flow(
-    order.get,
-    Op.fromNullable,
-    Op.getOrElse(() => ({ amount: 0, comment: "" }))
-  )
 
   return (
-    <div
-      ref={navbar.setContainer}
-      onScroll={navbar.onScroll}
-      className={clsx(
-        "relative h-full bg-gray-50 scroll-smooth",
-        open || reviewOrder ? "overflow-hidden" : "overflow-auto"
-      )}
-    >
-      <nav
-        aria-label="Categories"
-        className="sticky top-0 z-20 flex w-full overflow-auto bg-white shadow snap-x snap-mandatory scroll-smooth gap-2 p-2 "
+    <>
+      <Head>
+        <title>{getTitle(restaurant)} | Renu</title>
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
+      <div
+        ref={navbar.setContainer}
+        onScroll={navbar.onScroll}
+        className={clsx(
+          "relative h-full bg-gray-50 scroll-smooth",
+          open || reviewOrder ? "overflow-hidden" : "overflow-auto"
+        )}
       >
-        {categories?.map((it, index) => (
-          <button
-            key={it.id}
-            ref={navbar.setButton(String(it.id))}
-            onClick={navbar.onClick(index)}
-            className={clsx(
-              eqOptionStr.equals(some(it.identifier), navbar.section)
-                ? "bg-indigo-100 text-indigo-700 ring-1 ring-indigo-400"
-                : "border-transparent text-gray-500 hover:text-gray-700",
-              "block flex-shrink-0 rounded-md snap-start scroll-m-2 px-3 py-2 text-sm font-medium"
-            )}
-          >
-            {getTitle(it)}
-          </button>
-        ))}
-      </nav>
-      <div className="space-y-8">
-        {categories?.map((category) => (
-          <div key={category.id} className="group">
-            <CategoryHeader ref={navbar.setSection} category={category} />
-            <ul role="list" className="flex flex-col gap-2 group-last:min-h-screen">
-              {category.items?.map((item) => {
-                const { amount, comment } = getMeta(item)
-                return (
+        <nav
+          aria-label="Categories"
+          className="sticky top-0 z-20 flex w-full overflow-auto bg-white shadow snap-x snap-mandatory scroll-smooth gap-2 p-2 "
+        >
+          {categories?.map((it, index) => (
+            <button
+              key={it.id}
+              ref={navbar.setButton(String(it.id))}
+              onClick={navbar.onClick(index)}
+              className={clsx(
+                eqOptionStr.equals(some(it.identifier), navbar.section)
+                  ? "bg-indigo-100 text-indigo-700 ring-1 ring-indigo-400"
+                  : "border-transparent text-gray-500 hover:text-gray-700",
+                "block flex-shrink-0 rounded-md snap-start scroll-m-2 px-3 py-2 text-sm font-medium"
+              )}
+            >
+              {getTitle(it)}
+            </button>
+          ))}
+        </nav>
+        <div className="space-y-8">
+          {categories?.map((category) => (
+            <div key={category.id} className="group">
+              <CategoryHeader ref={navbar.setSection} category={category} />
+              <ul role="list" className="flex flex-col gap-2 group-last:min-h-screen">
+                {category.items?.map((item) => (
                   <ListItem
                     key={item.id}
-                    item={item}
-                    amountOption={Op.fromNullable(order.get(item)?.amount)}
+                    atom={orderAtomFamily(item)}
                     onClick={() => handleShowOrderModal(item)}
-                    onAdd={() => order.change(item, { amount: increment(amount), comment })}
-                    onRemove={() =>
-                      order.change(item, {
-                        amount: pipe(amount, decrement, max(0)),
-                        comment,
-                      })
-                    }
                   />
-                )
-              })}
-            </ul>
-          </div>
-        ))}
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+        <Suspense>
+          <LazyViewOrderButton
+            onClick={() => {
+              setReviewOrder(true)
+            }}
+          />
+        </Suspense>
+        <Suspense>
+          {item && (
+            <LazyItemModal
+              open={open}
+              onClose={() => setOpen(false)}
+              atom={orderAtomFamily(item)}
+            />
+          )}
+        </Suspense>
+        <Suspense>
+          <LazyOrderModal {...order} open={reviewOrder} onClose={() => setReviewOrder(false)} />
+        </Suspense>
       </div>
-      <Suspense>
-        <LazyViewOrderButton
-          show={order.items.length > 0}
-          onClick={() => {
-            setReviewOrder(true)
-          }}
-          amount={order.amount}
-          price={order.price}
-        />
-      </Suspense>
-      <Suspense>
-        <LazyItemModal
-          open={open}
-          onClose={() => setOpen(false)}
-          item={item}
-          meta={item && order.get(item)}
-          onAddToOrder={handleChangeOrder}
-        />
-      </Suspense>
-      <Suspense>
-        <LazyOrderModal {...order} open={reviewOrder} onClose={() => setReviewOrder(false)} />
-      </Suspense>
-    </div>
+    </>
   )
 }
+
+Menu.getLayout = (comp) => <MenuLayout>{comp}</MenuLayout>
+
+export default Menu
 
 export const getStaticPaths: GetStaticPaths = async () => {
   const venues = await db.venue.findMany()

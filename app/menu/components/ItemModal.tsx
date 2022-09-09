@@ -1,21 +1,20 @@
 import Image from "next/image"
 import { useScroll } from "@use-gesture/react"
-import { Item__Content, OrderMeta } from "../types/item"
 import { useLocale } from "app/core/hooks/useLocale"
 import { clamp } from "app/core/helpers/number"
-import { Nullish } from "../types/utils"
 import { a, useSpring } from "@react-spring/web"
 import { descriptionFor, price, priceShekel, titleFor } from "app/core/helpers/content"
 import { ItemModalForm } from "./ItemModalForm"
 import { useState } from "react"
 import { Modal } from "./Modal"
+import { useAtomValue } from "jotai"
+import { OrderFamilyAtom } from "../jotai/order"
+import { useUpdateOrderItem } from "../hooks/useUpdateOrderItem"
 
 type Props = {
   open?: boolean
+  atom: OrderFamilyAtom
   onClose(): void
-  onAddToOrder(meta: OrderMeta): void
-  item: Item__Content | null
-  meta?: Nullish<OrderMeta>
 }
 
 const ImageBasis = {
@@ -29,7 +28,9 @@ const clampImgHeight = clamp(ImageBasis.Min, ImageBasis.Max)
 const clampBinary = clamp(0, 1)
 
 export function ItemModal(props: Props) {
-  const { open, onClose, onAddToOrder, item, meta } = props
+  const { open, onClose, atom } = props
+  const order = useAtomValue(atom)
+  const setOrder = useUpdateOrderItem(atom)
   const locale = useLocale()
   const title = titleFor(locale)
   const desc = descriptionFor(locale)
@@ -68,6 +69,8 @@ export function ItemModal(props: Props) {
     }
   })
 
+  const { item, ...meta } = order
+
   return (
     <Modal open={open} onClose={onClose}>
       <a.div
@@ -81,14 +84,14 @@ export function ItemModal(props: Props) {
             style={{ height: imgHeight, opacity: imgOpacity }}
             className="relative w-full self-end grow-0 shrink-0"
           >
-            {item?.image && (
+            {order.item.image && (
               <Image
-                src={item.image}
+                src={order.item.image}
                 layout="fill"
                 objectFit="cover"
-                placeholder={item.blurDataUrl ? "blur" : "empty"}
-                blurDataURL={item.blurDataUrl ?? undefined}
-                alt={item.identifier}
+                placeholder={order.item.blurDataUrl ? "blur" : "empty"}
+                blurDataURL={order.item.blurDataUrl ?? undefined}
+                alt={order.item.identifier}
               />
             )}
           </a.div>
@@ -111,7 +114,7 @@ export function ItemModal(props: Props) {
             meta={meta}
             onSubmit={(meta) => {
               onClose()
-              setTimeout(() => onAddToOrder(meta), 200)
+              setOrder({ ...meta, item })
             }}
           />
         </div>

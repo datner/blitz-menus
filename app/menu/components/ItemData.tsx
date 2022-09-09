@@ -1,21 +1,19 @@
 import { animated, useSpring } from "@react-spring/web"
 import { toShekel } from "app/core/helpers/content"
 import { ItemI18L } from "db"
-import * as O from "fp-ts/Option"
 import { useTranslations } from "next-intl"
 import { memo } from "react"
 import { ResizeObserver } from "@juggle/resize-observer"
 import { useIsRtl } from "app/core/hooks/useIsRtl"
 import { usePrevious } from "app/core/hooks/usePrevious"
+import { max, min } from "app/core/helpers/number"
 import useMeasure from "react-use-measure"
 
 type Props = {
   price: number
   content: ItemI18L
-  amount: O.Option<number>
+  amount: number
 }
-
-const orOne = O.getOrElse(() => 1)
 
 export const ItemData = memo(function ItemData(props: Props) {
   const { price, content, amount } = props
@@ -23,12 +21,11 @@ export const ItemData = memo(function ItemData(props: Props) {
   const isRtl = useIsRtl()
   const rtlWidth = isRtl ? width : -width
   const { opacity, x } = useSpring({
-    opacity: O.isSome(amount) ? 1 : 0,
-    x: O.isSome(amount) ? 0 : rtlWidth,
+    opacity: max(1)(amount),
+    x: amount > 0 ? 0 : rtlWidth,
   })
   const t = useTranslations("menu.Components.ItemData")
-  const prevAmount = usePrevious(orOne(amount))
-  const orPrev = O.getOrElseW(() => prevAmount)
+  const prevAmount = usePrevious(min(1)(amount))
 
   return (
     <dl className="z-10 flex h-full flex-col p-3">
@@ -40,7 +37,7 @@ export const ItemData = memo(function ItemData(props: Props) {
             style={{ opacity }}
             className="font-semibold ltr:pr-1.5 px-1 rtl:pl-1.5 text-indigo-600"
           >
-            x{orPrev(amount)}
+            x{max(prevAmount)(amount)}
           </animated.span>
           <animated.span className="block truncate">{content.name}</animated.span>
         </animated.div>
