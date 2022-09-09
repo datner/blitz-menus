@@ -22,6 +22,7 @@ import { Content } from "app/items/validations"
 import { Locale } from "@prisma/client"
 import { useStableEffect } from "fp-ts-react-stable-hooks"
 import { eqItem } from "app/items/helpers/eqItem"
+import { nanoid } from "nanoid"
 
 type _Item = PromiseReturnType<typeof getItem>
 
@@ -83,7 +84,7 @@ export function ItemForm(props: Props) {
     try {
       if (file) {
         const { url, headers: h } = await getAssetUrl({
-          name: `${data.identifier}.${file.name.split(".").pop()}`,
+          name: `${data.identifier}-${nanoid()}.${file.name.split(".").pop()}`,
         })
         const headers = new Headers(h)
         headers.append("Content-Length", `${file.size + 5000}`)
