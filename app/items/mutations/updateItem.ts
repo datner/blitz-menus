@@ -11,7 +11,6 @@ export default resolver.pipe(
   resolver.authorize(),
   setDefaultOrganizationId,
   enforceSuperAdminIfNotCurrentOrganization,
-  (input) => input, // fixes a weird typebug 🤔
   async (input) => {
     const item = await db.item.findFirst({
       where: { id: input.id, organizationId: input.organizationId },
@@ -21,7 +20,7 @@ export default resolver.pipe(
 
     if (item.image === input.image) return input
 
-    return { ...input, dataBlurUrl: await getBlurDataUrl(input.image) }
+    return { ...input, blurDataUrl: await getBlurDataUrl(input.image) }
   },
   ({ organizationId, id, ...data }) =>
     db.item.update({
