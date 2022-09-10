@@ -1,52 +1,62 @@
-import { ChevronUpIcon } from "@heroicons/react/solid"
-import { usePrev } from "@react-spring/shared"
-import { useChain, useSpring, useSpringRef, a, config } from "@react-spring/web"
+import { useChain, useSpring, useSpringRef, a } from "@react-spring/web"
 import { price, titleFor, toShekel } from "app/core/helpers/content"
 import { useLocale } from "app/core/hooks/useLocale"
+import Image from "next/future/image"
 import { useState } from "react"
 import useMeasure from "react-use-measure"
 import { ResizeObserver } from "@juggle/resize-observer"
 import { AmountButtons, AmountButtonsProps } from "./AmountButtons"
-import { useTranslations } from "next-intl"
-import LabeledTextAreaNoForm from "app/core/components/LabeledTextAreaNoForm"
 import { PrimitiveAtom, useAtomValue } from "jotai"
 import { OrderItem } from "app/menu/jotai/order"
 import { useUpdateOrderItem } from "../hooks/useUpdateOrderItem"
+import { ImageLoader } from "next/image"
+import { useUpdateAtom } from "jotai/utils"
+import { itemAtom } from "app/menu/jotai/item"
 
 type Props = {
-  itemAtom: PrimitiveAtom<OrderItem>
+  atom: PrimitiveAtom<OrderItem>
 }
 
+const loader: ImageLoader = ({ src, width, quality = 75 }) =>
+  `https://renu.imgix.net/${src}?w=${width}&q=${quality}`
+
 export function OrderModalItem(props: Props) {
-  const { itemAtom } = props
-  const orderItem = useAtomValue(itemAtom)
-  const setOrderitem = useUpdateOrderItem(itemAtom)
-  const t = useTranslations("menu.Components.OrderModalItem")
+  const { atom } = props
+  const orderItem = useAtomValue(atom)
+  const setOrderitem = useUpdateOrderItem(atom)
+  const setItem = useUpdateAtom(itemAtom)
   const { item, amount, comment } = orderItem
-  const [isOpen, setOpen] = useState(false)
-  const previous = usePrev(isOpen)
   const locale = useLocale()
-  const [ref, { height: contentHeight }] = useMeasure({ polyfill: ResizeObserver })
-  const { height, opacity } = useSpring({
-    from: { height: 0, opacity: 0 },
-    to: { height: isOpen ? contentHeight : 0, opacity: isOpen ? 1 : 0 },
-    config: config.stiff,
-  })
 
   const title = titleFor(locale)
   return (
     <li className="pt-8 pb-6">
       <div className="h-14 flex items-center">
-        <div className="flex-grow bg-white mr-px" onClick={() => setOpen((o) => !o)}>
-          <div className="flex items-center">
-            <a.span className="m-1">
-              <ChevronUpIcon className="h-5 text-indigo-600" />
-            </a.span>
+        <div className="flex-grow bg-white mr-px" onClick={() => setItem(item)}>
+          <div className="flex">
+            <div className="h-16 w-24 relative rounded-md overflow-hidden mx-2">
+              <Image
+                fill
+                priority
+                src={item.image}
+                className="object-cover"
+                loader={loader}
+                sizes="(min-width: 370px) 12rem,
+              8rem"
+                placeholder={item.blurDataUrl ? "blur" : "empty"}
+                blurDataURL={item.blurDataUrl ?? undefined}
+                quality={20}
+                alt={item.identifier}
+              />
+            </div>
             <p className="text-sm whitespace-pre-line">
               <span>{title(item)}</span>
+              <br />
               <span className="rounded-full mx-1 text-xs font-medium text-indigo-800">
                 {toShekel(price(item) * amount)}
               </span>
+              <br />
+              <span className="text-gray-500">{comment}</span>
             </p>
           </div>
         </div>
@@ -58,19 +68,6 @@ export function OrderModalItem(props: Props) {
           />
         </div>
       </div>
-      <a.div
-        className="overflow-hidden"
-        style={{ opacity, height: isOpen && previous === isOpen ? "auto" : height }}
-      >
-        <a.div className="pb-2 mx-px" style={{ opacity }} ref={ref}>
-          <LabeledTextAreaNoForm
-            name="comment"
-            value={comment}
-            onChange={(event) => setOrderitem((it) => ({ ...it, comment: event.target.value }))}
-            label={t("comment")}
-          />
-        </a.div>
-      </a.div>
     </li>
   )
 }

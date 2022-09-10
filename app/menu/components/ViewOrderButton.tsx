@@ -1,6 +1,6 @@
 import { animated, useTransition } from "@react-spring/web"
 import { toShekel } from "app/core/helpers/content"
-import { amountAtom, orderAtom, priceAtom } from "app/menu/jotai/order"
+import { amountAtom, priceAtom } from "app/menu/jotai/order"
 import { useAtomValue } from "jotai"
 import { useTranslations } from "next-intl"
 
@@ -11,8 +11,6 @@ type Props = {
 export function ViewOrderButton(props: Props) {
   const { onClick } = props
   const amount = useAtomValue(amountAtom)
-  console.log(useAtomValue(amountAtom))
-  console.log({ amount })
   const show = amount > 0
   const price = useAtomValue(priceAtom)
   const t = useTranslations("menu.Components.ViewOrderButton")

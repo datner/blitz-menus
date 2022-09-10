@@ -1,4 +1,3 @@
-import { FullOrderItem, Item__Content, OrderMeta } from "../types/item"
 import { useTranslations } from "next-intl"
 import { OrderModalItem } from "./OrderModalItem"
 import { Modal } from "./Modal"
@@ -14,21 +13,10 @@ import { useSpring, a } from "@react-spring/web"
 import { Locale } from "@prisma/client"
 import * as E from "fp-ts/Either"
 import { useAtomValue } from "jotai"
-import {
-  amountAtom,
-  orderAtom,
-  orderAtomFamily,
-  orderAtomsAtom,
-  orderItemsAtom,
-  priceAtom,
-} from "app/menu/jotai/order"
+import { amountAtom, orderAtomFamily, orderItemsAtom, priceAtom } from "app/menu/jotai/order"
 
 type Props = {
   open?: boolean
-  items: FullOrderItem[]
-  amount: number
-  price: number
-  change(item: Item__Content, meta: OrderMeta): void
   onClose(): void
 }
 
@@ -75,7 +63,7 @@ export function OrderModal(props: Props) {
           <a.div style={{ height: h }}>
             <ul ref={ref} className="divide-y divide-indigo-400">
               {items.map(({ item }) => (
-                <OrderModalItem key={item.identifier} itemAtom={orderAtomFamily(item)} />
+                <OrderModalItem key={item.identifier} atom={orderAtomFamily(item)} />
               ))}
             </ul>
           </a.div>

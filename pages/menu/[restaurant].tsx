@@ -7,11 +7,11 @@ import { useLocale } from "app/core/hooks/useLocale"
 import { titleFor } from "app/core/helpers/content"
 import { ListItem } from "app/menu/components/ListItem"
 import { CategoryHeader } from "app/menu/components/CategoryHeader"
-import { useOrder } from "app/menu/hooks/useOrder"
 import { useNavBar } from "app/menu/hooks/useNavBar"
 // import { useZodParams } from "app/core/hooks/useParams"
-import { fromNullable, getEq, some } from "fp-ts/Option"
+import { fromNullable, getEq, some, matchW } from "fp-ts/Option"
 import { Eq as eqStr } from "fp-ts/string"
+import { constNull } from "fp-ts/function"
 import { NotFoundError } from "blitz"
 import dynamic from "next/dynamic"
 import { Query } from "app/menu/validations/page"
@@ -19,6 +19,8 @@ import Head from "next/head"
 import { BlitzPage } from "@blitzjs/auth"
 import MenuLayout from "app/core/layouts/MenuLayout"
 import { OrderItem, orderAtomFamily } from "app/menu/jotai/order"
+import { useAtom } from "jotai"
+import { itemAtom } from "app/menu/jotai/item"
 
 const LazyViewOrderButton = dynamic(() => import("app/menu/components/ViewOrderButton"), {
   suspense: true,
@@ -34,8 +36,7 @@ export const Menu: BlitzPage<InferGetStaticPropsType<typeof getStaticProps>> = (
   const navbar = useNavBar({ initialActive: fromNullable(categories[0]?.identifier) })
   // const { table } = useZodParams(Query)
   const locale = useLocale()
-  const order = useOrder()
-  const [item, setItem] = useState<OrderItem["item"] | null>(null)
+  const [item, setItem] = useAtom(itemAtom)
   const [open, setOpen] = useState(false)
   const [reviewOrder, setReviewOrder] = useState(false)
 
@@ -46,10 +47,15 @@ export const Menu: BlitzPage<InferGetStaticPropsType<typeof getStaticProps>> = (
 
   const getTitle = titleFor(locale)
 
+  console.log(item)
+  const itemModal = matchW<null, OrderItem["item"], JSX.Element>(constNull, (item) => (
+    <LazyItemModal open={open} onClose={() => setOpen(false)} atom={orderAtomFamily(item)} />
+  ))
+
   return (
     <>
       <Head>
-        <title>{getTitle(restaurant)} | Renu</title>
+        <title>{getTitle(restaurant) + " | Renu"}</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <div
@@ -96,24 +102,16 @@ export const Menu: BlitzPage<InferGetStaticPropsType<typeof getStaticProps>> = (
             </div>
           ))}
         </div>
-        <Suspense>
+        <Suspense fallback={<></>}>
           <LazyViewOrderButton
             onClick={() => {
               setReviewOrder(true)
             }}
           />
         </Suspense>
-        <Suspense>
-          {item && (
-            <LazyItemModal
-              open={open}
-              onClose={() => setOpen(false)}
-              atom={orderAtomFamily(item)}
-            />
-          )}
-        </Suspense>
-        <Suspense>
-          <LazyOrderModal {...order} open={reviewOrder} onClose={() => setReviewOrder(false)} />
+        <Suspense fallback={<></>}>{itemModal(item)}</Suspense>
+        <Suspense fallback={<></>}>
+          <LazyOrderModal open={reviewOrder} onClose={() => setReviewOrder(false)} />
         </Suspense>
       </div>
     </>

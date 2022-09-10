@@ -1,10 +1,10 @@
 import { Item, ItemI18L } from "@prisma/client"
-import { flow, pipe } from "fp-ts/function"
+import { pipe } from "fp-ts/function"
 import * as A from "fp-ts/Array"
 import * as N from "fp-ts/number"
 import * as Eq from "fp-ts/Eq"
 import { atom, PrimitiveAtom } from "jotai"
-import { atomFamily, selectAtom, splitAtom } from "jotai/utils"
+import { atomFamily, splitAtom } from "jotai/utils"
 
 export interface OrderItem {
   amount: number
