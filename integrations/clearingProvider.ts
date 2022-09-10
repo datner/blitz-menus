@@ -6,15 +6,18 @@ import { tryCatch } from "fp-ts/TaskEither"
 import db from "db"
 import { prismaNotFound } from "app/core/helpers/prisma"
 import { constant } from "fp-ts/lib/function"
-import { ReaderTask } from "fp-ts/lib/ReaderTask"
 
-export type GetLink = (order: Order & { items: OrderItem[] }) => Task<string>
+type OrderWithItems = Order & { items: OrderItem[] }
+export type GetLink = (order: OrderWithItems) => Task<string>
+export const INVALID = Symbol.for("invalid")
+export type TxId = string
 
 export type OrderId = number
-export type ValidateTransaction = (txId: string) => ReaderTask<OrderId, "VALID" | "INVALID">
+export type ValidateTransaction = (
+  txId: string
+) => ReaderTaskEither<OrderWithItems, typeof INVALID, TxId>
 
-export const constValid = constant("VALID" as const)
-export const constInvalid = constant("INVALID" as const)
+export const constInvalid = constant(INVALID)
 
 export interface ClearingProvider {
   getLink: GetLink

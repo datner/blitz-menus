@@ -14,10 +14,8 @@ import {
   reportStatusResponseStatusError,
   reportStatusZodError,
 } from "./messages"
-import { getOrder } from "integrations/helpers"
 import {
   constInvalid,
-  constValid,
   getClearingIntegration,
   ValidateTransaction,
 } from "integrations/clearingProvider"
@@ -31,12 +29,11 @@ const checkStatus = pipe(
   E.traverseArray
 )
 
-export const validateTransaction: ValidateTransaction = (txId) => (orderId) =>
+export const validateTransaction: ValidateTransaction = (txId) => (order) =>
   pipe(
     TE.Do,
     TE.apSW("service", service),
-    TE.apSW("order", getOrder(orderId)),
-    TE.bindW("clearing", ({ order }) => getClearingIntegration(order.venueId)),
+    TE.apSW("clearing", getClearingIntegration(order.venueId)),
     TE.bindW("authorization", ({ clearing }) =>
       pipe(clearing.vendorData, zodParse(Authorization), TE.fromEither)
     ),
@@ -56,5 +53,5 @@ export const validateTransaction: ValidateTransaction = (txId) => (orderId) =>
         .with({ tag: "httpRequestError" }, ({ error }) => reportGenericError(error.message))
         .exhaustive()()
     ),
-    TE.matchW(constInvalid, constValid)
+    TE.bimap(constInvalid, () => txId)
   )

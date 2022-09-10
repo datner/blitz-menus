@@ -3,13 +3,11 @@ import { pipe } from "fp-ts/function"
 import { creditGuardService } from "./client"
 import {
   constInvalid,
-  constValid,
   getClearingIntegration,
   ValidateTransaction,
 } from "integrations/clearingProvider"
 import { zodParse } from "app/core/helpers/zod"
 import { Credentials } from "./lib"
-import { getOrder } from "integrations/helpers"
 
 interface GetInquireTransactionInput {
   terminal: string
@@ -44,12 +42,11 @@ export interface GetStatusParams {
 
 const service = TE.fromEither(creditGuardService)
 
-export const validateTransaction: ValidateTransaction = (txId) => (orderId) =>
+export const validateTransaction: ValidateTransaction = (txId) => (order) =>
   pipe(
     TE.Do,
-    TE.apS("order", getOrder(orderId)),
     TE.apSW("service", service),
-    TE.bindW("clearing", ({ order }) => getClearingIntegration(order.venueId)),
+    TE.apSW("clearing", getClearingIntegration(order.venueId)),
     TE.bindW("credentials", ({ clearing }) =>
       pipe(clearing.vendorData, zodParse(Credentials), TE.fromEither)
     ),
@@ -65,5 +62,5 @@ export const validateTransaction: ValidateTransaction = (txId) => (orderId) =>
         ])
       )
     ),
-    TE.match(constInvalid, constValid)
+    TE.bimap(constInvalid, () => txId)
   )

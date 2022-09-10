@@ -30,12 +30,12 @@ export function toItems(items: OrderItem[]) {
   }))
 }
 
-export function toTransaction(order: Order & { items: OrderItem[] }): Dorix.Transaction {
-  return {
-    id: String(order.id),
+export function toTransaction(txId: string) {
+  return (order: Order & { items: OrderItem[] }): Dorix.Transaction => ({
+    id: txId,
     amount: OrderUtils.total(order) / 100,
     type: "CREDIT",
-  }
+  })
 }
 
 export function toPayment(transaction: Dorix.Transaction): Dorix.Payment {
@@ -47,13 +47,13 @@ export function toPayment(transaction: Dorix.Transaction): Dorix.Payment {
 
 const getDesiredTime = flow(now, addMinutes(10), formatISO)
 
-export const sendOrder = (order: Order & { items: OrderItem[] }) =>
+export const sendOrder = (txId: string) => (order: Order & { items: OrderItem[] }) =>
   pipe(
     TE.fromEither(dorixService),
     TE.chainW((service) =>
       service.postOrder({
         externalId: String(order.id),
-        payment: pipe(order, toTransaction, toPayment),
+        payment: pipe(order, toTransaction(txId), toPayment),
         items: toItems(order.items),
         source: "RENU",
         branchId: "6021287cad8b0de9a3a8d09e",

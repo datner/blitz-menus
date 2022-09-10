@@ -2,7 +2,9 @@ import { resolver } from "@blitzjs/rpc"
 import { z } from "zod"
 import { pipe } from "fp-ts/function"
 import { getClearingProvider } from "integrations/helpers"
+import * as dorix from "integrations/dorix"
 import { match } from "ts-pattern"
+import { getOrder } from "app/orders/helpers/getOrder"
 import { ClearingProvider as ClearingKind } from "@prisma/client"
 import * as E from "fp-ts/Either"
 import * as TE from "fp-ts/TaskEither"
@@ -37,19 +39,21 @@ const getTxId = (input: OrderSuccess) =>
     .with({ provider: ClearingKind.CREDIT_GUARD }, ({ params }) => getParam("txId")(params))
     .exhaustive()
 
+const getOrderFromInput = (input: OrderSuccess) =>
+  pipe(
+    getOrderId(input),
+    TE.fromEither,
+    TE.chainW((id) => getOrder(id)({ items: true }))
+  )
+
 const validateTransaction = (input: OrderSuccess) =>
   pipe(
-    getClearingProvider(input.provider),
-    TE.fromTask,
-    TE.chain((provider) =>
-      pipe(
-        E.Do,
-        E.apS("txId", getTxId(input)),
-        E.apS("orderId", getOrderId(input)),
-        TE.fromEither,
-        TE.chainTaskK(({ txId, orderId }) => provider.validateTransaction(txId)(orderId))
-      )
-    )
+    TE.Do,
+    TE.apS("provider", TE.fromTask(getClearingProvider(input.provider))),
+    TE.apSW("order", getOrderFromInput(input)),
+    TE.apSW("txId", TE.fromEither(getTxId(input))),
+    TE.chainFirstW(({ order, provider, txId }) => provider.validateTransaction(txId)(order)),
+    TE.chainFirstTaskK(({ txId, order }) => dorix.sendOrder(txId)(order))
   )
 
 export default resolver.pipe(resolver.zod(OrderSuccess), validateTransaction, (task) => task())
