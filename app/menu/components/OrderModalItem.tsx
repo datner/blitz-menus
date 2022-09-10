@@ -6,12 +6,12 @@ import { useState } from "react"
 import useMeasure from "react-use-measure"
 import { ResizeObserver } from "@juggle/resize-observer"
 import { AmountButtons, AmountButtonsProps } from "./AmountButtons"
-import { PrimitiveAtom, useAtomValue } from "jotai"
+import { PrimitiveAtom, useAtomValue, useSetAtom } from "jotai"
 import { OrderItem } from "app/menu/jotai/order"
 import { useUpdateOrderItem } from "../hooks/useUpdateOrderItem"
 import { ImageLoader } from "next/image"
 import { useUpdateAtom } from "jotai/utils"
-import { itemAtom } from "app/menu/jotai/item"
+import { itemAtom, itemModalOpenAtom } from "app/menu/jotai/item"
 
 type Props = {
   atom: PrimitiveAtom<OrderItem>
@@ -25,6 +25,7 @@ export function OrderModalItem(props: Props) {
   const orderItem = useAtomValue(atom)
   const setOrderitem = useUpdateOrderItem(atom)
   const setItem = useUpdateAtom(itemAtom)
+  const setOpen = useSetAtom(itemModalOpenAtom)
   const { item, amount, comment } = orderItem
   const locale = useLocale()
 
@@ -32,7 +33,13 @@ export function OrderModalItem(props: Props) {
   return (
     <li className="pt-8 pb-6">
       <div className="h-14 flex items-center">
-        <div className="flex-grow bg-white mr-px" onClick={() => setItem(item)}>
+        <div
+          className="flex-grow bg-white mr-px"
+          onClick={() => {
+            setOpen(true)
+            setItem(item)
+          }}
+        >
           <div className="flex">
             <div className="h-16 w-24 relative rounded-md overflow-hidden mx-2">
               <Image

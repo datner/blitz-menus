@@ -20,7 +20,7 @@ import { BlitzPage } from "@blitzjs/auth"
 import MenuLayout from "app/core/layouts/MenuLayout"
 import { OrderItem, orderAtomFamily } from "app/menu/jotai/order"
 import { useAtom } from "jotai"
-import { itemAtom } from "app/menu/jotai/item"
+import { itemAtom, itemModalOpenAtom } from "app/menu/jotai/item"
 
 const LazyViewOrderButton = dynamic(() => import("app/menu/components/ViewOrderButton"), {
   suspense: true,
@@ -37,7 +37,7 @@ export const Menu: BlitzPage<InferGetStaticPropsType<typeof getStaticProps>> = (
   // const { table } = useZodParams(Query)
   const locale = useLocale()
   const [item, setItem] = useAtom(itemAtom)
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useAtom(itemModalOpenAtom)
   const [reviewOrder, setReviewOrder] = useState(false)
 
   const handleShowOrderModal = (item: OrderItem["item"]) => {
@@ -47,9 +47,8 @@ export const Menu: BlitzPage<InferGetStaticPropsType<typeof getStaticProps>> = (
 
   const getTitle = titleFor(locale)
 
-  console.log(item)
   const itemModal = matchW<null, OrderItem["item"], JSX.Element>(constNull, (item) => (
-    <LazyItemModal open={open} onClose={() => setOpen(false)} atom={orderAtomFamily(item)} />
+    <LazyItemModal atom={orderAtomFamily(item)} />
   ))
 
   return (
@@ -109,10 +108,10 @@ export const Menu: BlitzPage<InferGetStaticPropsType<typeof getStaticProps>> = (
             }}
           />
         </Suspense>
-        <Suspense fallback={<></>}>{itemModal(item)}</Suspense>
         <Suspense fallback={<></>}>
           <LazyOrderModal open={reviewOrder} onClose={() => setReviewOrder(false)} />
         </Suspense>
+        <Suspense fallback={<></>}>{itemModal(item)}</Suspense>
       </div>
     </>
   )

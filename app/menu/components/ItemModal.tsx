@@ -7,14 +7,13 @@ import { descriptionFor, price, priceShekel, titleFor } from "app/core/helpers/c
 import { ItemModalForm } from "./ItemModalForm"
 import { useState } from "react"
 import { Modal } from "./Modal"
-import { useAtomValue } from "jotai"
+import { useAtom, useAtomValue } from "jotai"
 import { OrderFamilyAtom } from "../jotai/order"
 import { useUpdateOrderItem } from "../hooks/useUpdateOrderItem"
+import { itemModalOpenAtom } from "../jotai/item"
 
 type Props = {
-  open?: boolean
   atom: OrderFamilyAtom
-  onClose(): void
 }
 
 const ImageBasis = {
@@ -28,7 +27,8 @@ const clampImgHeight = clamp(ImageBasis.Min, ImageBasis.Max)
 const clampBinary = clamp(0, 1)
 
 export function ItemModal(props: Props) {
-  const { open, onClose, atom } = props
+  const { atom } = props
+  const [open, setOpen] = useAtom(itemModalOpenAtom)
   const order = useAtomValue(atom)
   const setOrder = useUpdateOrderItem(atom)
   const locale = useLocale()
@@ -72,7 +72,7 @@ export function ItemModal(props: Props) {
   const { item, ...meta } = order
 
   return (
-    <Modal open={open} onClose={onClose}>
+    <Modal open={open} onClose={() => setOpen(false)}>
       <a.div
         ref={(el) => set(el)}
         {...bind()}
@@ -113,7 +113,7 @@ export function ItemModal(props: Props) {
             price={price(item)}
             meta={meta}
             onSubmit={(meta) => {
-              onClose()
+              setOpen(false)
               setOrder({ ...meta, item })
             }}
           />
