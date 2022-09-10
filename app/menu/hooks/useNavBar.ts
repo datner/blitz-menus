@@ -1,6 +1,7 @@
 import { useRef } from "react"
-import { Option, some, map, match, chain, fromNullable } from "fp-ts/Option"
+import { Option, some, map, match, chain, getEq, fromNullable } from "fp-ts/Option"
 import { findLast, last } from "fp-ts/Array"
+import { Eq as eqStr } from "fp-ts/string"
 import { useStableO } from "fp-ts-react-stable-hooks"
 import { pipe } from "fp-ts/function"
 
@@ -24,6 +25,8 @@ const active = (els: HTMLDivElement[]) => (container: HTMLDivElement) =>
     findLast((el: HTMLDivElement) => fromTop(container) > el.offsetTop),
     match(() => last(els), some)
   )
+
+const eqOStr = getEq(eqStr)
 
 export function useNavBar(props: UseNavBarProps) {
   const { initialActive } = props
@@ -52,7 +55,8 @@ export function useNavBar(props: UseNavBarProps) {
       fromNullable(refs.current.container),
       chain(active(refs.current.sections)),
       chain((el) => {
-        set(some(el.id))
+        if (!eqOStr.equals(section, some(el.id))) set(some(el.id))
+
         return fromNullable(refs.current.buttons[el.id])
       }),
       map((el) => el.scrollIntoView({ inline: "start", behavior: "smooth" }))
