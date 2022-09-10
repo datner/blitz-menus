@@ -30,11 +30,6 @@ const config = {
       fallback: [],
     }
   },
-  experimental: {
-    images: {
-      allowFutureImage: true,
-    },
-  },
 }
 
 module.exports = withPlaiceholder(withBlitz(config))
