@@ -16,8 +16,12 @@ Router.events.on("routeChangeStart", () => NProgress.start())
 Router.events.on("routeChangeComplete", () => NProgress.done())
 Router.events.on("routeChangeError", () => NProgress.done())
 
-export default withBlitz(function App({ Component, pageProps }: AppProps) {
+export default withBlitz(function App({
+  Component,
+  pageProps,
+}: AppProps<{ messages: IntlMessages }>) {
   const getLayout = Component.getLayout || ((page) => page)
+  const { messages, ...rest } = pageProps
   const locale = useLocale()
 
   useIsomorphicLayoutEffect(() => {
@@ -26,12 +30,12 @@ export default withBlitz(function App({ Component, pageProps }: AppProps) {
   }, [locale])
 
   return (
-    <NextIntlProvider messages={pageProps.messages}>
+    <NextIntlProvider messages={messages}>
       <ErrorBoundary
         FallbackComponent={RootErrorFallback}
         onReset={useQueryErrorResetBoundary().reset}
       >
-        {getLayout(<Component {...pageProps} />)}
+        {getLayout(<Component {...rest} />)}
       </ErrorBoundary>
     </NextIntlProvider>
   )
