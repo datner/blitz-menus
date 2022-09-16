@@ -15,10 +15,12 @@ import { ModifiersBlock } from "./ModifiersBlock"
 import { Extras, Modifier, OneOf } from "db/itemModifierConfig"
 import { constant, pipe } from "fp-ts/lib/function"
 import { findFirst } from "fp-ts/Array"
+import * as A from "fp-ts/Array"
 import * as RA from "fp-ts/ReadonlyArray"
 import { last } from "fp-ts/Semigroup"
 import * as RR from "fp-ts/ReadonlyRecord"
 import * as O from "fp-ts/Option"
+import * as N from "fp-ts/number"
 import { useMemo } from "react"
 
 interface ItemModalFormProps {
@@ -105,7 +107,7 @@ export function ItemModalForm(props: ItemModalFormProps) {
     },
   })
 
-  const { control, handleSubmit, formState } = form
+  const { control, handleSubmit, formState, watch } = form
 
   const { isDirty } = formState
 
@@ -126,6 +128,47 @@ export function ItemModalForm(props: ItemModalFormProps) {
         : data
     )
   })
+
+  const value = watch()
+
+  const basePrice = value.amount * order.item.price
+  const oneOfMarkup = pipe(
+    value.modifiers.oneOf,
+    RR.toReadonlyArray,
+    RA.reduce(
+      0,
+      (acc, [ref, mod]) =>
+        pipe(
+          order.item.modifiers,
+          oneOfs,
+          RA.findFirst((m) => m.ref === ref),
+          O.map((o) => o.options),
+          O.chain(A.findFirst((o) => o.ref === mod.choice)),
+          O.map((a) => a.price * mod.amount),
+          O.getOrElse(() => 0)
+        ) + acc
+    )
+  )
+  const extrasMarkup = pipe(
+    value.modifiers.oneOf,
+    RR.toReadonlyArray,
+    RA.reduce(
+      0,
+      (acc, [ref, mod]) =>
+        pipe(
+          order.item.modifiers,
+          extras,
+          RA.findFirst((m) => m.ref === ref),
+          O.map((o) => o.options),
+          O.chain(A.findFirst((o) => o.ref === mod.choice)),
+          O.map((a) => a.price * mod.amount),
+          O.getOrElse(() => 0)
+        ) + acc
+    )
+  )
+
+  const price = basePrice + oneOfMarkup + extrasMarkup
+
   return (
     <form id="item-form" onSubmit={submitOrRemove}>
       <FormProvider {...form}>
@@ -154,11 +197,7 @@ export function ItemModalForm(props: ItemModalFormProps) {
                   : "bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500"
               )}
             >
-              <CallToActionText
-                price={order.item.price * order.amount}
-                multi={order.amount > 1}
-                orderState={orderState}
-              />
+              <CallToActionText price={price} multi={order.amount > 1} orderState={orderState} />
             </button>
           </div>,
           containerEl
