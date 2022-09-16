@@ -33,10 +33,13 @@ export function OrderModal(props: Props) {
   const [ref, { height }] = useMeasure()
   const isNoHeight = usePrevious(height) === 0
   const { h } = useSpring({ h: height, immediate: isNoHeight })
-  const [sendOrderMutation, { isIdle }] = useMutation(sendOrder, {
+  const [sendOrderMutation, { isIdle, reset }] = useMutation(sendOrder, {
     onSuccess: E.match(
       (e) => console.log(e.error.message),
-      (url) => window.location.assign(url)
+      (url) => {
+        reset()
+        return window.location.assign(url)
+      }
     ),
   })
 

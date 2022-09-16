@@ -1,21 +1,29 @@
+import { OrderItem } from "app/menu/jotai/order"
 import { LabeledTextArea } from "app/core/components/LabeledTextArea"
 import { toShekel } from "app/core/helpers/content"
-import { max, min, clamp } from "app/core/helpers/number"
+import { max } from "app/core/helpers/number"
 import { useZodForm } from "app/core/hooks/useZodForm"
 import clsx from "clsx"
 import { useTranslations } from "next-intl"
 import { createPortal } from "react-dom"
 import { FormProvider, useController } from "react-hook-form"
-import { OrderMeta } from "../types/item"
-import { Nullish } from "../types/utils"
-import { ItemForm } from "../validations/item"
+import { head } from "fp-ts/NonEmptyArray"
+import { some, none, getOrElse, match } from "fp-ts/Option"
+import { ExtrasItem, getItemFormSchema, ItemForm, OneOfItem } from "../validations/item"
 import { AmountButtons } from "./AmountButtons"
-import { SideDishExtra } from "./SideDishExtra"
+import { ModifiersBlock } from "./ModifiersBlock"
+import { Extras, Modifier, OneOf } from "db/itemModifierConfig"
+import { constant, pipe } from "fp-ts/lib/function"
+import { findFirst } from "fp-ts/Array"
+import * as RA from "fp-ts/ReadonlyArray"
+import { last } from "fp-ts/Semigroup"
+import * as RR from "fp-ts/ReadonlyRecord"
+import * as O from "fp-ts/Option"
+import { useMemo } from "react"
 
 interface ItemModalFormProps {
   options?: boolean
-  price: number
-  meta: OrderMeta
+  order: OrderItem
   // Note on containerEl: this is a filthy dirty hack because I can't find a fuck to do it right
   containerEl: HTMLElement | null
   onSubmit(data: ItemForm): void
@@ -29,23 +37,74 @@ const OrderState = {
 
 type OrderState = typeof OrderState[keyof typeof OrderState]
 
-const DefaultValues = ItemForm.default({
-  amount: 1,
-  comment: "",
+const floorOne = max(1)
+
+const oneOfs = RA.filterMap<Modifier, OneOf>((m) =>
+  m.config._tag === "oneOf" ? some(m.config) : none
+)
+
+const extras = RA.filterMap<Modifier, Extras>((m) =>
+  m.config._tag === "extras" ? some(m.config) : none
+)
+
+const makeDefaults = (order: OrderItem): ItemForm["modifiers"] => ({
+  oneOf: RR.fromFoldableMap(last<OneOfItem>(), RA.Foldable)(oneOfs(order.item.modifiers), (of) => [
+    of.ref,
+    {
+      ref: of.ref,
+      amount: 1,
+      choice: pipe(
+        order.modifiers,
+        findFirst((m) => m.ref === of.ref && m.refType === "oneOf"),
+        O.map((m) => m.choice),
+        getOrElse(() =>
+          pipe(
+            of.options,
+            findFirst((o) => o.default),
+            O.map((o) => o.ref),
+            getOrElse(constant(head(of.options).ref))
+          )
+        )
+      ),
+    },
+  ]),
+  extras: RR.fromFoldableMap(last<ExtrasItem>(), RA.Foldable)(
+    extras(order.item.modifiers),
+    (ex) => [
+      ex.ref,
+      {
+        ref: ex.ref,
+        choices: RR.fromFoldableMap(last<number>(), RA.Foldable)(ex.options, (o) => [
+          o.ref,
+          pipe(
+            order.modifiers,
+            RA.findFirst((m) => m.choice === o.ref),
+            match(
+              () => 0,
+              (m) => m.amount
+            )
+          ),
+        ]),
+      },
+    ]
+  ),
 })
 
 export function ItemModalForm(props: ItemModalFormProps) {
-  const { price, meta, options = false, onSubmit, containerEl } = props
-  const defaultValues = DefaultValues.parse(meta)
+  const { order, onSubmit, containerEl } = props
   const t = useTranslations("menu.Components.ItemModal")
+  const ItemForm = useMemo(() => getItemFormSchema(order.item.modifiers), [order])
+  const df = makeDefaults(order)
 
   const form = useZodForm({
     schema: ItemForm,
     defaultValues: {
-      comment: meta.comment,
-      amount: max(1)(meta.amount),
+      comment: order.comment,
+      amount: floorOne(order.amount),
+      modifiers: df,
     },
   })
+
   const { control, handleSubmit, formState } = form
 
   const { isDirty } = formState
@@ -54,20 +113,23 @@ export function ItemModalForm(props: ItemModalFormProps) {
   const amount = field.value
 
   const orderState =
-    meta.amount > 0
+    order.amount > 0
       ? amount === 0 || !isDirty
         ? OrderState.REMOVE
         : OrderState.UPDATE
       : OrderState.NEW
 
   const submitOrRemove = handleSubmit((data) => {
-    onSubmit(orderState === OrderState.REMOVE ? { amount: 0, comment: "" } : data)
+    onSubmit(
+      orderState === OrderState.REMOVE
+        ? { amount: 0, comment: "", modifiers: { oneOf: {}, extras: {} } }
+        : data
+    )
   })
-
   return (
     <form id="item-form" onSubmit={submitOrRemove}>
       <FormProvider {...form}>
-        {options && <SideDishExtra />}
+        <ModifiersBlock modifiers={order.item.modifiers ?? []} />
         <div className="mt-4">
           <LabeledTextArea label={t("comment")} name="comment" rows={4} />
         </div>
@@ -77,7 +139,7 @@ export function ItemModalForm(props: ItemModalFormProps) {
           <div className="mt-6 sticky bottom-4 mx-2 flex gap-2">
             <div className="basis-32">
               <AmountButtons
-                minimum={meta.amount > 0 ? 0 : 1}
+                minimum={order.amount > 0 ? 0 : 1}
                 amount={amount}
                 onChange={field.onChange}
               />
@@ -93,8 +155,8 @@ export function ItemModalForm(props: ItemModalFormProps) {
               )}
             >
               <CallToActionText
-                price={price * amount}
-                multi={meta.amount > 1}
+                price={order.item.price * order.amount}
+                multi={order.amount > 1}
                 orderState={orderState}
               />
             </button>

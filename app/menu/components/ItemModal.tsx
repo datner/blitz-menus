@@ -3,14 +3,18 @@ import { useScroll } from "@use-gesture/react"
 import { useLocale } from "app/core/hooks/useLocale"
 import { clamp } from "app/core/helpers/number"
 import { a, useSpring } from "@react-spring/web"
-import { descriptionFor, price, priceShekel, titleFor } from "app/core/helpers/content"
+import { descriptionFor, priceShekel, titleFor } from "app/core/helpers/content"
 import { ItemModalForm } from "./ItemModalForm"
 import { useState } from "react"
 import { Modal } from "./Modal"
 import { useAtom, useAtomValue } from "jotai"
-import { OrderFamilyAtom } from "../jotai/order"
+import { ModifierItem, OrderFamilyAtom } from "../jotai/order"
 import { useUpdateOrderItem } from "../hooks/useUpdateOrderItem"
 import { itemModalOpenAtom } from "../jotai/item"
+import { pipe } from "fp-ts/function"
+import { Ord } from "fp-ts/string"
+import * as RA from "fp-ts/ReadonlyArray"
+import * as RR from "fp-ts/ReadonlyRecord"
 
 type Props = {
   atom: OrderFamilyAtom
@@ -69,8 +73,6 @@ export function ItemModal(props: Props) {
     }
   })
 
-  const { item, ...meta } = order
-
   return (
     <Modal open={open} onClose={() => setOpen(false)}>
       <a.div
@@ -101,20 +103,52 @@ export function ItemModal(props: Props) {
             style={{ opacity: titleOpacity }}
             className="text-3xl leading-6 font-medium text-gray-900"
           >
-            {title(item)}
+            {title(order.item)}
           </a.h3>
-          <p className="mt-2 text-indigo-600">₪ {priceShekel(item)}</p>
-          <p className="mt-2 text-sm text-gray-500">{desc(item)}</p>
+          <p className="mt-2 text-indigo-600">₪ {priceShekel(order.item)}</p>
+          <p className="mt-2 text-sm text-gray-500">{desc(order.item)}</p>
         </div>
         <div className="flex flex-col p-4">
           <ItemModalForm
-            options={item?.categoryId === 3}
+            options={order.item.categoryId === 3}
             containerEl={containerEl}
-            price={price(item)}
-            meta={meta}
-            onSubmit={(meta) => {
+            order={order}
+            onSubmit={({ amount, comment, modifiers }) => {
               setOpen(false)
-              setOrder({ ...meta, item })
+              setOrder({
+                item: order.item,
+                amount,
+                comment,
+                modifiers: [
+                  ...pipe(
+                    modifiers.oneOf,
+                    RR.collect(Ord)(
+                      (_, of): ModifierItem => ({
+                        ...of,
+                        refType: "oneOf",
+                      })
+                    )
+                  ),
+                  ...pipe(
+                    modifiers.extras,
+                    RR.collect(Ord)((_, ex) =>
+                      pipe(
+                        ex.choices,
+                        RR.collect(Ord)(
+                          (choice, amount): ModifierItem => ({
+                            ref: ex.ref,
+                            refType: "extras",
+                            choice,
+                            amount,
+                          })
+                        )
+                      )
+                    ),
+                    RA.flatten,
+                    RA.filter((mi) => mi.amount > 0)
+                  ),
+                ],
+              })
             }}
           />
         </div>
@@ -130,7 +164,7 @@ export function ItemModal(props: Props) {
           ),
         }}
       >
-        <a.h3 className="text-2xl leading-6 font-medium text-gray-900">{title(item)}</a.h3>
+        <a.h3 className="text-2xl leading-6 font-medium text-gray-900">{title(order.item)}</a.h3>
       </a.div>
     </Modal>
   )
