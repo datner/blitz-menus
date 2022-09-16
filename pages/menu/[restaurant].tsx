@@ -1,7 +1,7 @@
 import { gSP } from "app/blitz-server"
 import { GetStaticPaths, GetStaticPropsContext, InferGetStaticPropsType } from "next"
 import clsx from "clsx"
-import db, { Locale } from "db"
+import db, { Locale, Prisma } from "db"
 import { Suspense, useState } from "react"
 import { useLocale } from "app/core/hooks/useLocale"
 import { titleFor } from "app/core/helpers/content"
@@ -21,6 +21,7 @@ import MenuLayout from "app/core/layouts/MenuLayout"
 import { OrderItem, orderAtomFamily } from "app/menu/jotai/order"
 import { useAtom } from "jotai"
 import { itemAtom, itemModalOpenAtom } from "app/menu/jotai/item"
+import { ModifierConfig } from "db/itemModifierConfig"
 
 const LazyViewOrderButton = dynamic(() => import("app/menu/components/ViewOrderButton"), {
   suspense: true,
@@ -149,6 +150,9 @@ export const getStaticProps = gSP(async (context: GetStaticPropsContext) => {
             },
             include: {
               content: true,
+              modifiers: {
+                orderBy: { position: Prisma.SortOrder.asc },
+              },
             },
           },
         },
@@ -158,9 +162,25 @@ export const getStaticProps = gSP(async (context: GetStaticPropsContext) => {
 
   if (!restaurant) throw new NotFoundError()
 
+  const typedRestaurant = {
+    ...restaurant,
+    categories: restaurant.categories.map((c) => ({
+      ...c,
+      items: c.items.map((i) => ({
+        ...i,
+        modifiers: i.modifiers
+          .map((m) => ({
+            ...m,
+            config: ModifierConfig.parse(m.config),
+          }))
+          .sort((a, b) => a.position - b.position),
+      })),
+    })),
+  }
+
   return {
     props: {
-      restaurant,
+      restaurant: typedRestaurant,
       messages: (await import(`app/core/messages/${context.locale}.json`)).default,
     },
     revalidate: 10,
