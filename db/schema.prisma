@@ -253,8 +253,9 @@ model Item {
 }
 
 model ItemModifier {
-  id    Int @id @default(autoincrement())
-  price Int
+  id       Int  @id @default(autoincrement())
+  position Int
+  config   Json
 
   Item   Item @relation(fields: [itemId], references: [id])
   itemId Int
@@ -314,6 +315,14 @@ enum ClearingProvider {
 
 enum ManagementProvider {
   DORIX
+}
+
+enum ModifierType {
+  ONE_OF
+  EXTRAS
+  QUERY
+  SLIDER
+  OPTIONS
 }
 
 enum GlobalRole {
