@@ -18,8 +18,8 @@ import * as A from "fp-ts/Array"
 import * as O from "fp-ts/Option"
 import * as RA from "fp-ts/ReadonlyArray"
 import * as RR from "fp-ts/ReadonlyRecord"
-
 import * as L from "monocle-ts/Lens"
+import { useTranslations } from "next-intl"
 
 type Props = {
   modifier: Extras
@@ -47,6 +47,7 @@ const checkbox =
               key={o.ref}
               disabled={value.choices[o.ref]! > 0 ? false : overMax}
               value={o.ref}
+              classNames={{ label: "flex grow h-11 items-center" }}
               label={
                 <>
                   <span className="grow">{getLabel(o)(locale)}</span>
@@ -58,7 +59,7 @@ const checkbox =
                     matchW(
                       () => null,
                       (n) => (
-                        <span>
+                        <span onClick={(e) => e.preventDefault()}>
                           <SmallAmountButtons
                             value={n}
                             onChange={onChange(o.ref)}
@@ -70,7 +71,6 @@ const checkbox =
                   )}
                 </>
               }
-              classNames={{ label: "flex grow h-11 items-center" }}
             />
           ))
         )
@@ -87,6 +87,7 @@ const lensAmount = (choice: string) =>
 export const ExtrasComponent = (props: Props) => {
   const { modifier } = props
   const locale = useLocale()
+  const t = useTranslations("menu.Components.Extras")
   const { field, fieldState } = useController<ItemForm, `modifiers.extras.${string}`>({
     name: `modifiers.extras.${modifier.ref}`,
   })
@@ -123,32 +124,36 @@ export const ExtrasComponent = (props: Props) => {
     })
   }
 
+  const value = pipe(
+    field.value.choices,
+    RR.filter((c) => c > 0),
+    RR.keys,
+    RA.toArray
+  )
+
   return (
     <Checkbox.Group
+      {...field}
+      tabIndex={-1}
       orientation="vertical"
       offset="lg"
       size="lg"
-      error={fieldState.error?.message}
+      error={fieldState.error ? t("error") : null}
       label={getLabel(modifier)(locale)}
       withAsterisk={isSome(modifier.min)}
       onChange={handleChange}
-      value={pipe(
-        field.value.choices,
-        RR.filter((c) => c > 0),
-        RR.keys,
-        RA.toArray
-      )}
+      value={value}
       description={
         <>
           <span>{getDescription(modifier)(locale)}</span>
           <br />
           {matchW(
             () => null,
-            (num: number) => <span className="mr-2">min: {num}</span>
+            (min: number) => <span className="ltr:mr-2 rtl:ml-2">{t("min", { min })}</span>
           )(modifier.min)}
           {matchW(
             () => null,
-            (num: number) => <span>max: {num}</span>
+            (max: number) => <span>{t("max", { max })}</span>
           )(modifier.max)}
         </>
       }

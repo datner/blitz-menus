@@ -63,6 +63,11 @@
           "all": "all"
         }
       },
+      "Extras": {
+        "min": "min: {min}",
+        "max": "max: {max}",
+        "error": "Please reach minimum!"
+      },
       "OrderModal": {
         "yourOrder": "Your Order",
         "order": "Order!",

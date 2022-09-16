@@ -20,7 +20,6 @@ import * as RA from "fp-ts/ReadonlyArray"
 import { last } from "fp-ts/Semigroup"
 import * as RR from "fp-ts/ReadonlyRecord"
 import * as O from "fp-ts/Option"
-import * as N from "fp-ts/number"
 import { useMemo } from "react"
 
 interface ItemModalFormProps {
@@ -100,6 +99,7 @@ export function ItemModalForm(props: ItemModalFormProps) {
 
   const form = useZodForm({
     schema: ItemForm,
+    shouldFocusError: true,
     defaultValues: {
       comment: order.comment,
       amount: floorOne(order.amount),
