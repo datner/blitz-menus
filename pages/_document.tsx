@@ -1,11 +1,11 @@
 import Document, { Html, Head, Main, NextScript } from "next/document"
+import { createGetInitialProps } from "@mantine/next"
 import { Locale } from "db"
 
+const getInitialProps = createGetInitialProps()
+
 class MyDocument extends Document {
-  // static async getInitialProps(ctx: DocumentContext) {
-  //   const initialProps = await Document.getInitialProps(ctx)
-  //   return { ...initialProps }
-  // }
+  static getInitialProps = getInitialProps
 
   render() {
     const { locale } = this.props.__NEXT_DATA__
