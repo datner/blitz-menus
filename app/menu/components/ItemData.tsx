@@ -23,6 +23,10 @@ export const ItemData = memo(function ItemData(props: Props) {
   const { opacity, x } = useSpring({
     opacity: max(1)(amount),
     x: amount > 0 ? 0 : rtlWidth,
+    from: {
+      opacity: 0,
+      x: rtlWidth,
+    },
   })
   const t = useTranslations("menu.Components.ItemData")
   const prevAmount = usePrevious(min(1)(amount))
