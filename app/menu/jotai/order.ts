@@ -5,14 +5,21 @@ import * as N from "fp-ts/number"
 import * as Eq from "fp-ts/Eq"
 import { atom, PrimitiveAtom } from "jotai"
 import { atomFamily, splitAtom } from "jotai/utils"
+import { Modifier, ModifierTag } from "db/itemModifierConfig"
 
 export interface OrderItem {
   amount: number
   comment: string
-  item: Item & { content: ItemI18L[] }
+  modifiers: ModifierItem[]
+  item: Item & { content: ItemI18L[]; modifiers: Modifier[] }
 }
 
-export type DatnerOrder = OrderItem
+export interface ModifierItem {
+  ref: string
+  refType: ModifierTag
+  choice: string
+  amount: number
+}
 
 const sum = A.reduce(0, N.SemigroupSum.concat)
 
@@ -27,7 +34,7 @@ export const orderItemsAtom = atom((get) =>
 )
 
 export const orderAtomFamily = atomFamily<OrderItem["item"], PrimitiveAtom<OrderItem>>(
-  (item) => atom({ comment: "", amount: 0, item }),
+  (item) => atom({ comment: "", amount: 0, item, modifiers: [] as ModifierItem[] }),
   eqItem.equals
 )
 
