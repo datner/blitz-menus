@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["interactiveTransactions"]
 }
 
 datasource db {
@@ -249,6 +250,8 @@ model Item {
   Venue   Venue? @relation(fields: [venueId], references: [id])
   venueId Int?
 
+  referencedIn OrderItem[]
+
   @@unique([restaurantId, identifier])
 }
 
@@ -257,8 +260,10 @@ model ItemModifier {
   position Int
   config   Json
 
-  Item   Item @relation(fields: [itemId], references: [id])
-  itemId Int
+  item                     Item                @relation(fields: [itemId], references: [id])
+  itemId                   Int
+  referencedIn             OrderItemModifier[]
+  managementRepresentation Json
 }
 
 model ItemI18L {
@@ -283,14 +288,27 @@ model Order {
 }
 
 model OrderItem {
-  id       Int    @id @default(autoincrement())
-  itemId   Int
-  price    Int
-  quantity Int
-  comment  String
-  name     String
-  orderId  Int
-  order    Order  @relation(fields: [orderId], references: [id])
+  id        Int                 @id @default(autoincrement())
+  item      Item                @relation(fields: [itemId], references: [id])
+  itemId    Int
+  modifiers OrderItemModifier[]
+  price     Int
+  quantity  Int
+  comment   String
+  name      String
+  orderId   Int
+  order     Order               @relation(fields: [orderId], references: [id])
+}
+
+model OrderItemModifier {
+  id             Int          @id @default(autoincrement())
+  modifier       ItemModifier @relation(fields: [itemModifierId], references: [id])
+  itemModifierId Int
+  choice         String
+  ref            String
+  amount         Int
+  price          Int
+  referencedIn   OrderItem[]
 }
 
 enum TokenType {
