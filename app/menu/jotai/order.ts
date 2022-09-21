@@ -19,6 +19,8 @@ export interface ModifierItem {
   refType: ModifierTag
   choice: string
   amount: number
+  price: number
+  id: number
 }
 
 const sum = A.reduce(0, N.SemigroupSum.concat)

@@ -53,6 +53,7 @@ export function OrderModal(props: Props) {
         price: it.item.price,
         item: it.item.id,
         name: title(it.item),
+        modifiers: it.modifiers,
       })),
     })
   }

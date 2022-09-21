@@ -1,4 +1,4 @@
-import { ClearingIntegration, Order, OrderItem } from "@prisma/client"
+import { ClearingIntegration, Item, Order, OrderItem } from "@prisma/client"
 import { PrismaNotFoundError } from "app/core/type/prisma"
 import { Task } from "fp-ts/Task"
 import { ReaderTaskEither } from "fp-ts/ReaderTaskEither"
@@ -7,7 +7,7 @@ import db from "db"
 import { prismaNotFound } from "app/core/helpers/prisma"
 import { constant } from "fp-ts/lib/function"
 
-type OrderWithItems = Order & { items: OrderItem[] }
+export type OrderWithItems = Order & { items: (OrderItem & { item: Item })[] }
 export type GetLink = (order: OrderWithItems) => Task<string>
 export const INVALID = Symbol.for("invalid")
 export type TxId = string

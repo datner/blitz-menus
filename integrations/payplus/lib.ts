@@ -1,15 +1,18 @@
-import { OrderItem } from "db"
+import { Item, OrderItem } from "db"
 import * as TE from "fp-ts/TaskEither"
 import * as A from "fp-ts/Array"
 import { payPlusService } from "./client"
-import { PaymentItem } from "./types"
+import { PaymentItemInput } from "./types"
 import { divide } from "app/core/helpers/number"
 
-export const toItems = A.map<OrderItem, PaymentItem>(({ price, quantity, name }) => ({
-  price: divide(100)(price),
-  quantity,
-  name,
-  vat_type: 0,
-}))
+export const toItems = A.map<OrderItem & { item: Item }, PaymentItemInput>(
+  ({ price, quantity, name, item, comment }) => ({
+    price: divide(100)(price),
+    quantity,
+    name,
+    image_url: item.image,
+    product_invoice_extra_details: comment,
+  })
+)
 
 export const service = TE.fromEither(payPlusService)

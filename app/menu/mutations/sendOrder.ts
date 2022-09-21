@@ -1,5 +1,5 @@
 import { resolver } from "@blitzjs/rpc"
-import db, { Order, OrderItem, Prisma } from "db"
+import db, { Item, Order, OrderItem, Prisma } from "db"
 import { SendOrder } from "app/menu/validations/order"
 import * as TE from "fp-ts/TaskEither"
 import * as RTE from "fp-ts/ReaderTaskEither"
@@ -18,7 +18,11 @@ type SendOrder = z.infer<typeof SendOrder>
 
 type CreateNewOrder = (
   venueId: number
-) => RTE.ReaderTaskEither<SendOrder, PrismaValidationError, Order & { items: OrderItem[] }>
+) => RTE.ReaderTaskEither<
+  SendOrder,
+  PrismaValidationError,
+  Order & { items: (OrderItem & { item: Item })[] }
+>
 
 const createNewOrder: CreateNewOrder =
   (venueId) =>
@@ -30,15 +34,32 @@ const createNewOrder: CreateNewOrder =
             venueId,
             items: {
               createMany: {
-                data: orderItems.map(({ item, amount, ...rest }) => ({
-                  itemId: item,
-                  quantity: amount,
-                  ...rest,
+                data: orderItems.map((oi) => ({
+                  name: oi.name,
+                  price: oi.price,
+                  quantity: oi.amount,
+                  itemId: oi.item,
+                  comment: oi.comment,
+                  modifiers: {
+                    create: oi.modifiers.map((m) => ({
+                      amount: m.amount,
+                      price: m.price,
+                      ref: m.ref,
+                      itemModifierId: m.id,
+                      choice: m.choice,
+                    })),
+                  },
                 })),
               },
             },
           },
-          include: { items: true },
+          include: {
+            items: {
+              include: {
+                item: true,
+              },
+            },
+          },
         }),
       (e) => ({
         tag: "prismaValidationError",

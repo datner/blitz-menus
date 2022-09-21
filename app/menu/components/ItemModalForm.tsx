@@ -1,7 +1,7 @@
 import { OrderItem } from "app/menu/jotai/order"
 import { LabeledTextArea } from "app/core/components/LabeledTextArea"
 import { toShekel } from "app/core/helpers/content"
-import { max } from "app/core/helpers/number"
+import { max, add } from "app/core/helpers/number"
 import { useZodForm } from "app/core/hooks/useZodForm"
 import clsx from "clsx"
 import { useTranslations } from "next-intl"
@@ -135,35 +135,33 @@ export function ItemModalForm(props: ItemModalFormProps) {
   const oneOfMarkup = pipe(
     value.modifiers.oneOf,
     RR.toReadonlyArray,
-    RA.reduce(
-      0,
-      (acc, [ref, mod]) =>
-        pipe(
-          order.item.modifiers,
-          oneOfs,
-          RA.findFirst((m) => m.ref === ref),
-          O.map((o) => o.options),
-          O.chain(A.findFirst((o) => o.ref === mod.choice)),
-          O.map((a) => a.price * mod.amount),
-          O.getOrElse(() => 0)
-        ) + acc
+    RA.reduce(0, (acc, [ref, mod]) =>
+      pipe(
+        order.item.modifiers,
+        oneOfs,
+        RA.findFirst((m) => m.ref === ref),
+        O.map((o) => o.options),
+        O.chain(A.findFirst((o) => o.ref === mod.choice)),
+        O.map((a) => a.price * mod.amount),
+        O.getOrElse(() => 0),
+        add(acc)
+      )
     )
   )
   const extrasMarkup = pipe(
     value.modifiers.oneOf,
     RR.toReadonlyArray,
-    RA.reduce(
-      0,
-      (acc, [ref, mod]) =>
-        pipe(
-          order.item.modifiers,
-          extras,
-          RA.findFirst((m) => m.ref === ref),
-          O.map((o) => o.options),
-          O.chain(A.findFirst((o) => o.ref === mod.choice)),
-          O.map((a) => a.price * mod.amount),
-          O.getOrElse(() => 0)
-        ) + acc
+    RA.reduce(0, (acc, [ref, mod]) =>
+      pipe(
+        order.item.modifiers,
+        extras,
+        RA.findFirst((m) => m.ref === ref),
+        O.map((o) => o.options),
+        O.chain(A.findFirst((o) => o.ref === mod.choice)),
+        O.map((a) => a.price * mod.amount),
+        O.getOrElse(() => 0),
+        add(acc)
+      )
     )
   )
 

@@ -4,15 +4,21 @@ import { z } from "zod"
 export const PaymentItem = z
   .object({
     name: z.string(),
+    product_invoice_extra_details: z.string().nullish(),
+    image_url: z
+      .string()
+      .transform((uri) => `https://renu.imgix.net${uri}?auto=format&fit=max&w=256&q=20`),
     quantity: z.number().positive(),
     price: z.number().nonnegative(),
   })
   .transform((it) => ({ ...it, vat_type: 0 }))
 
+export type PaymentItemInput = z.input<typeof PaymentItem>
 export type PaymentItem = z.infer<typeof PaymentItem>
 
 export const GeneratePaymentLinkBody = z
   .object({
+    language_code: z.enum(["en", "he"]).default("he"),
     payment_page_uid: z.string().uuid(),
     more_info: z.string(),
     more_info_1: z.string().optional(),

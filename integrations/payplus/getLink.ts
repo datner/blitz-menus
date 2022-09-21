@@ -3,7 +3,7 @@ import { Order } from "db"
 import { pipe } from "fp-ts/function"
 import * as TE from "fp-ts/TaskEither"
 import { match } from "ts-pattern"
-import { PaymentItem, Authorization, GeneratePaymentLinkBody } from "./types"
+import { Authorization, GeneratePaymentLinkBody, PaymentItemInput } from "./types"
 import { reportEnvVarError } from "integrations/dorix/messages"
 import {
   reportGenericError,
@@ -18,7 +18,7 @@ import { errorUrl, successUrl } from "integrations/helpers"
 
 interface PayloadProps {
   payment_page_uid: string
-  items: PaymentItem[]
+  items: PaymentItemInput[]
 }
 
 const toPayload = (order: Order) => (props: PayloadProps) =>

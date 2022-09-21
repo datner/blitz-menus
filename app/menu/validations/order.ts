@@ -4,12 +4,22 @@ import { zLocale } from "app/core/hooks/useLocale"
 import * as Dorix from "integrations/dorix/types"
 import { z } from "zod"
 
+export const OrderModifierItem = z.object({
+  id: Id,
+  ref: z.string(),
+  price: z.number().int().positive().multipleOf(50),
+  refType: z.enum(["oneOf", "extras"]),
+  choice: z.string(),
+  amount: z.number().int().nonnegative(),
+})
+
 export const SendOrderItem = z.object({
   amount: z.number().int().positive(),
   price: z.number().int().positive().multipleOf(50),
   comment: z.string().default(""),
   item: Id,
   name: z.string(),
+  modifiers: OrderModifierItem.array(),
 })
 
 export type SendOrderItem = z.infer<typeof SendOrderItem>

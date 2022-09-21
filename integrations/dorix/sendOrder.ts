@@ -1,4 +1,4 @@
-import { Order, OrderItem } from "@prisma/client"
+import { Order, OrderItem, OrderItemModifier } from "@prisma/client"
 import { OrderUtils } from "app/orders/utils"
 import { addMinutes, formatISO } from "date-fns/fp"
 import { now } from "fp-ts/Date"
@@ -20,7 +20,7 @@ import {
 
 export type RequestVariables = Pick<Dorix.Request, "externalId" | "payment" | "items">
 
-export function toItems(items: OrderItem[]) {
+export function toItems(items: (OrderItem & { modifiers: OrderItemModifier[] })[]) {
   return items.map(({ id, itemId, comment, price, orderId, ...rest }) => ({
     id: String(itemId),
     notes: comment,
@@ -47,35 +47,37 @@ export function toPayment(transaction: Dorix.Transaction): Dorix.Payment {
 
 const getDesiredTime = flow(now, addMinutes(10), formatISO)
 
-export const sendOrder = (txId: string) => (order: Order & { items: OrderItem[] }) =>
-  pipe(
-    TE.fromEither(dorixService),
-    TE.chainW((service) =>
-      service.postOrder({
-        externalId: String(order.id),
-        payment: pipe(order, toTransaction(txId), toPayment),
-        items: toItems(order.items),
-        source: "RENU",
-        branchId: "6021287cad8b0de9a3a8d09e",
-        notes: "Sent from Renu",
-        desiredTime: getDesiredTime(),
-        type: "PICKUP",
-        customer: { firstName: "", lastName: "", email: "", phone: "" },
-        discounts: [],
-        metadata: {},
-      })
-    ),
-    TE.match(
-      (e) =>
-        match(e)
-          .with({ tag: "NoEnvVarError" }, reportEnvVarError)
-          .with({ tag: "axiosRequestError" }, reportOrderAxiosError(order))
-          .with({ tag: "httpResponseStatusError" }, reportOrderResponseStatusError(order))
-          .with({ tag: "zodParseError" }, reportOrderZodError(order))
-          .with({ tag: "dorixResponseError" }, reportDorixOrderError(order))
-          .with({ tag: "httpRequestError" }, ({ error }) => reportGenericError(error.message))
-          .exhaustive(),
-      reportOrderSuccess(order)
-    ),
-    T.flatten
-  )
+export const sendOrder =
+  (txId: string) =>
+  (order: Order & { items: (OrderItem & { modifiers: OrderItemModifier[] })[] }) =>
+    pipe(
+      TE.fromEither(dorixService),
+      TE.chainW((service) =>
+        service.postOrder({
+          externalId: String(order.id),
+          payment: pipe(order, toTransaction(txId), toPayment),
+          items: toItems(order.items),
+          source: "RENU",
+          branchId: "6021287cad8b0de9a3a8d09e",
+          notes: "Sent from Renu",
+          desiredTime: getDesiredTime(),
+          type: "PICKUP",
+          customer: { firstName: "", lastName: "", email: "", phone: "" },
+          discounts: [],
+          metadata: {},
+        })
+      ),
+      TE.match(
+        (e) =>
+          match(e)
+            .with({ tag: "NoEnvVarError" }, reportEnvVarError)
+            .with({ tag: "axiosRequestError" }, reportOrderAxiosError(order))
+            .with({ tag: "httpResponseStatusError" }, reportOrderResponseStatusError(order))
+            .with({ tag: "zodParseError" }, reportOrderZodError(order))
+            .with({ tag: "dorixResponseError" }, reportDorixOrderError(order))
+            .with({ tag: "httpRequestError" }, ({ error }) => reportGenericError(error.message))
+            .exhaustive(),
+        reportOrderSuccess(order)
+      ),
+      T.flatten
+    )

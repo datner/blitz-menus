@@ -2,9 +2,9 @@ import * as TE from "fp-ts/TaskEither"
 import { pipe } from "fp-ts/function"
 import { creditGuardService } from "./client"
 import {
-  constInvalid,
   getClearingIntegration,
   ValidateTransaction,
+  ValidationError,
 } from "integrations/clearingProvider"
 import { zodParse } from "app/core/helpers/zod"
 import { Credentials } from "./lib"
@@ -62,5 +62,11 @@ export const validateTransaction: ValidateTransaction = (txId) => (order) =>
         ])
       )
     ),
-    TE.bimap(constInvalid, () => txId)
+    TE.bimap(
+      (): ValidationError => ({
+        tag: "ValidationError",
+        error: "credit guard failed to validate transaction",
+      }),
+      () => txId
+    )
   )

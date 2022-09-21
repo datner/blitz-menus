@@ -11,10 +11,15 @@ import { useAtom, useAtomValue } from "jotai"
 import { ModifierItem, OrderFamilyAtom } from "../jotai/order"
 import { useUpdateOrderItem } from "../hooks/useUpdateOrderItem"
 import { itemModalOpenAtom } from "../jotai/item"
-import { pipe } from "fp-ts/function"
+import { pipe, tuple } from "fp-ts/function"
 import { Ord } from "fp-ts/string"
+import { last } from "fp-ts/Semigroup"
+import * as T from "fp-ts/Tuple"
+import * as O from "fp-ts/Option"
+import * as A from "fp-ts/Array"
 import * as RA from "fp-ts/ReadonlyArray"
 import * as RR from "fp-ts/ReadonlyRecord"
+import { Modifier } from "db/itemModifierConfig"
 
 type Props = {
   atom: OrderFamilyAtom
@@ -115,6 +120,32 @@ export function ItemModal(props: Props) {
             order={order}
             onSubmit={({ amount, comment, modifiers }) => {
               setOpen(false)
+              const modmap = RR.fromFoldableMap(last<[number, Modifier]>(), RA.Foldable)(
+                order.item.modifiers,
+                (mod) => [mod.config.ref, tuple(mod.id, mod)]
+              )
+
+              const getId = (ref: string) =>
+                pipe(
+                  O.fromNullable(modmap[ref]),
+                  O.map(T.fst),
+                  O.getOrElse(() => -1)
+                )
+
+              const getPrice = (ref: string, choice: string) =>
+                pipe(
+                  O.fromNullable(modmap[ref]),
+                  O.map(T.snd),
+                  O.chain((m) =>
+                    pipe(
+                      m.config.options as { ref: string; price: number }[],
+                      A.findFirst((o) => o.ref === choice)
+                    )
+                  ),
+                  O.map((m) => m.price),
+                  O.getOrElse(() => 0)
+                )
+
               setOrder({
                 item: order.item,
                 amount,
@@ -125,6 +156,8 @@ export function ItemModal(props: Props) {
                     RR.collect(Ord)(
                       (_, of): ModifierItem => ({
                         ...of,
+                        id: getId(of.ref),
+                        price: getPrice(of.ref, of.choice),
                         refType: "oneOf",
                       })
                     )
@@ -138,6 +171,8 @@ export function ItemModal(props: Props) {
                           (choice, amount): ModifierItem => ({
                             ref: ex.ref,
                             refType: "extras",
+                            id: getId(ex.ref),
+                            price: getPrice(ex.ref, choice),
                             choice,
                             amount,
                           })

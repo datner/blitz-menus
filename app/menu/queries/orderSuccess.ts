@@ -43,7 +43,7 @@ const getOrderFromInput = (input: OrderSuccess) =>
   pipe(
     getOrderId(input),
     TE.fromEither,
-    TE.chainW((id) => getOrder(id)({ items: true }))
+    TE.chainW((id) => getOrder(id)({ items: { include: { item: true, modifiers: true } } }))
   )
 
 const validateTransaction = (input: OrderSuccess) =>
