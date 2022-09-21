@@ -95,7 +95,6 @@ export function ItemModalForm(props: ItemModalFormProps) {
   const { order, onSubmit, containerEl } = props
   const t = useTranslations("menu.Components.ItemModal")
   const ItemForm = useMemo(() => getItemFormSchema(order.item.modifiers), [order])
-  const df = makeDefaults(order)
 
   const form = useZodForm({
     schema: ItemForm,
@@ -103,7 +102,7 @@ export function ItemModalForm(props: ItemModalFormProps) {
     defaultValues: {
       comment: order.comment,
       amount: floorOne(order.amount),
-      modifiers: df,
+      modifiers: makeDefaults(order),
     },
   })
 
