@@ -263,7 +263,7 @@ model ItemModifier {
   item                     Item                @relation(fields: [itemId], references: [id])
   itemId                   Int
   referencedIn             OrderItemModifier[]
-  managementRepresentation Json
+  managementRepresentation Json                @default("{}")
 }
 
 model ItemI18L {
