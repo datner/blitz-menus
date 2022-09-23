@@ -33,24 +33,22 @@ const createNewOrder: CreateNewOrder =
           data: {
             venueId,
             items: {
-              createMany: {
-                data: orderItems.map((oi) => ({
-                  name: oi.name,
-                  price: oi.price,
-                  quantity: oi.amount,
-                  itemId: oi.item,
-                  comment: oi.comment,
-                  modifiers: {
-                    create: oi.modifiers.map((m) => ({
-                      amount: m.amount,
-                      price: m.price,
-                      ref: m.ref,
-                      itemModifierId: m.id,
-                      choice: m.choice,
-                    })),
-                  },
-                })),
-              },
+              create: orderItems.map((oi) => ({
+                name: oi.name,
+                price: oi.price,
+                quantity: oi.amount,
+                itemId: oi.item,
+                comment: oi.comment,
+                modifiers: {
+                  create: oi.modifiers.map((m) => ({
+                    amount: m.amount,
+                    price: m.price,
+                    ref: m.ref,
+                    itemModifierId: m.id,
+                    choice: m.choice,
+                  })),
+                },
+              })),
             },
           },
           include: {

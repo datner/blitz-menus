@@ -1,13 +1,16 @@
 import { resolver } from "@blitzjs/rpc"
 import { z } from "zod"
-import { pipe } from "fp-ts/function"
+import { flow, pipe } from "fp-ts/function"
 import { getClearingProvider } from "integrations/helpers"
 import * as dorix from "integrations/dorix"
 import { match } from "ts-pattern"
 import { getOrder } from "app/orders/helpers/getOrder"
 import { ClearingProvider as ClearingKind } from "@prisma/client"
+import * as RTE from "fp-ts/ReaderTaskEither"
 import * as E from "fp-ts/Either"
+import * as T from "fp-ts/Task"
 import * as TE from "fp-ts/TaskEither"
+import { secondsToMilliseconds } from "date-fns"
 
 const OrderSuccess = z.object({
   provider: z.nativeEnum(ClearingKind),
@@ -56,4 +59,19 @@ const validateTransaction = (input: OrderSuccess) =>
     TE.chainFirstTaskK(({ txId, order }) => dorix.sendOrder(txId)(order))
   )
 
-export default resolver.pipe(resolver.zod(OrderSuccess), validateTransaction, (task) => task())
+const withBackoff = (seconds: number) =>
+  pipe(
+    RTE.ask<OrderSuccess>(),
+    RTE.chainTaskEitherKW(flow(validateTransaction, T.delay(secondsToMilliseconds(seconds))))
+  )
+
+const validate = (input: OrderSuccess) =>
+  pipe(
+    withBackoff(0),
+    RTE.orElse(() => withBackoff(5)),
+    RTE.orElse(() => withBackoff(15)),
+    RTE.orElse(() => withBackoff(35)),
+    RTE.orElse(() => withBackoff(75))
+  )(input)
+
+export default resolver.pipe(resolver.zod(OrderSuccess), validate, (task) => task())

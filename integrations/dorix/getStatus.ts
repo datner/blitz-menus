@@ -22,7 +22,7 @@ export const getStatus = (params: GetStatusParams) =>
           .with({ tag: "httpResponseStatusError" }, reportStatusResponseStatusError(params))
           .with({ tag: "zodParseError" }, reportStatusZodError(params))
           .with({ tag: "httpRequestError" }, ({ error }) => reportGenericError(error.message))
-          .exhaustive(),
+          .exhaustive()(),
       constVoid
     )
   )

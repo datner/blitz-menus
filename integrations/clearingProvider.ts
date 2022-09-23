@@ -11,11 +11,15 @@ export type OrderWithItems = Order & { items: (OrderItem & { item: Item })[] }
 export type GetLink = (order: OrderWithItems) => Task<string>
 export const INVALID = Symbol.for("invalid")
 export type TxId = string
+export type ValidationError = {
+  tag: "ValidationError"
+  error: string
+}
 
 export type OrderId = number
 export type ValidateTransaction = (
   txId: string
-) => ReaderTaskEither<OrderWithItems, typeof INVALID, TxId>
+) => ReaderTaskEither<OrderWithItems, ValidationError, TxId>
 
 export const constInvalid = constant(INVALID)
 

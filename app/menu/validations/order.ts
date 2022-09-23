@@ -7,7 +7,7 @@ import { z } from "zod"
 export const OrderModifierItem = z.object({
   id: Id,
   ref: z.string(),
-  price: z.number().int().positive().multipleOf(50),
+  price: z.number().int().nonnegative().multipleOf(50),
   refType: z.enum(["oneOf", "extras"]),
   choice: z.string(),
   amount: z.number().int().nonnegative(),

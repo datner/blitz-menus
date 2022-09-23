@@ -15,9 +15,9 @@ import {
   reportStatusZodError,
 } from "./messages"
 import {
-  constInvalid,
   getClearingIntegration,
   ValidateTransaction,
+  ValidationError,
 } from "integrations/clearingProvider"
 import { zodParse } from "app/core/helpers/zod"
 
@@ -41,8 +41,8 @@ export const validateTransaction: ValidateTransaction = (txId) => (order) =>
     TE.map((r) => r.invoices),
     TE.map(RA.fromArray),
     TE.chainEitherKW(checkStatus),
-    TE.mapLeft((e) =>
-      match(e)
+    TE.orElseW((e) => {
+      const send = match(e)
         .with({ tag: "NoEnvVarError" }, reportEnvVarError)
         .with({ tag: "axiosRequestError" }, reportStatusAxiosError(txId))
         .with({ tag: "httpResponseStatusError" }, reportStatusResponseStatusError(txId))
@@ -51,7 +51,12 @@ export const validateTransaction: ValidateTransaction = (txId) => (order) =>
         .with({ tag: "payPlusNotFound" }, reportPayPlusNotFound)
         .with({ tag: "prismaNotFoundError" }, ({ error }) => reportGenericError(error.message))
         .with({ tag: "httpRequestError" }, ({ error }) => reportGenericError(error.message))
-        .exhaustive()()
-    ),
-    TE.bimap(constInvalid, () => txId)
+        .exhaustive()
+      send()
+      return TE.left<ValidationError>({ tag: "ValidationError", error: "could not verify" })
+    }),
+    TE.bimap(
+      (e) => e,
+      () => txId
+    )
   )
