@@ -65,13 +65,17 @@ const withBackoff = (seconds: number) =>
     RTE.chainTaskEitherKW(flow(validateTransaction, T.delay(secondsToMilliseconds(seconds))))
   )
 
+// todo: this is not a good solution.
 const validate = (input: OrderSuccess) =>
   pipe(
     withBackoff(0),
     RTE.orElse(() => withBackoff(5)),
     RTE.orElse(() => withBackoff(15)),
     RTE.orElse(() => withBackoff(35)),
-    RTE.orElse(() => withBackoff(75))
+    RTE.orElse(() => withBackoff(75)),
+    RTE.getOrElse((e) => {
+      throw e
+    })
   )(input)
 
 export default resolver.pipe(resolver.zod(OrderSuccess), validate, (task) => task())
