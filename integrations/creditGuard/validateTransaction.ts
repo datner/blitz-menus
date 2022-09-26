@@ -6,7 +6,7 @@ import {
   ValidateTransaction,
   ValidationError,
 } from "integrations/clearingProvider"
-import { zodParse } from "app/core/helpers/zod"
+import { ensureType } from "app/core/helpers/zod"
 import { Credentials } from "./lib"
 
 interface GetInquireTransactionInput {
@@ -48,7 +48,7 @@ export const validateTransaction: ValidateTransaction = (txId) => (order) =>
     TE.apSW("service", service),
     TE.apSW("clearing", getClearingIntegration(order.venueId)),
     TE.bindW("credentials", ({ clearing }) =>
-      pipe(clearing.vendorData, zodParse(Credentials), TE.fromEither)
+      pipe(clearing.vendorData, ensureType(Credentials), TE.fromEither)
     ),
     TE.bind("int_in", ({ clearing, credentials }) =>
       TE.of(getInquireTransactionsXml({ txId, terminal: clearing.terminal, mid: credentials.mid }))

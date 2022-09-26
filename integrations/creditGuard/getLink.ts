@@ -8,7 +8,7 @@ import { log } from "blitz"
 import { match } from "ts-pattern"
 import { Reader } from "fp-ts/lib/Reader"
 import { getClearingIntegration, GetLink } from "integrations/clearingProvider"
-import { zodParse } from "app/core/helpers/zod"
+import { ensureType } from "app/core/helpers/zod"
 import { cancelUrl, errorUrl, getAmount, successUrl } from "integrations/helpers"
 import { Credentials } from "./lib"
 import { host } from "app/core/helpers/env"
@@ -44,8 +44,8 @@ const getDoDealXml =
 			<total>${getAmount(order.items)}</total>
 			<mid>${mid}</mid>
 			<uniqueid>${order.id}</uniqueid>
-      <successUrl>${successUrl("CREDIT_GUARD")}</successUrl>
-      <errorUrl>${errorUrl("CREDIT_GUARD")}</errorUrl>
+      <successUrl>${successUrl}</successUrl>
+      <errorUrl>${errorUrl}</errorUrl>
       <cancelUrl>${cancelUrl("CREDIT_GUARD")}</cancelUrl>
       <customerData>
 				<userData1>${order.venueId}</userData1>
@@ -75,7 +75,7 @@ export const getLink: GetLink = (order) =>
     TE.apS("clearing", getClearingIntegration(order.venueId)),
     TE.apSW("service", TE.fromEither(creditGuardService)),
     TE.bindW("credentials", ({ clearing }) =>
-      pipe(clearing.vendorData, zodParse(Credentials), TE.fromEither)
+      pipe(clearing.vendorData, ensureType(Credentials), TE.fromEither)
     ),
     TE.chainW(({ service, clearing, credentials }) =>
       pipe(

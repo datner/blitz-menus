@@ -30,7 +30,7 @@ export const getClearingProvider = (clearing: ClearingKind): Task<ClearingProvid
     .with(ClearingKind.PAY_PLUS, () => getPayPlusProvider)
     .exhaustive()
 
-export const successUrl = (provider: ClearingKind) => `${host()}/payments/${provider}/success`
-export const errorUrl = (provider: ClearingKind) => `${host()}/payments/${provider}/error`
+export const successUrl = `${host()}/payments/success`
+export const errorUrl = `${host()}/payments/error`
 export const cancelUrl = (provider: ClearingKind) => `${host()}/payments/${provider}/cancel`
-export const callbackUrl = (provider: ClearingKind) => `${host()}/payments/${provider}/callback`
+export const callbackUrl = `${host()}/api/payment/callback`

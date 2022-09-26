@@ -19,7 +19,7 @@ import {
   ValidateTransaction,
   ValidationError,
 } from "integrations/clearingProvider"
-import { zodParse } from "app/core/helpers/zod"
+import { ensureType } from "app/core/helpers/zod"
 
 const checkStatus = pipe(
   E.fromPredicate(
@@ -35,7 +35,7 @@ export const validateTransaction: ValidateTransaction = (txId) => (order) =>
     TE.apSW("service", service),
     TE.apSW("clearing", getClearingIntegration(order.venueId)),
     TE.bindW("authorization", ({ clearing }) =>
-      pipe(clearing.vendorData, zodParse(Authorization), TE.fromEither)
+      pipe(clearing.vendorData, ensureType(Authorization), TE.fromEither)
     ),
     TE.chainW(({ service, authorization }) => service.getStatus([authorization, txId])),
     TE.map((r) => r.invoices),

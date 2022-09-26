@@ -114,6 +114,8 @@ const getStatus = ([Authorization, txId]: [Authorization, string]) =>
     RTE.chainEitherKW(toTyped(GetStatusResponse))
   )
 
+const refund = () => null
+
 const createPayPlusService = pipe(
   R.ask<HttpClientEnv>(),
   R.map(

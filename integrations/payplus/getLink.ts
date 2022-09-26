@@ -1,4 +1,4 @@
-import { zodParse } from "app/core/helpers/zod"
+import { ensureType } from "app/core/helpers/zod"
 import { Order } from "db"
 import { pipe } from "fp-ts/function"
 import * as TE from "fp-ts/TaskEither"
@@ -14,7 +14,7 @@ import {
 } from "./messages"
 import { service, toItems } from "./lib"
 import { getClearingIntegration, GetLink } from "integrations/clearingProvider"
-import { errorUrl, successUrl } from "integrations/helpers"
+import { callbackUrl, errorUrl, successUrl } from "integrations/helpers"
 
 interface PayloadProps {
   payment_page_uid: string
@@ -25,8 +25,9 @@ const toPayload = (order: Order) => (props: PayloadProps) =>
   GeneratePaymentLinkBody.parse({
     more_info: String(order.id),
     more_info_1: String(order.venueId),
-    refURL_failure: errorUrl("PAY_PLUS"),
-    refURL_success: successUrl("PAY_PLUS"),
+    refURL_failure: errorUrl,
+    refURL_success: successUrl,
+    refURL_callback: callbackUrl,
     ...props,
   })
 
@@ -39,7 +40,7 @@ export const getLink: GetLink = (order) =>
     TE.bind("payment_page_uid", ({ clearing }) => TE.of(clearing.terminal)),
     TE.bindW("payload", (props) => TE.of(toPayload(order)(props))),
     TE.bindW("authorization", ({ clearing }) =>
-      pipe(clearing.vendorData, zodParse(Authorization), TE.fromEither)
+      pipe(clearing.vendorData, ensureType(Authorization), TE.fromEither)
     ),
     TE.chainW(({ service, authorization, payload }) =>
       service.generatePageLink([authorization, payload])
