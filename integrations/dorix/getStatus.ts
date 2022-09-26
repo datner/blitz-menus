@@ -1,7 +1,9 @@
-import { constVoid, pipe } from "fp-ts/function"
+import { Order } from "@prisma/client"
+import { getBranchId } from "app/core/helpers/dorix"
+import { pipe } from "fp-ts/function"
 import * as TE from "fp-ts/TaskEither"
 import { match } from "ts-pattern"
-import { dorixService, GetStatusParams } from "./client"
+import { dorixService } from "./client"
 import {
   reportStatusZodError,
   reportStatusAxiosError,
@@ -10,19 +12,28 @@ import {
   reportEnvVarError,
 } from "./messages"
 
-export const getStatus = (params: GetStatusParams) =>
+export const getStatus = (order: Order) =>
   pipe(
-    TE.fromEither(dorixService),
-    TE.chainW((service) => service.getStatus(params)),
-    TE.match(
-      (e) =>
-        match(e)
-          .with({ tag: "NoEnvVarError" }, reportEnvVarError)
-          .with({ tag: "axiosRequestError" }, reportStatusAxiosError(params))
-          .with({ tag: "httpResponseStatusError" }, reportStatusResponseStatusError(params))
-          .with({ tag: "zodParseError" }, reportStatusZodError(params))
-          .with({ tag: "httpRequestError" }, ({ error }) => reportGenericError(error.message))
-          .exhaustive()(),
-      constVoid
-    )
+    TE.Do,
+    TE.apS("order", TE.of(order)),
+    TE.apS("service", TE.fromEither(dorixService)),
+    TE.bindW("branchId", ({ order }) => getBranchId(order)),
+    TE.chainW(({ service, order, branchId }) => service.getStatus({ branchId, orderId: order.id })),
+    TE.orElseFirstW((e) => {
+      match(e)
+        .with({ tag: "NoEnvVarError" }, reportEnvVarError)
+        .with({ tag: "axiosRequestError" }, reportStatusAxiosError(order))
+        .with({ tag: "httpResponseStatusError" }, reportStatusResponseStatusError(order))
+        .with({ tag: "zodParseError" }, reportStatusZodError(order))
+        .with({ tag: "httpRequestError" }, ({ error }) => reportGenericError(error.message))
+        .with({ tag: "prismaNotFoundError" }, ({ error }) => reportGenericError(error.message))
+        .with({ tag: "UnsupportedManagementError" }, ({ venueId }) =>
+          reportGenericError(
+            `venue ${venueId} tried to report to dorix using a different integration`
+          )
+        )
+        .exhaustive()()
+      return TE.of(e)
+    }),
+    TE.map((p) => p.order.status)
   )

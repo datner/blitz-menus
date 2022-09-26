@@ -77,7 +77,13 @@ const createDorixService: R.Reader<HttpClientEnv, DorixService> = pipe(
     })
   )
 )
-const OrderStatus = z.enum(["AWAITING_TO_BE_RECEIVED", "RECEIVED", "PREPARATION", "FAILED"])
+export const OrderStatus = z.enum([
+  "AWAITING_TO_BE_RECEIVED",
+  "RECEIVED",
+  "PREPARATION",
+  "FAILED",
+  "UNREACHABLE",
+])
 
 const StatusResponse = z.object({
   branch: z.object({

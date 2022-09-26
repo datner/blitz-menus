@@ -3,7 +3,7 @@ import { NoEnvVarError } from "app/core/helpers/env"
 import { Json } from "fp-ts/Json"
 import { AxiosRequestError, HttpResponseStatusError, ZodParseError } from "integrations/httpClient"
 import { sendMessage } from "integrations/telegram/sendMessage"
-import { DorixResponseError, GetStatusParams } from "./client"
+import { DorixResponseError } from "./client"
 
 export const reportOrderAxiosError = (order: Order) => (e: AxiosRequestError) =>
   sendMessage(`
@@ -43,9 +43,9 @@ ${e.message}
 export const reportOrderSuccess = (order: Order) => () =>
   sendMessage(`Hooray\\! ${order.id} was succesfully reported to Dorix\\!`)
 
-export const reportStatusAxiosError = (params: GetStatusParams) => (e: AxiosRequestError) =>
+export const reportStatusAxiosError = (params: Order) => (e: AxiosRequestError) =>
   sendMessage(`
-Oh no, we couldn't reach Dorix to get status of order ${params.orderId}
+Oh no, we couldn't reach Dorix to get status of order ${params.id}
 
 Error details:
 \`\`\`
@@ -53,10 +53,9 @@ ${e.error.message}
 \`\`\`
 `)
 
-export const reportStatusResponseStatusError =
-  (params: GetStatusParams) => (e: HttpResponseStatusError) =>
-    sendMessage(`
-Oh no, Dorix returned \`${e.status}\` for our request to get status of order ${params.orderId}\\.
+export const reportStatusResponseStatusError = (params: Order) => (e: HttpResponseStatusError) =>
+  sendMessage(`
+Oh no, Dorix returned \`${e.status}\` for our request to get status of order ${params.id}\\.
 `)
 
 export const reportGenericError = (details: Json) =>
@@ -68,9 +67,9 @@ ${JSON.stringify(details, null, 2)}
 \`\`\`
 `)
 
-export const reportStatusZodError = (params: GetStatusParams) => (e: ZodParseError) =>
+export const reportStatusZodError = (params: Order) => (e: ZodParseError) =>
   sendMessage(`
-Thats weird. Dorix payload came back malformed for our request to get status for order ${params.orderId}\\.
+Thats weird. Dorix payload came back malformed for our request to get status for order ${params.id}\\.
 
 Error details:
 \`\`\`

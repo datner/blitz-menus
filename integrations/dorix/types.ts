@@ -1,3 +1,5 @@
+import { z } from "zod"
+
 export interface Transaction {
   /** payment reference number */
   id: string
@@ -109,3 +111,8 @@ export interface Request<T extends "PICKUP" = "PICKUP"> {
 
   items: Item[]
 }
+
+export const DorixVendorData = z.object({
+  branchId: z.string(),
+})
+export type DorixVendorData = z.infer<typeof DorixVendorData>
