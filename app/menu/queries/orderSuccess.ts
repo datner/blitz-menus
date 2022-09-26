@@ -1,81 +1,57 @@
 import { resolver } from "@blitzjs/rpc"
 import { z } from "zod"
-import { flow, pipe } from "fp-ts/function"
-import { getClearingProvider } from "integrations/helpers"
-import * as dorix from "integrations/dorix"
-import { match } from "ts-pattern"
-import { getOrder } from "app/orders/helpers/getOrder"
-import { ClearingProvider as ClearingKind } from "@prisma/client"
-import * as RTE from "fp-ts/ReaderTaskEither"
+import { identity, pipe } from "fp-ts/function"
+import { Order } from "@prisma/client"
 import * as E from "fp-ts/Either"
-import * as T from "fp-ts/Task"
+import * as O from "fp-ts/Option"
 import * as TE from "fp-ts/TaskEither"
-import { secondsToMilliseconds } from "date-fns"
+import db from "db"
+import { prismaNotFound } from "app/core/helpers/prisma"
 
-const OrderSuccess = z.object({
-  provider: z.nativeEnum(ClearingKind),
-  params: z.record(z.string()).transform((params) => new URLSearchParams(Object.entries(params))),
+const None = z.object({
+  _tag: z.literal("None"),
 })
 
-type OrderSuccess = z.infer<typeof OrderSuccess>
+const Some = <T extends z.ZodTypeAny>(schema: T) =>
+  z.object({
+    _tag: z.literal("Some"),
+    value: schema,
+  })
+
+const Option = <T extends z.ZodTypeAny>(schema: T) =>
+  z.discriminatedUnion("_tag", [None, Some(schema)])
+
+const OrderSuccess = z.object({
+  txId: Option(z.string()),
+})
 
 type MissingParamError = {
   tag: "missingParamError"
   param: string
 }
 
-const getParam = (param: string) => (qs: URLSearchParams) =>
-  E.fromNullable<MissingParamError>({ tag: "missingParamError", param })(qs.get(param))
+type OrderSuccess = {
+  txId: O.Option<string>
+}
 
-const getOrderId = (input: OrderSuccess) =>
+const getOrderByTxId = (txId: string) =>
+  TE.tryCatch(() => db.order.findUniqueOrThrow({ where: { txId } }), prismaNotFound)
+
+const ensureOrderState = <O extends Order>(order: O) =>
+  E.fromPredicate(
+    (o: Order) => o.state === "Confirmed",
+    () => ({ tag: "StateNotConfirmedError", state: order.state })
+  )(order)
+
+const orderSuccess = (input: OrderSuccess) =>
   pipe(
-    match(input)
-      .with({ provider: ClearingKind.PAY_PLUS }, ({ params }) => getParam("more_info")(params))
-      .with({ provider: ClearingKind.CREDIT_GUARD }, ({ params }) => getParam("uniqueid")(params))
-      .exhaustive(),
-    E.map(Number)
+    input.txId,
+    TE.fromOption<MissingParamError>(() => ({ tag: "missingParamError", param: "txId" })),
+    TE.chainW(getOrderByTxId),
+    TE.chainEitherKW(ensureOrderState),
+    TE.matchW((e) => {
+      throw new Error(e.tag)
+    }, identity)
   )
 
-const getTxId = (input: OrderSuccess) =>
-  match(input)
-    .with({ provider: ClearingKind.PAY_PLUS }, ({ params }) => getParam("transaction_uid")(params))
-    .with({ provider: ClearingKind.CREDIT_GUARD }, ({ params }) => getParam("txId")(params))
-    .exhaustive()
-
-const getOrderFromInput = (input: OrderSuccess) =>
-  pipe(
-    getOrderId(input),
-    TE.fromEither,
-    TE.chainW((id) => getOrder(id)({ items: { include: { item: true, modifiers: true } } }))
-  )
-
-const validateTransaction = (input: OrderSuccess) =>
-  pipe(
-    TE.Do,
-    TE.apS("provider", TE.fromTask(getClearingProvider(input.provider))),
-    TE.apSW("order", getOrderFromInput(input)),
-    TE.apSW("txId", TE.fromEither(getTxId(input))),
-    TE.chainFirstW(({ order, provider, txId }) => provider.validateTransaction(txId)(order)),
-    TE.chainFirstTaskK(({ txId, order }) => dorix.sendOrder(txId)(order))
-  )
-
-const withBackoff = (seconds: number) =>
-  pipe(
-    RTE.ask<OrderSuccess>(),
-    RTE.chainTaskEitherKW(flow(validateTransaction, T.delay(secondsToMilliseconds(seconds))))
-  )
-
-// todo: this is not a good solution.
-const validate = (input: OrderSuccess) =>
-  pipe(
-    withBackoff(0),
-    RTE.orElse(() => withBackoff(5)),
-    RTE.orElse(() => withBackoff(15)),
-    RTE.orElse(() => withBackoff(35)),
-    RTE.orElse(() => withBackoff(75)),
-    RTE.getOrElse((e) => {
-      throw e
-    })
-  )(input)
-
-export default resolver.pipe(resolver.zod(OrderSuccess), validate, (task) => task())
+export default resolver.pipe(resolver.zod(OrderSuccess), orderSuccess, (task) => task())
