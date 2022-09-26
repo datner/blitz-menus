@@ -6,7 +6,7 @@ export const Id = z.number().int().nonnegative()
 
 export const Slug = z
   .string()
-  .nonempty()
+  .min(1)
   .regex(/^[a-z0-9-]+$/, {
     message: "Slug should contain only lowercase letters, numbers, and dashes",
   })
@@ -31,7 +31,7 @@ export type ZodParseError<T> = {
   error: z.ZodError<T>
 }
 
-export const zodParse =
+export const ensureType =
   <Schema extends z.ZodTypeAny>(schema: Schema) =>
   (data: unknown): E.Either<ZodParseError<Schema>, z.output<Schema>> =>
     pipe(schema.safeParse(data), (result) =>

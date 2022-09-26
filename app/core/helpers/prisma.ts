@@ -1,11 +1,16 @@
 import { Prisma } from "@prisma/client"
-import { PrismaNotFoundError } from "app/core/type/prisma"
+import { PrismaNotFoundError, PrismaValidationError } from "app/core/type/prisma"
 import db from "db"
 import { tryCatch } from "fp-ts/TaskEither"
 
 export const prismaNotFound = (e: unknown): PrismaNotFoundError => ({
   tag: "prismaNotFoundError",
   error: e as Prisma.NotFoundError,
+})
+
+export const prismaNotValid = (e: unknown): PrismaValidationError => ({
+  tag: "prismaValidationError",
+  error: e as Prisma.PrismaClientValidationError,
 })
 
 export const getVenueById =
