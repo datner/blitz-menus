@@ -285,6 +285,7 @@ model Order {
   venueId Int
   txId    String?     @unique
   items   OrderItem[]
+  state   OrderState  @default(Init)
 }
 
 model OrderItem {
@@ -318,6 +319,17 @@ enum TokenType {
 enum Locale {
   en
   he
+}
+
+enum OrderState {
+  Init
+  Dead
+  PaidFor
+  Unconfirmed
+  Confirmed
+  Cancelled
+  Refunded
+  Delivered
 }
 
 enum MembershipRole {
