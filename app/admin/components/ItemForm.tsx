@@ -7,7 +7,7 @@ import { useTranslations } from "next-intl"
 import { DefaultValues, FormProvider } from "react-hook-form"
 import getUploadUrl from "../mutations/getUploadUrl"
 import { FormDropzone } from "./FormDropzone"
-import { useEffect, useReducer } from "react"
+import { useReducer } from "react"
 import { match } from "ts-pattern"
 import { FormCategoryCombobox } from "./FormCategoryCombobox"
 import { DeleteButton } from "./DeleteButton"
@@ -76,7 +76,6 @@ export function ItemForm(props: Props) {
     [item, reset],
     Eq.tuple(O.getEq(eqItem), { equals: constTrue })
   )
-  useEffect(() => {}, [reset, item])
 
   const onSubmit = handleSubmit(async (data) => {
     const { image } = data

@@ -51,7 +51,7 @@ export const CreateCategoryModal = create<Props>(({ name }) => {
               <Dialog.Panel className="w-full max-w-md transform text-left rtl:text-right overflow-hidden rounded-2xl shadow-xl transition-all">
                 <CategoryForm
                   onSubmit={async (data) => {
-                    await onSubmit(data)
+                    await onSubmit(data)()
                     modal.hide()
                   }}
                   defaultValues={defaultValues}
