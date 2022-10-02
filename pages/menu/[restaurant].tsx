@@ -113,6 +113,9 @@ export const Menu: BlitzPage<InferGetStaticPropsType<typeof getStaticProps>> = (
           <LazyOrderModal open={reviewOrder} onClose={() => setReviewOrder(false)} />
         </Suspense>
         <Suspense fallback={<></>}>{itemModal(item)}</Suspense>
+        {restaurant.simpleContactInfo && (
+          <div className="mt-4 text-center">{restaurant.simpleContactInfo}</div>
+        )}
         <div className="mt-4 text-center">
           ביטול עסקה בהתאם לתקנות הגנת הצרכן (ביטול עסקה), התשע״א-2010 וחוק הגנת הצרכן, התשמ״א-1981
         </div>

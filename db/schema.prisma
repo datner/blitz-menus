@@ -106,6 +106,7 @@ model Venue {
   managementIntegration ManagementIntegration?
   content               RestaurantI18L[]
   menus                 Menu[]
+  simpleContactInfo     String?
 }
 
 model ClearingIntegration {
