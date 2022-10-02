@@ -113,6 +113,9 @@ export const Menu: BlitzPage<InferGetStaticPropsType<typeof getStaticProps>> = (
           <LazyOrderModal open={reviewOrder} onClose={() => setReviewOrder(false)} />
         </Suspense>
         <Suspense fallback={<></>}>{itemModal(item)}</Suspense>
+        <div className="mt-4 text-center">
+          ביטול עסקה בהתאם לתקנות הגנת הצרכן (ביטול עסקה), התשע״א-2010 וחוק הגנת הצרכן, התשמ״א-1981
+        </div>
       </div>
     </>
   )
@@ -183,6 +186,6 @@ export const getStaticProps = gSP(async (context: GetStaticPropsContext) => {
       restaurant: typedRestaurant,
       messages: (await import(`app/core/messages/${context.locale}.json`)).default,
     },
-    revalidate: 10,
+    revalidate: 30,
   }
 })
