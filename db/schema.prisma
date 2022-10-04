@@ -107,6 +107,7 @@ model Venue {
   content               RestaurantI18L[]
   menus                 Menu[]
   simpleContactInfo     String?
+  open                  Boolean                @default(true)
 }
 
 model ClearingIntegration {
