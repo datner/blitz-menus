@@ -16,7 +16,7 @@ const config = {
   images: {
     loader: "imgix",
     path: "https://renu.imgix.net/",
-    domains: ["renu.imgix.net", ""],
+    domains: ["renu.imgix.net", "", "images.unsplash.com"],
   },
   async rewrites() {
     return {
