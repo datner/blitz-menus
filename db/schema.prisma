@@ -88,6 +88,8 @@ model Affiliation {
   updatedAt      DateTime       @updatedAt
   member         Membership     @relation(fields: [memberId], references: [id])
   organization   Organization   @relation(fields: [organizationId], references: [id])
+  Venue          Venue          @relation(fields: [venueId], references: [id])
+  venueId        Int
 }
 
 model Venue {
@@ -108,6 +110,7 @@ model Venue {
   menus                 Menu[]
   simpleContactInfo     String?
   open                  Boolean                @default(true)
+  Affiliation           Affiliation[]
 }
 
 model ClearingIntegration {
