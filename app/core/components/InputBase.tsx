@@ -15,9 +15,10 @@ export const InputBase = memo(
         "placeholder-gray-400",
         "sm:text-sm",
         "error:border-red-300 error:focus:ring-red-500 error:text-red-900",
-        "focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none",
+        "focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none",
         "disabled:bg-gray-200",
       ])}
     />
   ))
 )
+InputBase.displayName = "InputBase"

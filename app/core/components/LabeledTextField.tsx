@@ -48,5 +48,6 @@ export const LabeledTextField = memo<LabeledTextFieldProps>(
     )
   }
 )
+LabeledTextField.displayName = "LabeledTextField"
 
 export default LabeledTextField

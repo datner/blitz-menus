@@ -48,5 +48,6 @@ export const LabeledTextArea = memo<LabeledTextAreaProps>(
     )
   }
 )
+LabeledTextArea.displayName = "LabeledTextArea"
 
 export default LabeledTextArea

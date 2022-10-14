@@ -44,5 +44,6 @@ export const LabeledTextAreaNoForm = memo<LabeledTextAreaProps>(
     )
   }
 )
+LabeledTextAreaNoForm.displayName = "LabeledTextAreaNoForm"
 
 export default LabeledTextAreaNoForm
