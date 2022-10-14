@@ -2,25 +2,30 @@ import Link from "next/link"
 import Image from "next/image"
 import { Routes } from "@blitzjs/next"
 import { useQuery } from "@blitzjs/rpc"
-import getCategories from "app/categories/queries/getCategories"
 import { priceShekel, titleFor } from "app/core/helpers/content"
 import { useLocale } from "app/core/hooks/useLocale"
 import { Prisma } from "@prisma/client"
 import { useTranslations } from "next-intl"
+import getCurrentVenueCategories from "app/categories/queries/getCurrentVenueCategories"
+import { Loader, LoadingOverlay } from "@mantine/core"
 
 function AsideDirectory() {
   const locale = useLocale()
   const t = useTranslations("admin.Components.Aside")
-  const [{ categories }] = useQuery(getCategories, {
+  const [{ categories }, ...rest] = useQuery(getCurrentVenueCategories, {
     orderBy: { identifier: Prisma.SortOrder.asc },
   })
+  // typescript is acting dumb
+  const [{ isLoading, isRefetching }] = rest
 
   const title = titleFor(locale)
 
   return (
     <div className="flex h-full flex-col">
-      <div className="p-2 pl-4">
-        <h3 className="text-xl text-gray-800 font-semibold">{t("items")}</h3>
+      <LoadingOverlay visible={isLoading} />
+      <div className="p-2 pl-4 flex items-center">
+        <h3 className="text-xl text-gray-800 font-semibold inline-block grow">{t("items")}</h3>
+        {isRefetching && <Loader color="green" variant="dots" />}
       </div>
       <nav className="grow overflow-y-auto" aria-label="Directory">
         {categories.map(({ items, identifier, ...rest }) => (
@@ -31,7 +36,7 @@ function AsideDirectory() {
             <ul role="list" className="relative z-0 divide-y divide-gray-200">
               {items.map((item) => (
                 <li key={item.id} className="bg-white">
-                  <div className="relative px-6 py-5 flex items-center gap-3 hover:bg-gray-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-500">
+                  <div className="relative px-6 py-5 flex items-center gap-3 hover:bg-gray-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-emerald-500">
                     <div className="flex-shrink-0">
                       {item.image && (
                         <Image

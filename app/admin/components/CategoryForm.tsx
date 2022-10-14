@@ -59,7 +59,7 @@ export function CategoryForm(props: Props) {
     <FormProvider {...form}>
       <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
         <div className="pb-4 h-20 flex">
-          <h2 className="text-xl text-gray-700 font-semibold underline underline-offset-1 decoration-indigo-600 grow">
+          <h2 className="text-xl text-gray-700 font-semibold underline underline-offset-1 decoration-emerald-600 grow">
             {props.defaultValues ? t("title.edit") : t("title.new")}
           </h2>
         </div>
@@ -88,7 +88,7 @@ export function CategoryForm(props: Props) {
             </fieldset>
           </div>
           <button
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-gray-400"
+            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-gray-400"
             type="submit"
             disabled={isSubmitting}
           >

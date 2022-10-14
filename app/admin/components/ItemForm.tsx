@@ -23,6 +23,7 @@ import { Locale } from "@prisma/client"
 import { useStableEffect } from "fp-ts-react-stable-hooks"
 import { eqItem } from "app/items/helpers/eqItem"
 import { nanoid } from "nanoid"
+import { toast } from "react-toastify"
 
 type _Item = PromiseReturnType<typeof getItem>
 
@@ -78,31 +79,39 @@ export function ItemForm(props: Props) {
   )
 
   const onSubmit = handleSubmit(async (data) => {
-    const { image } = data
-    const file = image.file
-    try {
-      if (file) {
-        const { url, headers: h } = await getAssetUrl({
-          name: `${data.identifier}-${nanoid()}.${file.name.split(".").pop()}`,
-        })
-        const headers = new Headers(h)
-        headers.append("Content-Length", `${file.size + 5000}`)
+    async function doAction() {
+      const { image } = data
+      const file = image.file
+      try {
+        if (file) {
+          const { url, headers: h } = await getAssetUrl({
+            name: `${data.identifier}-${nanoid()}.${file.name.split(".").pop()}`,
+          })
+          const headers = new Headers(h)
+          headers.append("Content-Length", `${file.size + 5000}`)
 
-        const {
-          data: {
-            attributes: { origin_path },
-          },
-        } = await fetch(url, {
-          method: "POST",
-          headers,
-          body: await file.arrayBuffer(),
-        }).then((res) => res.json())
-        image.src = origin_path
+          const {
+            data: {
+              attributes: { origin_path },
+            },
+          } = await fetch(url, {
+            method: "POST",
+            headers,
+            body: await file.arrayBuffer(),
+          }).then((res) => res.json())
+          image.src = origin_path
+        }
+        await pipe(onSubmit_(data), TE.match(setFormError, flow(O.some, toDefaults, reset)))()
+      } catch (error: any) {
+        setFormError(error.toString())
       }
-      await pipe(onSubmit_(data), TE.match(setFormError, flow(O.some, toDefaults, reset)))()
-    } catch (error: any) {
-      setFormError(error.toString())
     }
+    const isCreate = O.isNone(item)
+    await toast.promise(doAction(), {
+      pending: `${isCreate ? "Creating" : "Updating"} in progress...`,
+      success: `${data.identifier} ${isCreate ? "created" : "updated"} successfully!`,
+      error: `Oops! Couldn't ${isCreate ? "create" : "update"} ${data.identifier}`,
+    })
   })
 
   const result = {
@@ -138,7 +147,7 @@ export function ItemForm(props: Props) {
     <FormProvider {...form}>
       <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
         <div className="pb-4 h-20 flex">
-          <h1 className="text-xl text-gray-700 font-semibold underline underline-offset-1 decoration-indigo-600 grow">
+          <h1 className="text-xl text-gray-700 font-semibold underline underline-offset-1 decoration-emerald-600 grow">
             {title}
           </h1>
           <div>{deleteButton}</div>
@@ -190,7 +199,7 @@ export function ItemForm(props: Props) {
             </div>
           </div>
           <button
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-gray-400"
+            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:bg-gray-400"
             type="submit"
             disabled={isSubmitting}
           >
