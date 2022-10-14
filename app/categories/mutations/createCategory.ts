@@ -1,18 +1,21 @@
 import { resolver } from "@blitzjs/rpc"
-import { getUserRestaurant } from "app/auth/helpers/getUserRestaurant"
+import { setDefaultOrganizationIdNoFilter } from "app/auth/helpers/setDefaultOrganizationId"
+import { setDefaultVenueId } from "app/auth/helpers/setDefaultVenueId"
 import db from "db"
 import { CreateCategory } from "../validations"
 
 export default resolver.pipe(
   resolver.zod(CreateCategory),
   resolver.authorize(),
-  async (input, ctx) => {
-    const restaurant = await getUserRestaurant(ctx)
+  setDefaultOrganizationIdNoFilter,
+  setDefaultVenueId,
+  async ({ organizationId, venueId, ...input }) => {
     const item = await db.category.create({
       data: {
         ...input,
-        restaurantId: restaurant.id,
-        organizationId: ctx.session.orgId,
+        restaurantId: -1,
+        venueId,
+        organizationId,
       },
       include: {
         content: true,
