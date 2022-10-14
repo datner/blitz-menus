@@ -6,7 +6,7 @@ export const enforceSuperAdminIfNotCurrentOrganization = <T extends Record<any, 
   input: T,
   ctx: Ctx
 ): T => {
-  assert(ctx.session.orgId, "missing session.orgId")
+  assert(ctx.session.organization, "missing session.organization")
   assert(input.organizationId, "missing input.organizationId")
 
   if (input.organizationId !== ctx.session.orgId) {

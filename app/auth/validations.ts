@@ -18,8 +18,10 @@ export const Signup = z.object({
 
 export const Login = z.object({
   email,
-  password: z.string().nonempty(),
+  password: z.string().min(1),
 })
+
+export type Login = z.infer<typeof Login>
 
 export const ForgotPassword = z.object({
   email,
@@ -44,13 +46,13 @@ export const ChangePassword = z.object({
 const RestaurantContent = z.object({
   name: z
     .string()
-    .nonempty()
+    .min(1)
     .transform((str) => str.trim()),
 })
 
 export const Slug = z
   .string()
-  .nonempty()
+  .min(1)
   .regex(/^[a-z0-9-]+$/, {
     message: "Slug should contain only lowercase letters, numbers, and dashes",
   })
@@ -60,7 +62,7 @@ export const Slug = z
 
 export const CreateRestaurant = z.object({
   slug: Slug,
-  logo: z.string().nonempty(),
+  logo: z.string().min(1),
   en: RestaurantContent,
   he: RestaurantContent,
 })

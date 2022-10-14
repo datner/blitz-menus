@@ -1,18 +1,19 @@
 import { SecurePassword } from "@blitzjs/auth"
 import { resolver } from "@blitzjs/rpc"
-import { AuthenticationError, NotFoundError } from "blitz"
+import { AuthenticationError } from "blitz"
 import db from "db"
-import { isNonEmpty } from "fp-ts/Array"
-import { head } from "fp-ts/NonEmptyArray"
+import { pipe } from "fp-ts/function"
+import * as E from "fp-ts/Either"
+import { getMembership } from "../helpers/getMembership"
 import { Login } from "../validations"
+import { none, some } from "fp-ts/Option"
 
 export const authenticateUser = async (rawEmail: string, rawPassword: string) => {
   const { email, password } = Login.parse({ email: rawEmail, password: rawPassword })
   const user = await db.user.findFirst({
     where: { email },
     include: {
-      membership: true,
-      restaurant: true,
+      membership: { include: { affiliations: { include: { Venue: true } }, organization: true } },
     },
   })
   if (!user) throw new AuthenticationError()
@@ -33,18 +34,22 @@ export default resolver.pipe(resolver.zod(Login), async ({ email, password }, ct
   // This throws an error if credentials are invalid
   const user = await authenticateUser(email, password)
 
-  if (!isNonEmpty(user.membership))
-    throw new NotFoundError(`User ${user.id} is not associated with any organizations`)
-
-  // TOOD: specify which membership
-  const membership = head(user.membership)
-
-  await ctx.session.$create({
-    userId: user.id,
-    roles: [user.role, membership.role],
-    orgId: membership.organizationId,
-    restaurantId: user.restaurantId ?? undefined,
-  })
+  await pipe(
+    getMembership(user),
+    E.map((m) =>
+      ctx.session.$create({
+        userId: user.id,
+        organization: some(m.organization),
+        venue: some(m.affiliation.Venue),
+        roles: [user.role, m.role],
+        orgId: m.organizationId,
+        impersonatingFromUserId: none,
+      })
+    ),
+    E.getOrElseW((e) => {
+      throw e
+    })
+  )
 
   return user
 })
