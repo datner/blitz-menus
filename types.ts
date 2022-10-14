@@ -1,5 +1,6 @@
 import { SessionContext, SimpleRolesIsAuthorized } from "@blitzjs/auth"
-import { User, GlobalRole, MembershipRole, Restaurant, Organization } from "db"
+import { User, GlobalRole, MembershipRole, Restaurant, Organization, Venue } from "db"
+import { Option } from "fp-ts/Option"
 
 type Role = GlobalRole | MembershipRole
 
@@ -12,9 +13,11 @@ declare module "@blitzjs/auth" {
     PublicData: {
       userId: User["id"]
       roles: Role[]
+      venue: Option<Venue>
       orgId?: Organization["id"]
+      organization: Option<Organization>
       restaurantId?: Restaurant["id"]
-      impersonatingFromUserId?: User["id"]
+      impersonatingFromUserId: Option<number>
     }
   }
 }
@@ -33,6 +36,7 @@ declare global {
     readonly PAY_PLUS_API_KEY: string
     readonly PAY_PLUS_SECRET_KEY: string
     readonly PAY_PLUS_API_URL: string
+    readonly REVALIDATION_SECRET_TOKEN: string
   }
   namespace NodeJS {
     interface ProcessEnv extends ProcessEnvVars {}
