@@ -1,7 +1,6 @@
 import { useRouter } from "next/router"
 import { Routes } from "@blitzjs/next"
 import { useMutation, useQuery } from "@blitzjs/rpc"
-import getCategories from "app/categories/queries/getCategories"
 import { Prisma } from "@prisma/client"
 import createItem from "../mutations/createItem"
 import updateItem from "../mutations/updateItem"
@@ -14,15 +13,14 @@ import * as TE from "fp-ts/TaskEither"
 import * as T from "fp-ts/Task"
 import { none, some } from "fp-ts/Option"
 import { fpInvalidateQuery, fpSetQueryData } from "app/core/helpers/blitz"
+import getCurrentVenueCategories from "app/categories/queries/getCurrentVenueCategories"
 
-const invalidateQueries = pipe(
+const invalidateQueries = T.sequenceArray([
   fpInvalidateQuery(getItems),
-  T.chain(() =>
-    fpInvalidateQuery(getCategories, {
-      orderBy: { identifier: Prisma.SortOrder.asc },
-    })
-  )
-)
+  fpInvalidateQuery(getCurrentVenueCategories, {
+    orderBy: { identifier: Prisma.SortOrder.asc },
+  }),
+])
 
 const useCreate = (redirect = false) =>
   pipe(
@@ -57,30 +55,27 @@ const useCreate = (redirect = false) =>
     (onSubmit) => ({ onSubmit, item: none })
   )
 
-const useUpdate = (identifier: string) =>
-  pipe(
-    {
-      updateItem: useMutation(updateItem),
-      router: useRouter(),
-      itemQuery: useQuery(getItem, { identifier }),
-    },
-    ({ updateItem: [updateItem], router, itemQuery: [item, { setQueryData }] }) => ({
-      onSubmit: (data: ItemSchema) =>
-        pipe(
-          () => updateItem({ id: item.id, ...data }),
-          T.chainFirst(() => invalidateQueries),
-          T.chainFirst((it) => () => setQueryData(it)),
-          T.chainFirst(
-            ({ identifier }) =>
-              () =>
-                router.replace(Routes.AdminItemsItem({ identifier }), undefined, { shallow: true })
-          ),
-          TE.fromTask,
-          TE.mapLeft(() => "Something happened while updating item!")
-        ),
-      item: some(item),
-    })
-  )
+const useUpdate = (identifier: string) => {
+  const [update] = useMutation(updateItem)
+  const router = useRouter()
+  const [item, { setQueryData }] = useQuery(getItem, { identifier })
+
+  const onSubmit = (data: ItemSchema) =>
+    pipe(
+      () => update({ id: item.id, ...data }),
+      T.chainFirst(() => invalidateQueries),
+      T.chainFirst((it) => () => setQueryData(it)),
+      T.chainFirst(
+        ({ identifier }) =>
+          () =>
+            router.replace(Routes.AdminItemsItem({ identifier }), undefined, { shallow: true })
+      ),
+      TE.fromTask,
+      TE.mapLeft(() => "Something happened while updating item!")
+    )
+
+  return { onSubmit, item: some(item) }
+}
 
 export const item = {
   useCreate,
