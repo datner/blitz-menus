@@ -4,17 +4,20 @@ import { Aside } from "app/admin/components/Aside"
 import { Content } from "app/admin/components/Content"
 import { CreateItemForm } from "app/admin/components/CreateItemForm"
 import { Suspense } from "react"
+import { LoadingOverlay } from "@mantine/core"
 
 const AdminItemsNew: BlitzPage = () => {
   return (
     <Content
       main={
-        <Suspense fallback={<>...fallback</>}>
-          <CreateItemForm />
+        <Suspense fallback={<LoadingOverlay visible />}>
+          <div className="px-8 pt-6">
+            <CreateItemForm />
+          </div>
         </Suspense>
       }
       aside={
-        <Suspense fallback={<>...fallback</>}>
+        <Suspense fallback={<LoadingOverlay visible />}>
           <Aside.Directory />
         </Suspense>
       }

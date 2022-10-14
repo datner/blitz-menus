@@ -1,24 +1,33 @@
 import { gSSP } from "app/blitz-server"
 import { GetServerSidePropsContext } from "next"
-import { getSession } from "@blitzjs/auth"
-import { BlitzPage, Routes, useParam } from "@blitzjs/next"
+import { BlitzPage, ErrorBoundary, Routes, useParam } from "@blitzjs/next"
 import { Content } from "app/admin/components/Content"
 import { AdminLayout } from "app/core/layouts/AdminLayout"
 import { Suspense } from "react"
 import { Aside } from "app/admin/components/Aside"
 import { UpdateItemForm } from "app/admin/components/UpdateItemForm"
+import { LoadingOverlay } from "@mantine/core"
+import { useRouter } from "next/router"
 
 const AdminItemsItem: BlitzPage = () => {
   const identifier = useParam("identifier", "string")
+  const router = useRouter()
   return (
     <Content
       main={
-        <Suspense fallback={<>...fallback</>}>
-          {identifier && <UpdateItemForm identifier={identifier} />}
-        </Suspense>
+        <ErrorBoundary
+          onError={() => router.push(Routes.AdminItems())}
+          fallback={<div>oops! couldn&apos;t find a {identifier}</div>}
+        >
+          <Suspense fallback={<LoadingOverlay visible />}>
+            <div className="px-8 pt-6 mx-auto flex max-w-4xl">
+              {identifier && <UpdateItemForm identifier={identifier} />}
+            </div>
+          </Suspense>
+        </ErrorBoundary>
       }
       aside={
-        <Suspense fallback={<>...fallback</>}>
+        <Suspense fallback={<LoadingOverlay visible />}>
           <Aside.Directory />
         </Suspense>
       }
@@ -27,12 +36,12 @@ const AdminItemsItem: BlitzPage = () => {
 }
 
 export const getServerSideProps = gSSP(async (ctx: GetServerSidePropsContext) => {
-  const { req, res, locale } = ctx
-  const session = await getSession(req, res)
-  if (!session.restaurantId) {
+  const { locale, query } = ctx
+  const { identifier } = query
+  if (!identifier || Array.isArray(identifier)) {
     return {
       redirect: {
-        destination: Routes.LoginPage(),
+        destination: Routes.AdminItemsNew(),
         permanent: false,
       },
       props: {},
