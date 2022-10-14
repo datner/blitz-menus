@@ -1,5 +1,4 @@
 import { withBlitz } from "app/blitz-client"
-import { Router } from "next/router"
 import { useQueryErrorResetBoundary } from "@blitzjs/rpc"
 import { AppProps, ErrorBoundary, ErrorComponent, ErrorFallbackProps } from "@blitzjs/next"
 import { LoginForm } from "app/auth/components/LoginForm"
@@ -10,13 +9,8 @@ import { Locale } from "@prisma/client"
 import { useIsomorphicLayoutEffect } from "app/core/hooks/useIsomorphicLayoutEffect"
 import { AuthenticationError, AuthorizationError } from "blitz"
 import { createEmotionCache, MantineProvider } from "@mantine/core"
-import NProgress from "nprogress"
-import "app/core/styles/nprogress.css"
 import { rtlCache } from "app/core/helpers/rtl-cache"
-
-Router.events.on("routeChangeStart", () => NProgress.start())
-Router.events.on("routeChangeComplete", () => NProgress.done())
-Router.events.on("routeChangeError", () => NProgress.done())
+import { RouterTransition } from "app/admin/components/RouterTransition"
 
 const renuCache = createEmotionCache({ key: "renu" })
 
@@ -41,8 +35,26 @@ export default withBlitz(function App({
         withGlobalStyles
         withNormalizeCSS
         emotionCache={rtl ? rtlCache : renuCache}
-        theme={{ dir, primaryColor: "indigo" }}
+        theme={{
+          dir,
+          primaryColor: "green",
+          colors: {
+            green: [
+              "#70AD99",
+              "#CFE4DD",
+              "#BDDFD5",
+              "#A0C9BB",
+              "#70AD99",
+              "#419277",
+              "#117755",
+              "#0D5940",
+              "#093C2B",
+              "#041E15",
+            ],
+          },
+        }}
       >
+        <RouterTransition />
         <ErrorBoundary
           FallbackComponent={RootErrorFallback}
           onReset={useQueryErrorResetBoundary().reset}
