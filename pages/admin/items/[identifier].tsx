@@ -54,7 +54,7 @@ export const getServerSideProps = gSSP(async (ctx: GetServerSidePropsContext) =>
 })
 
 AdminItemsItem.authenticate = {
-  redirectTo: Routes.LoginPage({ next: Routes.AdminHome().pathname }),
+  redirectTo: Routes.Authentication(),
 }
 
 AdminItemsItem.getLayout = (page) => <AdminLayout>{page}</AdminLayout>

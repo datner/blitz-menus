@@ -1,12 +1,28 @@
 import Link from "next/link"
+import login from "app/auth/mutations/login"
 import { useMutation } from "@blitzjs/rpc"
 import { BlitzPage, Routes } from "@blitzjs/next"
-import { Suspense } from "react"
 import Layout from "app/core/layouts/Layout"
 import { useCurrentUser } from "app/core/hooks/useCurrentUser"
 import logout from "app/auth/mutations/logout"
+import {
+  Container,
+  Title,
+  Text,
+  Anchor,
+  Paper,
+  TextInput,
+  PasswordInput,
+  Group,
+  Button,
+  Loader,
+} from "@mantine/core"
 import styles from "styles/index.module.css"
 import clsx from "clsx"
+import { useZodForm } from "app/core/hooks/useZodForm"
+import { Login } from "app/auth/validations"
+import { AuthenticationError } from "blitz"
+import { useRouter } from "next/router"
 
 /*
  * This file is just for a pleasant getting started page for your new app.
@@ -51,6 +67,89 @@ const UserInfo = () => {
       </>
     )
   }
+}
+
+function LoginForm() {
+  const router = useRouter()
+  const [loginMutation] = useMutation(login)
+  const form = useZodForm({
+    schema: Login,
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  })
+
+  const handleSubmit = form.handleSubmit(async (data) => {
+    try {
+      await loginMutation(data)
+      router.push(Routes.AdminHome())
+    } catch (error: unknown) {
+      if (error instanceof AuthenticationError) {
+        return form.setFormError("Sorry, those credentials are invalid")
+      }
+
+      if (error instanceof Error) {
+        return form.setFormError(
+          "Sorry, we had an unexpected error. Please try again. - " + error.toString()
+        )
+      }
+
+      return form.setFormError("Sorry, we had an unexpected error. Please try again.")
+    }
+  })
+
+  return (
+    <Paper
+      component="form"
+      withBorder
+      shadow="md"
+      p={30}
+      mt={30}
+      radius="md"
+      onSubmit={handleSubmit}
+    >
+      <fieldset disabled={form.formState.isSubmitting}>
+        <TextInput
+          {...form.register("email", { required: true })}
+          label="Email"
+          placeholder="you@renu.menu"
+        />
+        <PasswordInput
+          {...form.register("password", { required: true })}
+          label="Password"
+          placeholder="your password"
+          mt="md"
+        />
+        <Group position="apart" mt="md">
+          <Anchor<"a"> size="sm" href="#" onClick={(e) => e.preventDefault()}>
+            Forgot Password?
+          </Anchor>
+        </Group>
+      </fieldset>
+      <Button type="submit" fullWidth mt="xl">
+        {form.formState.isSubmitting ? <Loader /> : "Sign In"}
+      </Button>
+    </Paper>
+  )
+}
+
+const Authentication: BlitzPage = () => {
+  return (
+    <Container size={420} my={40}>
+      <Title align="center" weight="bolder">
+        Welcome back!
+      </Title>
+      <Text color="dimmed" size="sm" align="center" mt={5}>
+        Do you not have an account yet?{" "}
+        <Anchor<"a"> size="sm" href="#" onClick={(e) => e.preventDefault()}>
+          Create Account
+        </Anchor>
+      </Text>
+
+      <LoginForm />
+    </Container>
+  )
 }
 
 const Home: BlitzPage = () => {
@@ -134,5 +233,8 @@ const Home: BlitzPage = () => {
 
 Home.suppressFirstRenderFlicker = true
 Home.getLayout = (page) => <Layout title="Home">{page}</Layout>
+Authentication.redirectAuthenticatedTo = Routes.AdminHome()
+Authentication.suppressFirstRenderFlicker = true
+Authentication.getLayout = (page) => <Layout title="Home">{page}</Layout>
 
-export default Home
+export default Authentication

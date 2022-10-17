@@ -43,7 +43,7 @@ export const getServerSideProps = gSSP(async (bag) => {
 })
 
 AdminHome.authenticate = {
-  redirectTo: Routes.LoginPage(),
+  redirectTo: Routes.Authentication(),
 }
 
 export default AdminHome
