@@ -43,10 +43,13 @@ const useCreate = (redirect = false) =>
           TE.chainFirstTaskK(() => invalidateQueries),
           TE.mapLeft((e) =>
             match(e)
-              .with({ tag: "noOrgIdError" }, constant("No organization is attached to this venue"))
               .with(
-                { tag: "noVenuesError" },
-                constant("Your organization has no venues affiliated")
+                { tag: "NoEnvVarError" },
+                constant("Could not find required environment resources")
+              )
+              .with(
+                { tag: "RevalidationFailedError" },
+                constant("Failed to revalidate your venue.. :(")
               )
               .with({ tag: "prismaValidationError" }, ({ error }) => error.message)
               .exhaustive()

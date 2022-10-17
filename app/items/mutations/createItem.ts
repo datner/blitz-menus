@@ -1,44 +1,21 @@
-import { AuthenticatedMiddlewareCtx, resolver } from "@blitzjs/rpc"
+import { resolver } from "@blitzjs/rpc"
 import * as TE from "fp-ts/TaskEither"
 import * as T from "fp-ts/Task"
-import * as E from "fp-ts/Either"
-import * as A from "fp-ts/Array"
 import { getBlurDataUrl } from "app/core/helpers/plaiceholder"
 import db, { Prisma, Venue } from "db"
 import { CreateItem } from "../validations"
-import { pipe, flow } from "fp-ts/function"
+import { pipe } from "fp-ts/function"
 import { PrismaValidationError } from "app/core/type/prisma"
 import * as L from "app/core/helpers/server"
 import { z } from "zod"
-import { match } from "ts-pattern"
+import { setDefaultOrganizationIdNoFilter } from "app/auth/helpers/setDefaultOrganizationId"
+import { setDefaultVenue } from "app/auth/helpers/setDefaultVenue"
+import { revalidateVenue } from "app/core/helpers/revalidation"
 
-type NoOrgIdError = {
-  tag: "noOrgIdError"
-  userId: number
-}
-
-type NoVenuesError = {
-  tag: "noVenuesError"
-  orgId: number
-}
-
-const getOrgId = (ctx: AuthenticatedMiddlewareCtx) =>
-  E.fromNullable<NoOrgIdError>({ tag: "noOrgIdError", userId: ctx.session.userId })(
-    ctx.session.orgId
-  )
-
-const getFirstVenue = (orgId: number) =>
-  pipe(
-    () => db.venue.findMany({ where: { organizationId: orgId } }),
-    T.chain(
-      flow(
-        A.head,
-        TE.fromOption((): NoVenuesError => ({ tag: "noVenuesError", orgId }))
-      )
-    )
-  )
-
-const createItem = (input: z.infer<typeof CreateItem>) => (venue: Venue) =>
+const createItem = ({
+  venue,
+  ...input
+}: z.infer<typeof CreateItem> & { venue: Venue; blurDataUrl: string | undefined }) =>
   TE.tryCatch(
     () =>
       db.item.create({
@@ -60,25 +37,15 @@ const createItem = (input: z.infer<typeof CreateItem>) => (venue: Venue) =>
 export default resolver.pipe(
   resolver.zod(CreateItem),
   resolver.authorize(),
-  async (input) => ({ ...input, blurDataUrl: await getBlurDataUrl(input.image) }),
-  (input, ctx) =>
+  setDefaultOrganizationIdNoFilter,
+  setDefaultVenue,
+  (input) =>
     pipe(
-      getOrgId(ctx),
-      TE.fromEither,
-      TE.chainW(getFirstVenue),
-      TE.chainW(createItem(input)),
-      TE.orElseFirstW((e) =>
-        TE.of(
-          match(e)
-            .with({ tag: "noOrgIdError" }, ({ userId }) =>
-              L.error(`User ${userId} is not associated with any user`)
-            )
-            .with({ tag: "noVenuesError" }, ({ orgId }) =>
-              L.error(`Org ${orgId} is not associated with any venues`)
-            )
-            .with({ tag: "prismaValidationError" }, ({ error }) => pipe(error, L.variable, L.error))
-            .exhaustive()
-        )
-      )
+      T.of(input),
+      T.apS("blurDataUrl", () => getBlurDataUrl(input.image)),
+      TE.fromTask,
+      TE.chain(createItem),
+      TE.chainFirstW(() => revalidateVenue(input.venue.identifier)),
+      TE.orElseFirst(TE.fromIOK((e) => pipe(e, L.variable, L.error)))
     )()
 )
