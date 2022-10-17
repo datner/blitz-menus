@@ -1,4 +1,4 @@
-import { XIcon } from "@heroicons/react/solid"
+import { XMarkIcon } from "@heroicons/react/24/solid"
 import { useTransition, config, a } from "@react-spring/web"
 import { PropsWithChildren } from "react"
 
@@ -47,7 +47,7 @@ export function Modal(props: Props) {
                 onClick={onClose}
                 className="absolute top-2 right-2 z-50 h-10 w-10 p-1.5 text-gray-700 rounded-full bg-gray-400/50"
               >
-                <XIcon />
+                <XMarkIcon />
               </button>
               {children}
             </div>

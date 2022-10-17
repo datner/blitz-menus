@@ -1,6 +1,6 @@
 import { useRouter } from "next/router"
 import { useQuery } from "@blitzjs/rpc"
-import { CheckIcon, DotsHorizontalIcon, XIcon } from "@heroicons/react/solid"
+import { CheckIcon, EllipsisHorizontalIcon, XMarkIcon } from "@heroicons/react/24/solid"
 import orderSuccess from "app/menu/queries/orderSuccess"
 import { pipe } from "fp-ts/function"
 import * as O from "fp-ts/Option"
@@ -22,7 +22,7 @@ export default function Success() {
       <div className="h-full flex items-center">
         <div>
           <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
-            <XIcon className="h-6 w-6 text-red-600" aria-hidden="true" />
+            <XMarkIcon className="h-6 w-6 text-red-600" aria-hidden="true" />
           </div>
           <div className="mt-3 text-center sm:mt-5">
             <h3 className="text-lg leading-6 font-medium text-gray-900">Payment Error!</h3>
@@ -48,7 +48,7 @@ export default function Success() {
           () => (
             <div>
               <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100">
-                <DotsHorizontalIcon className="h-6 w-6 text-blue-600" aria-hidden="true" />
+                <EllipsisHorizontalIcon className="h-6 w-6 text-blue-600" aria-hidden="true" />
               </div>
               <div className="mt-3 text-center sm:mt-5">
                 <h3 className="text-lg leading-6 font-medium text-gray-900">Wait for it....</h3>

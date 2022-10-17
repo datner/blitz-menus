@@ -1,4 +1,4 @@
-import { ExclamationCircleIcon } from "@heroicons/react/solid"
+import { ExclamationCircleIcon } from "@heroicons/react/24/solid"
 import { ComponentPropsWithoutRef, memo } from "react"
 import { TextAreaBase, TextAreaProps } from "./TextAreaBase"
 

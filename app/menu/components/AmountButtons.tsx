@@ -1,4 +1,4 @@
-import { MinusCircleIcon, PlusCircleIcon } from "@heroicons/react/solid"
+import { MinusCircleIcon, PlusCircleIcon } from "@heroicons/react/24/solid"
 import { decrement, increment } from "fp-ts/function"
 
 export interface AmountButtonsProps {
