@@ -14,7 +14,7 @@ export function Content(props: ContentAreaProps) {
     <div className="flex-1 flex flex-col bg-gray-50 overflow-hidden">
       <ContentHeader />
       {/* Main content */}
-      <div className="flex-1 flex items-stretch overflow-hidden">
+      <div className="flex-1 flex h-full items-stretch overflow-hidden">
         <ContentMain>{main}</ContentMain>
         {aside && <ContentAside>{aside}</ContentAside>}
       </div>
