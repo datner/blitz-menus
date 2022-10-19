@@ -1,4 +1,5 @@
 const plugin = require("tailwindcss/plugin")
+const defaultTheme = require("tailwindcss/defaultTheme")
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
@@ -21,6 +22,10 @@ module.exports = {
           800: "#093C2B",
           900: "#041E15",
         },
+      },
+      fontFamily: {
+        title: ['"Secular One"', ...defaultTheme.fontFamily.sans],
+        sans: ['"Noto Sans"', ...defaultTheme.fontFamily.sans],
       },
     },
   },
