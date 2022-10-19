@@ -202,7 +202,7 @@ model CategoryItem {
 model Category {
   id             Int            @id @default(autoincrement())
   menuId         Int?
-  restaurantId   Int
+  restaurantId   Int?
   identifier     String
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @default(now()) @updatedAt
@@ -210,7 +210,7 @@ model Category {
   organizationId Int            @default(0)
   venueId        Int?
   menu           Menu?          @relation(fields: [menuId], references: [id])
-  restaurant     Restaurant     @relation(fields: [restaurantId], references: [id])
+  restaurant     Restaurant?    @relation(fields: [restaurantId], references: [id])
   Venue          Venue?         @relation(fields: [venueId], references: [id])
   content        CategoryI18L[]
   items          Item[]
