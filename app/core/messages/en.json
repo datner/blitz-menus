@@ -20,7 +20,9 @@
         "identifier": "Identifier",
         "price": "Price",
         "english name": "English Name",
+        "english description": "English Description",
         "hebrew name": "Hebrew Name",
+        "hebrew description": "Hebrew Description",
         "upload": "Uploading Image...",
         "update": {
           "initial": "Update Item",

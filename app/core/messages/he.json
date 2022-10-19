@@ -20,7 +20,9 @@
         "identifier": "מזהה (באנגלית)",
         "price": "מחיר",
         "english name": "שם באנגלית",
+        "english description": "תיאור באנגלית",
         "hebrew name": "שם בעברית",
+        "hebrew description": "תיאור בעברית",
         "upload": "מעלה תמונה ...",
         "update": {
           "initial": "עדכן פריט",

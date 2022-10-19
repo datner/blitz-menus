@@ -181,16 +181,16 @@ export function ItemForm(props: Props) {
                 <LabeledTextField name="en.name" label={t("english name")} placeholder="My Item" />
                 <LabeledTextArea
                   name="en.description"
-                  label={t("english name")}
-                  placeholder="My Item"
+                  label={t("english description")}
+                  placeholder="My item is very nice and also cool"
                 />
               </div>
               <div>
                 <LabeledTextField name="he.name" label={t("hebrew name")} placeholder="פריט שלי" />
                 <LabeledTextArea
                   name="he.description"
-                  label={t("english name")}
-                  placeholder="My Item"
+                  label={t("hebrew description")}
+                  placeholder="הפריט שלי מאוד נחמד וגם מגניב"
                 />
               </div>
             </fieldset>
