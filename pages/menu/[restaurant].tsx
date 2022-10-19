@@ -3,7 +3,7 @@ import { GetStaticPaths, GetStaticPropsContext, InferGetStaticPropsType } from "
 import clsx from "clsx"
 import db, { Locale, Prisma } from "db"
 import { Suspense, useState } from "react"
-import { useLocale } from "app/core/hooks/useLocale"
+import { useLocale, zLocale } from "app/core/hooks/useLocale"
 import { titleFor } from "app/core/helpers/content"
 import { ListItem } from "app/menu/components/ListItem"
 import { CategoryHeader } from "app/menu/components/CategoryHeader"
@@ -22,6 +22,7 @@ import { OrderItem, orderAtomFamily } from "app/menu/jotai/order"
 import { useAtom } from "jotai"
 import { itemAtom, itemModalOpenAtom } from "app/menu/jotai/item"
 import { ModifierConfig } from "db/itemModifierConfig"
+import { Routes } from "@blitzjs/next"
 
 const LazyViewOrderButton = dynamic(() => import("app/menu/components/ViewOrderButton"), {
   suspense: true,
@@ -141,6 +142,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
 }
 
 export const getStaticProps = gSP(async (context: GetStaticPropsContext) => {
+  const locale = zLocale.parse(context.locale)
   const { restaurant: identifier } = Query.parse(context.params)
   const restaurant = await db.venue.findUnique({
     where: { identifier },
@@ -182,6 +184,20 @@ export const getStaticProps = gSP(async (context: GetStaticPropsContext) => {
           .sort((a, b) => a.position - b.position),
       })),
     })),
+  }
+
+  if (!restaurant.open) {
+    return {
+      redirect: {
+        destination: Routes.Closed({ venue: titleFor(locale)(restaurant) }),
+        permanent: false,
+      },
+      // to satisfy typescript
+      props: {
+        restaurant: typedRestaurant,
+        messages: (await import(`app/core/messages/${context.locale}.json`)).default,
+      },
+    }
   }
 
   return {
