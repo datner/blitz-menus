@@ -31,7 +31,7 @@ export default resolver.pipe(
       include: { content: true },
       data,
     })
-    console.log(await revalidateVenue(venue.identifier)())
+    await revalidateVenue(venue.identifier)()
     return item
   }
 )
