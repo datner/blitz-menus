@@ -37,9 +37,9 @@ export default withBlitz(function App({
         emotionCache={rtl ? rtlCache : renuCache}
         theme={{
           dir,
-          primaryColor: "green",
+          primaryColor: "teal",
           colors: {
-            green: [
+            teal: [
               "#70AD99",
               "#CFE4DD",
               "#BDDFD5",

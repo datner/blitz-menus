@@ -25,7 +25,7 @@ function AsideDirectory() {
       <LoadingOverlay visible={isLoading} />
       <div className="p-2 pl-4 flex items-center">
         <h3 className="text-xl text-gray-800 font-semibold inline-block grow">{t("items")}</h3>
-        {isRefetching && <Loader color="green" variant="dots" />}
+        {isRefetching && <Loader color="teal" variant="dots" />}
       </div>
       <nav className="grow overflow-y-auto" aria-label="Directory">
         {categories.map(({ items, identifier, ...rest }) => (

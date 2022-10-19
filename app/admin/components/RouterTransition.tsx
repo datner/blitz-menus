@@ -24,5 +24,5 @@ export function RouterTransition() {
     }
   }, [router.asPath, router.events])
 
-  return <NavigationProgress color="green" />
+  return <NavigationProgress color="teal" />
 }
