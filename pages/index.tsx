@@ -142,9 +142,9 @@ const Authentication: BlitzPage = () => {
       </Title>
       <Text color="dimmed" size="sm" align="center" mt={5}>
         Do you not have an account yet?{" "}
-        <Anchor<"a"> size="sm" href="#" onClick={(e) => e.preventDefault()}>
-          Create Account
-        </Anchor>
+        <Link passHref href={Routes.UserSignupPage()}>
+          <Anchor<"a"> size="sm">Create Account</Anchor>
+        </Link>
       </Text>
 
       <LoginForm />
