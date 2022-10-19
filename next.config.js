@@ -18,6 +18,15 @@ const config = {
     path: "https://renu.imgix.net/",
     domains: ["renu.imgix.net", "", "images.unsplash.com"],
   },
+  async redirects() {
+    return [
+      {
+        source: "/admin",
+        destination: "/admin/home",
+        permanent: true,
+      },
+    ]
+  },
   async rewrites() {
     return {
       beforeFiles: [
