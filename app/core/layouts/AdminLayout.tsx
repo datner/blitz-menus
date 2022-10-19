@@ -4,11 +4,11 @@ import { ReactNode, Suspense } from "react"
 import Layout from "./Layout"
 import {
   Square2StackIcon,
-  CogIcon,
-  CircleStackIcon as CollectionIcon,
+  // CogIcon,
+  // CircleStackIcon as CollectionIcon,
   HomeIcon,
-  PhotoIcon as PhotographIcon,
-  UserGroupIcon,
+  // PhotoIcon as PhotographIcon,
+  // UserGroupIcon,
 } from "@heroicons/react/24/solid"
 import { ImpersonationNotice } from "app/auth/components/ImpersonationNotice"
 import { ToastContainer } from "react-toastify"
@@ -24,10 +24,10 @@ type Props = { children?: ReactNode }
 const sidebarNavigation = [
   { name: "Home", href: "/admin/home", icon: HomeIcon, current: false },
   { name: "Inventory", href: "/admin/items", icon: Square2StackIcon, current: false },
-  { name: "Photos", href: "/admin/photos", icon: PhotographIcon, current: true },
-  { name: "Shared", href: "/admin/shared", icon: UserGroupIcon, current: false },
-  { name: "Albums", href: "/admin/albums", icon: CollectionIcon, current: false },
-  { name: "Settings", href: "/admin/settings", icon: CogIcon, current: false },
+  // { name: "Photos", href: "/admin/photos", icon: PhotographIcon, current: true },
+  // { name: "Shared", href: "/admin/shared", icon: UserGroupIcon, current: false },
+  // { name: "Albums", href: "/admin/albums", icon: CollectionIcon, current: false },
+  // { name: "Settings", href: "/admin/settings", icon: CogIcon, current: false },
 ]
 
 const navLinks = sidebarNavigation.map((item) => (
