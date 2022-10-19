@@ -1,6 +1,5 @@
 import { useQuery } from "@blitzjs/rpc"
 import { match } from "ts-pattern"
-import getCategories from "app/categories/queries/getCategories"
 import { Prisma } from "@prisma/client"
 import { Combobox } from "@headlessui/react"
 import { useLocale } from "app/core/hooks/useLocale"
@@ -12,12 +11,13 @@ import clsx from "clsx"
 import { useTranslations } from "next-intl"
 import { useModal } from "@ebay/nice-modal-react"
 import { CreateCategoryModal } from "./CreateCategoryModal"
+import getCurrentVenueCategories from "app/categories/queries/getCurrentVenueCategories"
 
 export function FormCategoryCombobox() {
   const modal = useModal(CreateCategoryModal)
   const locale = useLocale()
   const t = useTranslations("admin.Components.FormCategoryCombobox")
-  const [queryBag] = useQuery(getCategories, {
+  const [queryBag] = useQuery(getCurrentVenueCategories, {
     orderBy: { identifier: Prisma.SortOrder.asc },
   })
   const [query, setQuery] = useState("")

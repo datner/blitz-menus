@@ -14,7 +14,6 @@ export default resolver.pipe(
     const item = await db.category.create({
       data: {
         ...input,
-        restaurantId: -1,
         venueId: venue.id,
         organizationId,
       },
