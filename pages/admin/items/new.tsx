@@ -12,7 +12,7 @@ const AdminItemsNew: BlitzPage = () => {
     <Content
       main={
         <Suspense fallback={<LoadingOverlay visible />}>
-          <div className="px-8 pt-6">
+          <div className="px-8 pt-6 mx-auto flex max-w-4xl">
             <CreateItemForm />
           </div>
         </Suspense>

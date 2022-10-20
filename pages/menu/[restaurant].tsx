@@ -154,7 +154,7 @@ export const getStaticProps = gSP(async (context: GetStaticPropsContext) => {
           items: {
             where: {
               deleted: null,
-              image: { not: identifier.startsWith("on-the-water") ? "gibbrish" : "" },
+              image: { not: identifier.startsWith("zelda") ? "gibbrish" : "" },
             },
             include: {
               content: true,
