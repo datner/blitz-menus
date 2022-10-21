@@ -16,7 +16,7 @@ export function AmountButtons(props: AmountButtonsProps) {
         type="button"
         onClick={() => amount > minimum && onChange(decrement(amount))}
         disabled={amount <= minimum}
-        className="relative disabled:text-gray-300 inline-flex items-center bg-indigo-50 focus:bg-indigo-200 px-2 py-2 rounded-l-md border border-gray-300 text-sm font-medium text-indigo-500 focus:text-indigo-800 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+        className="relative disabled:text-gray-300 inline-flex items-center bg-emerald-50 focus:bg-emerald-200 px-2 py-2 rounded-l-md border border-gray-300 text-sm font-medium text-emerald-500 focus:text-emerald-800 focus:z-10 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
       >
         <span className="sr-only">Decrement</span>
         <MinusCircleIcon className="h-5 w-5 m-0.5" aria-hidden="true" />
@@ -27,7 +27,7 @@ export function AmountButtons(props: AmountButtonsProps) {
       <button
         type="button"
         onClick={() => onChange(increment(amount))}
-        className="-ml-px relative inline-flex items-center px-2 py-2 bg-indigo-50 focus:bg-indigo-200 rounded-r-md border border-gray-300 text-sm font-medium text-indigo-500 focus:text-indigo-800 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+        className="-ml-px relative inline-flex items-center px-2 py-2 bg-emerald-50 focus:bg-emerald-200 rounded-r-md border border-gray-300 text-sm font-medium text-emerald-500 focus:text-emerald-800 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
       >
         <span className="sr-only">Increment</span>
         <PlusCircleIcon className="h-5 w-5 m-0.5" aria-hidden="true" />

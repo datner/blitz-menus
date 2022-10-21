@@ -98,7 +98,7 @@ export const ListItem = memo(function ListItem(props: Props) {
         className="relative flex flex-1 pointer-events-none h-36 overflow-hidden rounded-lg bg-white shadow"
       >
         <a.div style={styles} className="inset-y-0 absolute ltr:left-0 rtl:right-0">
-          <div className="inset-y-0 bg-gradient-to-t from-indigo-500 to-indigo-700 w-2 absolute shadow-2xl" />
+          <div className="inset-y-0 bg-gradient-to-t from-emerald-500 to-emerald-700 w-2 absolute shadow-2xl" />
         </a.div>
         <div className="grow w-40 overflow-hidden">
           <ItemData content={content} price={price} amount={order.amount} />

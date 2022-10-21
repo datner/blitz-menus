@@ -78,7 +78,7 @@ export const Menu: BlitzPage<InferGetStaticPropsType<typeof getStaticProps>> = (
               onClick={navbar.onClick(index)}
               className={clsx(
                 eqOptionStr.equals(some(it.identifier), navbar.section)
-                  ? "bg-indigo-100 text-indigo-700 ring-1 ring-indigo-400"
+                  ? "bg-emerald-100 text-emerald-700 ring-1 ring-emerald-400"
                   : "border-transparent text-gray-500 hover:text-gray-700",
                 "block flex-shrink-0 rounded-md snap-start scroll-m-2 px-3 py-2 text-sm font-medium"
               )}

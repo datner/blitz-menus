@@ -11,7 +11,7 @@ module.exports = {
       },
       colors: {
         emerald: {
-          50: "#70AD99",
+          50: "#F7FBF9",
           100: "#CFE4DD",
           200: "#BDDFD5",
           300: "#A0C9BB",

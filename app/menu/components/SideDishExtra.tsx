@@ -40,14 +40,14 @@ export function SideDishExtra() {
                     readOnly
                     type="radio"
                     checked={checked}
-                    className="border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                    className="border-gray-300 text-emerald-600 focus:ring-emerald-500"
                   />
                 </div>
                 <div className="min-w-0 flex flex-1 text-sm">
                   <span
                     className={clsx(
                       "select-none font-medium",
-                      checked ? "text-indigo-600 font-bold" : "text-gray-700"
+                      checked ? "text-emerald-600 font-bold" : "text-gray-700"
                     )}
                   >
                     {name}

@@ -39,7 +39,7 @@ export const ItemData = memo(function ItemData(props: Props) {
           <animated.span
             ref={ref}
             style={{ opacity }}
-            className="font-semibold ltr:pr-1.5 px-1 rtl:pl-1.5 text-indigo-600"
+            className="font-semibold ltr:pr-1.5 px-1 rtl:pl-1.5 text-emerald-600"
           >
             x{max(prevAmount)(amount)}
           </animated.span>
@@ -53,7 +53,7 @@ export const ItemData = memo(function ItemData(props: Props) {
       <dt className="sr-only">{t("price")}</dt>
       <div className="flex-grow" />
       <dd>
-        <span className="rounded-full bg-indigo-100 px-2 py-1 ml-1 text-xs font-medium text-indigo-800">
+        <span className="rounded-full bg-emerald-100 px-2 py-1 ml-1 text-xs font-medium text-emerald-800">
           {toShekel(price)}
         </span>
       </dd>

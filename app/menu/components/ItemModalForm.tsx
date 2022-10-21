@@ -191,7 +191,7 @@ export function ItemModalForm(props: ItemModalFormProps) {
                 "inline-flex grow justify-center items-center rounded-md border border-transparent shadow-sm px-2 sm:px-4 py-2 text-xs whitespace-nowrap font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2  sm:text-base",
                 orderState === OrderState.REMOVE
                   ? "bg-red-600 hover:bg-red-700 focus:ring-red-500"
-                  : "bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500"
+                  : "bg-emerald-600 hover:bg-emerald-700 focus:ring-emerald-500"
               )}
             >
               <CallToActionText price={price} multi={order.amount > 1} orderState={orderState} />

@@ -110,7 +110,7 @@ export function ItemModal(props: Props) {
           >
             {title(order.item)}
           </a.h3>
-          <p className="mt-2 text-indigo-600">₪ {priceShekel(order.item)}</p>
+          <p className="mt-2 text-emerald-600">₪ {priceShekel(order.item)}</p>
           <p className="mt-2 text-sm text-gray-500">{desc(order.item)}</p>
         </div>
         <div className="flex flex-col p-4">

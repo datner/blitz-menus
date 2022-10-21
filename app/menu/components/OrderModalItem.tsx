@@ -59,7 +59,7 @@ export function OrderModalItem(props: Props) {
             <p className="text-sm whitespace-pre-line">
               <span>{title(item)}</span>
               <br />
-              <span className="rounded-full mx-1 text-xs font-medium text-indigo-800">
+              <span className="rounded-full mx-1 text-xs font-medium text-emerald-800">
                 {toShekel(price(item) * amount)}
               </span>
               <br />
@@ -110,7 +110,7 @@ function Thing(props: AmountButtonsProps) {
       >
         <a.div
           style={{ width }}
-          className="h-10 rounded-md text-sm sm:text-base text-indigo-500 border-gray-300 flex items-center justify-center bg-indigo-50 border"
+          className="h-10 rounded-md text-sm sm:text-base text-emerald-500 border-gray-300 flex items-center justify-center bg-emerald-50 border"
         >
           {props.amount}
         </a.div>
