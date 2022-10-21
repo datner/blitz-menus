@@ -71,7 +71,7 @@ const useUpdate = (identifier: string) => {
       T.chainFirst(
         ({ identifier }) =>
           () =>
-            router.replace(Routes.AdminItemsItem({ identifier }), undefined, { shallow: true })
+            router.push(Routes.AdminItemsItem({ identifier }))
       ),
       TE.fromTask,
       TE.mapLeft(() => "Something happened while updating item!")
