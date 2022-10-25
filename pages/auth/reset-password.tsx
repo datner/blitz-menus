@@ -7,10 +7,38 @@ import { LabeledTextField } from "app/core/components/LabeledTextField"
 import { Form, FORM_ERROR } from "app/core/components/Form"
 import { ResetPassword } from "app/auth/validations"
 import resetPassword from "app/auth/mutations/resetPassword"
+import { useZodForm } from "app/core/hooks/useZodForm"
+import { Button, PasswordInput, TextInput } from "@mantine/core"
 
 const ResetPasswordPage: BlitzPage = () => {
   const query = useRouter().query
   const [resetPasswordMutation, { isSuccess }] = useMutation(resetPassword)
+  const form = useZodForm({
+    schema: ResetPassword,
+    defaultValues: { token: query.token as string },
+  })
+
+  const onSubmit = form.handleSubmit(
+    async (values) => {
+      console.log("hmm?")
+      try {
+        console.log(values)
+        await resetPasswordMutation(values)
+      } catch (error: any) {
+        console.log(error)
+        if (error.name === "ResetPasswordError") {
+          return {
+            [FORM_ERROR]: error.message,
+          }
+        } else {
+          return {
+            [FORM_ERROR]: "Sorry, we had an unexpected error. Please try again.",
+          }
+        }
+      }
+    },
+    (a) => console.log(a)
+  )
 
   return (
     <div>
@@ -24,33 +52,16 @@ const ResetPasswordPage: BlitzPage = () => {
           </p>
         </div>
       ) : (
-        <Form
-          submitText="Reset Password"
-          schema={ResetPassword}
-          initialValues={{ password: "", passwordConfirmation: "", token: query.token as string }}
-          onSubmit={async (values) => {
-            try {
-              await resetPasswordMutation(values)
-            } catch (error: any) {
-              if (error.name === "ResetPasswordError") {
-                return {
-                  [FORM_ERROR]: error.message,
-                }
-              } else {
-                return {
-                  [FORM_ERROR]: "Sorry, we had an unexpected error. Please try again.",
-                }
-              }
-            }
-          }}
-        >
-          <LabeledTextField name="password" label="New Password" type="password" />
-          <LabeledTextField
+        <form onSubmit={onSubmit}>
+          <input {...form.register("token", { value: query.token as string })} />
+          <PasswordInput label="New Password" {...form.register("password")} />
+          <PasswordInput
+            {...form.register("passwordConfirmation")}
             name="passwordConfirmation"
             label="Confirm New Password"
-            type="password"
           />
-        </Form>
+          <Button type="submit">Submit</Button>
+        </form>
       )}
     </div>
   )

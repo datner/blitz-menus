@@ -122,9 +122,11 @@ function LoginForm() {
           mt="md"
         />
         <Group position="apart" mt="md">
-          <Anchor<"a"> size="sm" href="#" onClick={(e) => e.preventDefault()}>
-            Forgot Password?
-          </Anchor>
+          <Link passHref href={Routes.ForgotPasswordPage()}>
+            <Anchor<"a"> size="sm" onClick={(e) => e.preventDefault()}>
+              Forgot Password?
+            </Anchor>
+          </Link>
         </Group>
       </fieldset>
       <Button type="submit" fullWidth mt="xl">
