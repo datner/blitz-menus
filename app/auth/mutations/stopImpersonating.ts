@@ -2,7 +2,7 @@ import { resolver } from "@blitzjs/rpc"
 import * as O from "fp-ts/Option"
 import * as T from "fp-ts/Task"
 import * as TE from "fp-ts/TaskEither"
-import db from "db"
+import db, { GlobalRole } from "db"
 import { NotFoundError } from "blitz"
 import { constVoid, pipe } from "fp-ts/lib/function"
 import { getMembership } from "../helpers/getMembership"
@@ -27,21 +27,41 @@ export default resolver.pipe(resolver.authorize(), async (_, ctx) => {
         () => new NotFoundError(`Could not find user with id ${userId}`)
       )
     ),
-    TE.bindTo("user"),
-    TE.bindW("membership", ({ user }) => TE.fromEither(getMembership(user))),
-    TE.chainFirstTaskK(
-      ({ membership: m, user }) =>
-        () =>
-          ctx.session.$create({
-            userId: user.id,
-            organization: O.some(m.organization),
-            venue: O.some(m.affiliation.Venue),
-            roles: [user.role, m.role],
-            orgId: m.organizationId,
-            impersonatingFromUserId: O.none,
-          })
+    TE.chainW((user) =>
+      user.role === GlobalRole.SUPER
+        ? pipe(
+            TE.of(user),
+            TE.chainFirstTaskK(
+              (u) => () =>
+                ctx.session.$create({
+                  userId: u.id,
+                  organization: O.none,
+                  venue: O.none,
+                  roles: [u.role],
+                  orgId: -1,
+                  impersonatingFromUserId: O.none,
+                })
+            )
+          )
+        : pipe(
+            TE.of(user),
+            TE.bindTo("user"),
+            TE.bindW("membership", ({ user }) => TE.fromEither(getMembership(user))),
+            TE.chainFirstTaskK(
+              ({ membership: m, user }) =>
+                () =>
+                  ctx.session.$create({
+                    userId: user.id,
+                    organization: O.some(m.organization),
+                    venue: O.some(m.affiliation.Venue),
+                    roles: [user.role, m.role],
+                    orgId: m.organizationId,
+                    impersonatingFromUserId: O.none,
+                  })
+            ),
+            TE.map(({ user }) => user)
+          )
     ),
-    TE.map(({ user }) => user),
     TE.getOrElseW((e) => {
       if (typeof e === "string") {
         console.log("You're not impersonating anyone!")

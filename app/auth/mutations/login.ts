@@ -1,7 +1,7 @@
 import { SecurePassword } from "@blitzjs/auth"
 import { resolver } from "@blitzjs/rpc"
 import { AuthenticationError } from "blitz"
-import db from "db"
+import db, { GlobalRole } from "db"
 import { pipe } from "fp-ts/function"
 import * as E from "fp-ts/Either"
 import { getMembership } from "../helpers/getMembership"
@@ -47,6 +47,16 @@ export default resolver.pipe(resolver.zod(Login), async ({ email, password }, ct
       })
     ),
     E.getOrElseW((e) => {
+      if (user.role === GlobalRole.SUPER) {
+        return ctx.session.$create({
+          userId: user.id,
+          organization: none,
+          venue: none,
+          roles: [user.role],
+          orgId: -1,
+          impersonatingFromUserId: none,
+        })
+      }
       throw e
     })
   )

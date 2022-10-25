@@ -9,22 +9,22 @@ import { pipe } from "fp-ts/function"
 import { some } from "fp-ts/Option"
 
 export const ImpersonateUserInput = z.object({
-  userId: z.number().int().nonnegative(),
+  email: z.string().email(),
 })
 
 export default resolver.pipe(
-  resolver.authorize(GlobalRole.SUPER),
   resolver.zod(ImpersonateUserInput),
-  async ({ userId }, ctx) => {
+  resolver.authorize(GlobalRole.SUPER),
+  async ({ email }, ctx) => {
     const user = await db.user.findUnique({
-      where: { id: userId },
+      where: { email },
       include: {
         membership: { include: { affiliations: { include: { Venue: true } }, organization: true } },
       },
     })
-    if (!user) throw new NotFoundError(`Could not find user with id ${userId}`)
+    if (!user) throw new NotFoundError(`Could not find user with email ${email}`)
     if (!isNonEmpty(user.membership))
-      throw new NotFoundError(`User ${userId} is not associated with any organizations`)
+      throw new NotFoundError(`${email} is not associated with any organizations`)
 
     await pipe(
       getMembership(user),
@@ -35,7 +35,7 @@ export default resolver.pipe(
           venue: some(m.affiliation.Venue),
           roles: [user.role, m.role],
           orgId: m.organizationId,
-          impersonatingFromUserId: some(userId),
+          impersonatingFromUserId: some(ctx.session.userId),
         })
       ),
       E.getOrElseW((e) => {
