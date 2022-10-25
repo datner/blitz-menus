@@ -49,6 +49,11 @@
           "initial": "Create Category",
           "category": "Creating Category..."
         }
+      },
+      "VenueSettings": {
+        "address": "Address",
+        "phone number": "Phone Number",
+        "update": "Update"
       }
     }
   },

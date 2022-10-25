@@ -1,4 +1,4 @@
-import { BlitzLayout } from "@blitzjs/next"
+import { BlitzLayout, Routes } from "@blitzjs/next"
 import clsx from "clsx"
 import { ReactNode, Suspense } from "react"
 import Layout from "./Layout"
@@ -7,6 +7,7 @@ import {
   // CogIcon,
   // CircleStackIcon as CollectionIcon,
   HomeIcon,
+  BuildingStorefrontIcon,
   // PhotoIcon as PhotographIcon,
   // UserGroupIcon,
 } from "@heroicons/react/24/solid"
@@ -22,9 +23,9 @@ import { ActiveLink } from "../components/ActiveLink"
 type Props = { children?: ReactNode }
 
 const sidebarNavigation = [
-  { name: "Home", href: "/admin/home", icon: HomeIcon, current: false },
-  { name: "Inventory", href: "/admin/items", icon: Square2StackIcon, current: false },
-  // { name: "Photos", href: "/admin/photos", icon: PhotographIcon, current: true },
+  { name: "Home", href: Routes.AdminHome(), icon: HomeIcon },
+  { name: "Inventory", href: Routes.AdminItems(), icon: Square2StackIcon },
+  { name: "Venue", href: Routes.AdminVenue(), icon: BuildingStorefrontIcon },
   // { name: "Shared", href: "/admin/shared", icon: UserGroupIcon, current: false },
   // { name: "Albums", href: "/admin/albums", icon: CollectionIcon, current: false },
   // { name: "Settings", href: "/admin/settings", icon: CogIcon, current: false },
