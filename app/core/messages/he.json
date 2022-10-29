@@ -25,8 +25,8 @@
         "hebrew description": "תיאור בעברית",
         "upload": "מעלה תמונה ...",
         "update": {
-          "initial": "עדכן פריט",
-          "item": "מעדכן פריט ..."
+          "initial": "שומר שימויים",
+          "item": "שומר שינויים ..."
         },
         "create": {
           "initial": "צור פריט",

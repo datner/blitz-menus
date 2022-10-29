@@ -1,14 +1,15 @@
 import { Slug } from "app/auth/validations"
 import { Id } from "app/core/helpers/zod"
 import { zLocale } from "app/core/hooks/useLocale"
+import { ModifierEnum } from "db/itemModifierConfig"
 import * as Dorix from "integrations/dorix/types"
 import { z } from "zod"
 
 export const OrderModifierItem = z.object({
   id: Id,
-  ref: z.string(),
+  identifier: z.string(),
   price: z.number().int().nonnegative().multipleOf(50),
-  refType: z.enum(["oneOf", "extras"]),
+  _tag: ModifierEnum,
   choice: z.string(),
   amount: z.number().int().nonnegative(),
 })

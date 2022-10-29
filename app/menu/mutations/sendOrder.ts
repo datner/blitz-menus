@@ -43,7 +43,7 @@ const createNewOrder: CreateNewOrder =
                   create: oi.modifiers.map((m) => ({
                     amount: m.amount,
                     price: m.price,
-                    ref: m.ref,
+                    ref: m.identifier,
                     itemModifierId: m.id,
                     choice: m.choice,
                   })),

@@ -36,9 +36,8 @@ const useCreate = (redirect = false) =>
           TE.chainFirstTaskK((item) =>
             fpSetQueryData(getItem, { identifier: item.identifier }, item)
           ),
-          TE.chainFirstTaskK(({ identifier }) => () => {
+          TE.chainFirstIOK(({ identifier }) => () => {
             if (redirect) router.push(Routes.AdminItemsItem({ identifier }))
-            return Promise.resolve()
           }),
           TE.chainFirstTaskK(() => invalidateQueries),
           TE.mapLeft((e) =>
@@ -68,10 +67,10 @@ const useUpdate = (identifier: string) => {
       () => update({ id: item.id, ...data }),
       T.chainFirst(() => invalidateQueries),
       T.chainFirst((it) => () => setQueryData(it)),
-      T.chainFirst(
-        ({ identifier }) =>
-          () =>
-            router.push(Routes.AdminItemsItem({ identifier }))
+      T.chainFirst(({ identifier }) =>
+        item.identifier === identifier
+          ? T.of(true)
+          : () => router.push(Routes.AdminItemsItem({ identifier }))
       ),
       TE.fromTask,
       TE.mapLeft(() => "Something happened while updating item!")

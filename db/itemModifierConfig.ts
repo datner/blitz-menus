@@ -1,84 +1,123 @@
 import { Locale } from "@prisma/client"
-import { fromNullable, Option } from "fp-ts/lib/Option"
-import { ReadonlyNonEmptyArray } from "fp-ts/lib/ReadonlyNonEmptyArray"
-import { NonEmptyArray } from "fp-ts/NonEmptyArray"
-import { isNonEmpty } from "fp-ts/Array"
+import * as O from "fp-ts/Option"
+import { isNonEmpty, filter } from "fp-ts/Array"
+import * as A from "fp-ts/Array"
+import { identity, pipe } from "fp-ts/function"
 import { z } from "zod"
+import { zodIso } from "app/core/helpers/zod"
+import { match } from "ts-pattern"
 
-export interface OptionContent {
-  readonly locale: Locale
-  readonly name: string
-  readonly description: string
-}
+// export interface OptionContent {
+//   readonly locale: Locale
+//   readonly name: string
+//   readonly description: string
+// }
 
-export interface OneOfOption {
-  readonly ref: string
-  readonly price: number
-  readonly content: ReadonlyNonEmptyArray<OptionContent>
-  readonly default: boolean
-}
+// export interface BaseOption {
+//   readonly ref: string
+//   readonly price: number
+//   readonly content: ReadonlyNonEmptyArray<OptionContent>
+//   readonly position: number
+// }
 
-export interface ExtrasOption {
-  readonly ref: string
-  readonly content: ReadonlyNonEmptyArray<OptionContent>
-  readonly price: number
-  readonly multi: boolean
-}
+// export interface OneOfOption extends BaseOption {
+//   readonly default: boolean
+// }
 
-export interface OneOf {
-  readonly _tag: "oneOf"
-  readonly ref: string
-  readonly content: ReadonlyNonEmptyArray<OptionContent>
-  readonly options: NonEmptyArray<OneOfOption>
-}
+// export interface ExtrasOption extends BaseOption {
+//   readonly multi: boolean
+// }
 
-export interface Extras {
-  readonly _tag: "extras"
-  readonly ref: string
-  readonly content: ReadonlyNonEmptyArray<OptionContent>
-  readonly options: NonEmptyArray<ExtrasOption>
-  readonly min: Option<number>
-  readonly max: Option<number>
-  readonly required: boolean
-}
+// export interface BaseModifier {
+//   readonly ref: string
+//   readonly content: ReadonlyNonEmptyArray<OptionContent>
+//   readonly options: NonEmptyArray<BaseOption>
+// }
 
-const OptionContent = z.object({
+// export interface OneOf extends BaseModifier {
+//   readonly _tag: "oneOf"
+//   readonly options: NonEmptyArray<OneOfOption>
+// }
+
+// export interface Extras extends BaseModifier {
+//   readonly _tag: "extras"
+//   readonly options: NonEmptyArray<ExtrasOption>
+//   readonly min: O.Option<number>
+//   readonly max: O.Option<number>
+// }
+
+export const ModifierEnum = z.enum(["oneOf", "extras"])
+export type ModifierEnum = z.infer<typeof ModifierEnum>
+
+export const OptionContent = z.object({
   locale: z.nativeEnum(Locale),
   name: z.string(),
   description: z.string(),
 })
+export type OptionContent = z.infer<typeof OptionContent>
 
-const BaseOption = z.object({
-  ref: z.string(),
+export const BaseOption = z.object({
+  identifier: z.string(),
   position: z.number().int(),
   price: z.number(),
   content: OptionContent.array().refine(isNonEmpty),
 })
+export type BaseOption = z.infer<typeof BaseOption>
 
-const OneOfOption = BaseOption.extend({ default: z.boolean() })
-const ExtrasOption = BaseOption.extend({ multi: z.boolean() })
+export const OneOfOption = BaseOption.extend({ default: z.boolean() })
+export const ExtrasOption = BaseOption.extend({ multi: z.boolean() })
+export type OneOfOption = z.infer<typeof OneOfOption>
+export type ExtrasOption = z.infer<typeof ExtrasOption>
 
-const OneOf = z.object({
-  _tag: z.literal("oneOf"),
-  ref: z.string(),
+export const BaseModifier = z.object({
+  identifier: z.string(),
   content: OptionContent.array().refine(isNonEmpty),
+  options: BaseOption.array().refine(isNonEmpty),
+})
+export type BaseModifier = z.infer<typeof BaseModifier>
+
+const ensureOnlyOneDefault = (op: OneOfOption[]) =>
+  pipe(
+    op,
+    filter((o) => o.default),
+    A.size,
+    (d) => d === 1
+  )
+
+export const OneOf = BaseModifier.extend({
+  _tag: z.literal(ModifierEnum.enum.oneOf),
   options: OneOfOption.array().refine(isNonEmpty),
 })
+export type OneOf = z.infer<typeof OneOf>
 
-const Extras = z.object({
-  _tag: z.literal("extras"),
-  ref: z.string(),
-  required: z.boolean(),
-  content: OptionContent.array().refine(isNonEmpty),
+export const Extras = BaseModifier.extend({
+  _tag: z.literal(ModifierEnum.enum.extras),
   options: ExtrasOption.array().refine(isNonEmpty),
-  min: z.number().nullable().transform(fromNullable),
-  max: z.number().nullable().transform(fromNullable),
+  min: z
+    .number()
+    .nullable()
+    .transform(O.fromNullable)
+    .transform(O.chain((n) => (n > 0 ? O.some(n) : O.none))),
+  max: z
+    .number()
+    .nullable()
+    .transform(O.fromNullable)
+    .transform(O.chain((n) => (n > 0 ? O.some(n) : O.none))),
 })
+export type Extras = z.infer<typeof Extras>
 
-export const ModifierConfig = z.discriminatedUnion("_tag", [OneOf, Extras])
+export const ModifierConfig = zodIso(z.discriminatedUnion("_tag", [OneOf, Extras]), (mod) =>
+  match(mod)
+    .with({ _tag: "extras" }, ({ min, max, ...ex }) => ({
+      ...ex,
+      min: O.toNullable(min),
+      max: O.toNullable(max),
+    }))
+    .with({ _tag: "oneOf" }, identity)
+    .exhaustive()
+)
+
 export type ModifierConfig = z.infer<typeof ModifierConfig>
-
-export type ModifierTag = "oneOf" | "extras"
 
 export interface Modifier {
   readonly config: OneOf | Extras

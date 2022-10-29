@@ -50,20 +50,20 @@ const extras = RA.filterMap<Modifier, Extras>((m) =>
 
 const makeDefaults = (order: OrderItem): ItemForm["modifiers"] => ({
   oneOf: RR.fromFoldableMap(last<OneOfItem>(), RA.Foldable)(oneOfs(order.item.modifiers), (of) => [
-    of.ref,
+    of.identifier,
     {
-      ref: of.ref,
+      identifier: of.identifier,
       amount: 1,
       choice: pipe(
         order.modifiers,
-        findFirst((m) => m.ref === of.ref && m.refType === "oneOf"),
+        findFirst((m) => m.identifier === of.identifier && m._tag === "oneOf"),
         O.map((m) => m.choice),
         getOrElse(() =>
           pipe(
             of.options,
             findFirst((o) => o.default),
-            O.map((o) => o.ref),
-            getOrElse(constant(head(of.options).ref))
+            O.map((o) => o.identifier),
+            getOrElse(constant(head(of.options).identifier))
           )
         )
       ),
@@ -72,14 +72,14 @@ const makeDefaults = (order: OrderItem): ItemForm["modifiers"] => ({
   extras: RR.fromFoldableMap(last<ExtrasItem>(), RA.Foldable)(
     extras(order.item.modifiers),
     (ex) => [
-      ex.ref,
+      ex.identifier,
       {
-        ref: ex.ref,
+        identifier: ex.identifier,
         choices: RR.fromFoldableMap(last<number>(), RA.Foldable)(ex.options, (o) => [
-          o.ref,
+          o.identifier,
           pipe(
             order.modifiers,
-            RA.findFirst((m) => m.choice === o.ref),
+            RA.findFirst((m) => m.choice === o.identifier),
             match(
               () => 0,
               (m) => m.amount
@@ -134,13 +134,13 @@ export function ItemModalForm(props: ItemModalFormProps) {
   const oneOfMarkup = pipe(
     value.modifiers.oneOf,
     RR.toReadonlyArray,
-    RA.reduce(0, (acc, [ref, mod]) =>
+    RA.reduce(0, (acc, [identifier, mod]) =>
       pipe(
         order.item.modifiers,
         oneOfs,
-        RA.findFirst((m) => m.ref === ref),
+        RA.findFirst((m) => m.identifier === identifier),
         O.map((o) => o.options),
-        O.chain(A.findFirst((o) => o.ref === mod.choice)),
+        O.chain(A.findFirst((o) => o.identifier === mod.choice)),
         O.map((a) => a.price * mod.amount),
         O.getOrElse(() => 0),
         add(acc)
@@ -150,13 +150,13 @@ export function ItemModalForm(props: ItemModalFormProps) {
   const extrasMarkup = pipe(
     value.modifiers.oneOf,
     RR.toReadonlyArray,
-    RA.reduce(0, (acc, [ref, mod]) =>
+    RA.reduce(0, (acc, [identifier, mod]) =>
       pipe(
         order.item.modifiers,
         extras,
-        RA.findFirst((m) => m.ref === ref),
+        RA.findFirst((m) => m.identifier === identifier),
         O.map((o) => o.options),
-        O.chain(A.findFirst((o) => o.ref === mod.choice)),
+        O.chain(A.findFirst((o) => o.identifier === mod.choice)),
         O.map((a) => a.price * mod.amount),
         O.getOrElse(() => 0),
         add(acc)

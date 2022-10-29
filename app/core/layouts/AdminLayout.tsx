@@ -69,14 +69,17 @@ const navigation = (
 
 export const AdminLayout: BlitzLayout<Props> = ({ children }) => (
   <Layout title="Renu | Admin">
-    <AppShell className="h-full" classNames={{ body: "h-full" }} padding={0} navbar={navigation}>
-      <Suspense>
-        <ImpersonationNotice />
-      </Suspense>
-      <NiceModal.Provider>
-        <div className="h-full flex">{children}</div>
-        <ToastContainer rtl={useIsRtl()} autoClose={1500} position="bottom-right" />
-      </NiceModal.Provider>
-    </AppShell>
+    <div className="flex grow min-h-0">
+      {navigation}
+      <div className="grow min-h-0 flex flex-col">
+        <Suspense>
+          <ImpersonationNotice />
+        </Suspense>
+        <NiceModal.Provider>
+          {children}
+          <ToastContainer rtl={useIsRtl()} autoClose={1500} position="bottom-right" />
+        </NiceModal.Provider>
+      </div>
+    </div>
   </Layout>
 )

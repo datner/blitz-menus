@@ -19,8 +19,8 @@ export function ModifiersBlock(props: Props) {
         map((m) => m.config),
         map((c) =>
           match(c)
-            .with({ _tag: "oneOf" }, (of) => <OneOfComponent key={of.ref} modifier={of} />)
-            .with({ _tag: "extras" }, (ex) => <ExtrasComponent key={ex.ref} modifier={ex} />)
+            .with({ _tag: "oneOf" }, (of) => <OneOfComponent key={of.identifier} modifier={of} />)
+            .with({ _tag: "extras" }, (ex) => <ExtrasComponent key={ex.identifier} modifier={ex} />)
             .exhaustive()
         )
       )}

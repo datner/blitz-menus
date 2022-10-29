@@ -5,7 +5,7 @@ import * as N from "fp-ts/number"
 import * as Eq from "fp-ts/Eq"
 import { atom, PrimitiveAtom } from "jotai"
 import { atomFamily, splitAtom } from "jotai/utils"
-import { Modifier, ModifierTag } from "db/itemModifierConfig"
+import { Modifier, ModifierEnum } from "db/itemModifierConfig"
 
 export interface OrderItem {
   amount: number
@@ -15,8 +15,8 @@ export interface OrderItem {
 }
 
 export interface ModifierItem {
-  ref: string
-  refType: ModifierTag
+  identifier: string
+  _tag: ModifierEnum
   choice: string
   amount: number
   price: number

@@ -6,7 +6,7 @@ import { AdminLayout } from "app/core/layouts/AdminLayout"
 import { Suspense } from "react"
 import { Aside } from "app/admin/components/Aside"
 import { UpdateItemForm } from "app/admin/components/UpdateItemForm"
-import { LoadingOverlay } from "@mantine/core"
+import { LoadingOverlay, Container } from "@mantine/core"
 import { useRouter } from "next/router"
 
 const AdminItemsItem: BlitzPage = () => {
@@ -20,7 +20,7 @@ const AdminItemsItem: BlitzPage = () => {
           fallback={<div>oops! couldn&apos;t find a {identifier}</div>}
         >
           <Suspense fallback={<LoadingOverlay visible />}>
-            <div className="px-8 pt-6 mx-auto flex max-w-4xl">
+            <div className="flex flex-col min-h-0 items-stretch grow justify-center p-6">
               {identifier && <UpdateItemForm identifier={identifier} />}
             </div>
           </Suspense>

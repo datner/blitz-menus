@@ -3,5 +3,8 @@
 @tailwind utilities;
 
 #__next {
-  @apply h-full;
+  height: 100vh;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }

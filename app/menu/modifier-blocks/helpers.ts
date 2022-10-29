@@ -10,14 +10,14 @@ import { Locale } from "db"
 export const lensOneOf = (ref: string) =>
   pipe(
     O.id<readonly ModifierItem[]>(),
-    O.findFirst((m) => m.ref === ref),
+    O.findFirst((m) => m.identifier === ref),
     O.prop("choice")
   )
 
 export const lensChoiceAmount = (ref: string) => (choice: string) =>
   pipe(
     O.id<readonly ModifierItem[]>(),
-    O.findFirst((m) => m.ref === ref && m.choice === choice),
+    O.findFirst((m) => m.identifier === ref && m.choice === choice),
     O.prop("amount")
   )
 

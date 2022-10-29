@@ -11,10 +11,10 @@ type ContentAreaProps = {
 export function Content(props: ContentAreaProps) {
   const { main, aside } = props
   return (
-    <div className="flex-1 flex flex-col bg-gray-50 overflow-hidden">
+    <div className="grow min-h-0 flex-1 flex flex-col bg-gray-50">
       <ContentHeader />
       {/* Main content */}
-      <div className="flex-1 flex items-stretch overflow-hidden">
+      <div className="grow min-h-0 flex items-stretch">
         <ContentMain>{main}</ContentMain>
         {aside && <ContentAside>{aside}</ContentAside>}
       </div>

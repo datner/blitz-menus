@@ -1,25 +1,13 @@
-import Link from "next/link"
-import login from "app/auth/mutations/login"
 import { useMutation } from "@blitzjs/rpc"
-import { BlitzPage, Routes } from "@blitzjs/next"
-import Layout from "app/core/layouts/Layout"
-import {
-  Container,
-  Title,
-  Text,
-  Anchor,
-  Paper,
-  TextInput,
-  PasswordInput,
-  Group,
-  Button,
-} from "@mantine/core"
 import { useZodForm } from "app/core/hooks/useZodForm"
-import { Login } from "app/auth/validations"
-import { AuthenticationError } from "blitz"
 import { useRouter } from "next/router"
+import login from "app/auth/mutations/login"
+import { Login } from "app/auth/validations"
+import { Routes } from "@blitzjs/next"
+import { AuthenticationError } from "blitz"
+import { Anchor, Button, Group, Loader, Paper, PasswordInput, TextInput } from "@mantine/core"
 
-function LoginForm() {
+export function LoginForm() {
   const router = useRouter()
   const [loginMutation] = useMutation(login)
   const form = useZodForm({
@@ -72,38 +60,14 @@ function LoginForm() {
           mt="md"
         />
         <Group position="apart" mt="md">
-          <Link passHref href={Routes.ForgotPasswordPage()}>
-            <Anchor<"a"> size="sm">Forgot Password?</Anchor>
-          </Link>
+          <Anchor<"a"> size="sm" href="#" onClick={(e) => e.preventDefault()}>
+            Forgot Password?
+          </Anchor>
         </Group>
       </fieldset>
-      <Button type="submit" fullWidth mt="xl" loading={form.formState.isSubmitting}>
-        Sign In
+      <Button type="submit" fullWidth mt="xl">
+        {form.formState.isSubmitting ? <Loader /> : "Sign In"}
       </Button>
     </Paper>
   )
 }
-
-const Authentication: BlitzPage = () => {
-  return (
-    <Container size={420} my={40}>
-      <Title align="center" weight="bolder">
-        Welcome back!
-      </Title>
-      <Text color="dimmed" size="sm" align="center" mt={5}>
-        Do you not have an account yet?{" "}
-        <Link passHref href={Routes.UserSignupPage()}>
-          <Anchor<"a"> size="sm">Create Account</Anchor>
-        </Link>
-      </Text>
-
-      <LoginForm />
-    </Container>
-  )
-}
-
-Authentication.redirectAuthenticatedTo = Routes.AdminHome()
-Authentication.suppressFirstRenderFlicker = true
-Authentication.getLayout = (page) => <Layout title="Home">{page}</Layout>
-
-export default Authentication

@@ -44,16 +44,16 @@ const checkbox =
           modifier.options,
           map<ExtrasOption, ReactNode>((o) => (
             <Checkbox
-              key={o.ref}
-              disabled={value.choices[o.ref]! > 0 ? false : overMax}
-              value={o.ref}
+              key={o.identifier}
+              disabled={value.choices[o.identifier]! > 0 ? false : overMax}
+              value={o.identifier}
               classNames={{ label: "flex grow h-11 items-center" }}
               label={
                 <>
                   <span className="grow">{getLabel(o)(locale)}</span>
                   {pipe(
                     value.choices,
-                    RR.lookup(o.ref),
+                    RR.lookup(o.identifier),
                     O.chain((a) => (a > 0 ? some(a) : none)),
                     chain(o.multi ? some : () => none),
                     matchW(
@@ -62,7 +62,7 @@ const checkbox =
                         <span onClick={(e) => e.preventDefault()}>
                           <SmallAmountButtons
                             value={n}
-                            onChange={onChange(o.ref)}
+                            onChange={onChange(o.identifier)}
                             disabled={overMax}
                           />
                         </span>
@@ -89,7 +89,7 @@ export const ExtrasComponent = (props: Props) => {
   const locale = useLocale()
   const t = useTranslations("menu.Components.Extras")
   const { field, fieldState } = useController<ItemForm, `modifiers.extras.${string}`>({
-    name: `modifiers.extras.${modifier.ref}`,
+    name: `modifiers.extras.${modifier.identifier}`,
   })
 
   const handleAmountChange = (choice: string) => (amount: number) => {
@@ -110,7 +110,7 @@ export const ExtrasComponent = (props: Props) => {
 
     const refs = pipe(
       modifier.options,
-      A.map((o) => o.ref)
+      A.map((o) => o.identifier)
     )
 
     const nextChoices = RR.fromFoldableMap(last<number>(), RA.Foldable)(refs, (r) => [
@@ -119,7 +119,7 @@ export const ExtrasComponent = (props: Props) => {
     ])
 
     field.onChange({
-      ref: modifier.ref,
+      identifier: modifier.identifier,
       choices: nextChoices,
     })
   }
@@ -147,14 +147,20 @@ export const ExtrasComponent = (props: Props) => {
         <>
           <span>{getDescription(modifier)(locale)}</span>
           <br />
-          {matchW(
-            () => null,
-            (min: number) => <span className="ltr:mr-2 rtl:ml-2">{t("min", { min })}</span>
-          )(modifier.min)}
-          {matchW(
-            () => null,
-            (max: number) => <span>{t("max", { max })}</span>
-          )(modifier.max)}
+          {pipe(
+            modifier.min,
+            matchW(
+              () => null,
+              (min: number) => <span className="ltr:mr-2 rtl:ml-2">{t("min", { min })}</span>
+            )
+          )}
+          {pipe(
+            modifier.max,
+            matchW(
+              () => null,
+              (max: number) => <span>{t("max", { max })}</span>
+            )
+          )}
         </>
       }
     >

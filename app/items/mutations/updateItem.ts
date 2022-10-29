@@ -1,5 +1,7 @@
 import { resolver } from "@blitzjs/rpc"
 import db from "db"
+import * as A from "fp-ts/Array"
+import { pipe, tuple } from "fp-ts/function"
 import { enforceSuperAdminIfNotCurrentOrganization } from "app/auth/helpers/enforceSuperAdminIfNoCurrentOrganization"
 import { setDefaultOrganizationId } from "app/auth/helpers/setDefaultOrganizationId"
 import { getBlurDataUrl } from "app/core/helpers/plaiceholder"
@@ -25,11 +27,85 @@ export default resolver.pipe(
 
     return { ...input, blurDataUrl: await getBlurDataUrl(input.image) }
   },
-  async ({ organizationId, venue, id, ...data }) => {
+  async ({ organizationId, venue, id, modifiers, ...data }) => {
+    const modifiersWithPosition = pipe(modifiers, A.mapWithIndex(tuple))
     const item = await db.item.update({
       where: { id },
-      include: { content: true },
-      data,
+      include: { content: true, modifiers: true },
+      data: {
+        ...data,
+        modifiers: {
+          update: pipe(
+            modifiersWithPosition,
+            A.filter(([, m]) => m.modifierId != null),
+            A.map(([p, { config, modifierId }]) => ({
+              where: { id: modifierId! },
+              data: {
+                position: p,
+                config: {
+                  ...config,
+                  content: [
+                    { locale: "en", ...config.content.en },
+                    { locale: "he", ...config.content.he },
+                  ],
+                  options: pipe(
+                    config.options,
+                    A.mapWithIndex((i, o) => ({
+                      ...o,
+                      position: i,
+                      content: [
+                        { locale: "en", ...o.content.en },
+                        { locale: "he", ...o.content.he },
+                      ],
+                    })),
+                    A.map((o) =>
+                      config._tag === "oneOf"
+                        ? {
+                            ...o,
+                            default: config.defaultOption === o.identifier,
+                          }
+                        : o
+                    )
+                  ),
+                },
+              },
+            }))
+          ),
+          create: pipe(
+            modifiersWithPosition,
+            A.filter(([, m]) => m.modifierId == null),
+            A.map(([p, m]) => ({
+              position: p,
+              config: {
+                ...m.config,
+                content: [
+                  { locale: "en", ...m.config.content.en },
+                  { locale: "he", ...m.config.content.he },
+                ],
+                options: pipe(
+                  m.config.options,
+                  A.mapWithIndex((i, o) => ({
+                    ...o,
+                    position: i,
+                    content: [
+                      { locale: "en", ...o.content.en },
+                      { locale: "he", ...o.content.he },
+                    ],
+                  })),
+                  A.map((o) =>
+                    m.config._tag === "oneOf"
+                      ? {
+                          ...o,
+                          default: m.config.defaultOption === o.identifier,
+                        }
+                      : o
+                  )
+                ),
+              },
+            }))
+          ),
+        },
+      },
     })
     await revalidateVenue(venue.identifier)()
     return item

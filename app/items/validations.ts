@@ -1,12 +1,27 @@
-import { Locale } from "@prisma/client"
+import { ItemModifier, Locale } from "@prisma/client"
 import { Slug } from "app/auth/validations"
 import { z } from "zod"
 import { Id } from "app/core/helpers/zod"
 import { isExists } from "app/core/helpers/common"
+import { Extras, ModifierConfig, OneOf, OptionContent } from "db/itemModifierConfig"
+import { DefaultValues } from "react-hook-form"
+import * as O from "fp-ts/Option"
+import * as A from "fp-ts/Array"
+import * as N from "fp-ts/number"
+import * as Ord from "fp-ts/Ord"
+import { match } from "ts-pattern"
+import { constant, pipe, tuple } from "fp-ts/function"
+import { PromiseReturnType } from "blitz"
+import getItem from "./queries/getItem"
 
 export const Content = z.object({
   name: z.string().min(1),
-  description: z.string().default(""),
+  description: z.string(),
+})
+
+const ContentSchema = z.object({
+  en: Content,
+  he: Content,
 })
 
 interface ZodImage {
@@ -21,21 +36,174 @@ export const Image: z.ZodType<ZodImage> = z.object({
   blur: z.string().optional(),
 })
 
-export const ItemSchema = z.object({
+export const OneOfOptionSchema = z.object({
+  identifier: Slug,
+  price: z.number(),
+  content: ContentSchema,
+})
+
+export const ExtrasOptionSchema = z.object({
+  identifier: Slug,
+  price: z.number(),
+  content: ContentSchema,
+  multi: z.boolean(),
+})
+
+export type OneOfOptionSchema = z.input<typeof OneOfOptionSchema>
+
+export const OneOfSchema = z.object({
+  _tag: z.literal("oneOf"),
+  identifier: Slug,
+  content: ContentSchema,
+  options: OneOfOptionSchema.array().refine(A.isNonEmpty),
+  defaultOption: z.string(),
+})
+
+export const ExtrasSchema = z.object({
+  _tag: z.literal("extras"),
+  identifier: Slug,
+  content: ContentSchema,
+  options: ExtrasOptionSchema.array().refine(A.isNonEmpty),
+  min: z.number(),
+  max: z.number(),
+})
+
+// export const ExtrasSchema = Extras.omit({ ref: true, max: true, min: true }).extend({
+//   _tag: z.literal("extras"),
+//   identifier: Slug,
+//   content: ContentSchema,
+//   options: OneOfOptionSchema.array().refine(A.isNonEmpty),
+//   defaultOption: z.string(),
+//   max: z.number().optional(),
+//   min: z.number().optional(),
+// })
+
+export type OneOfSchema = z.infer<typeof OneOfSchema>
+export type ExtrasSchema = z.infer<typeof ExtrasSchema>
+
+export const ItemSchema = ContentSchema.extend({
   image: Image,
-  price: z.number().int().multipleOf(50, "Price should only be multiples of 50"),
+  price: z.number().int().min(50).multipleOf(50, "Price should only be multiples of 50"),
   identifier: Slug,
   categoryId: Id,
-  en: Content.transform((it) => ({ ...it, locale: Locale.en })),
-  he: Content.transform((it) => ({ ...it, locale: Locale.he })),
+  modifiers: z
+    .object({
+      modifierId: z.number().optional(),
+      config: z.discriminatedUnion("_tag", [
+        OneOfSchema,
+        ExtrasSchema,
+      ]) /* leaving room for management integration */,
+    })
+    .array(),
 })
+
+export const toContent = (
+  content: OptionContent[]
+): DefaultValues<z.input<typeof ContentSchema>> => ({
+  en: content.find((c) => c.locale === "en"),
+  he: content.find((c) => c.locale === "he"),
+})
+
+export const toOneOfDefaults = ({
+  content,
+  options,
+  ...oneOf
+}: OneOf): DefaultValues<OneOfSchema> => ({
+  ...oneOf,
+  content: toContent(content),
+  options: pipe(
+    options,
+    A.let("newContent", ({ content }) => toContent(content)),
+    A.map(({ newContent, ...o }) => ({
+      ...o,
+      content: newContent,
+    }))
+  ),
+  defaultOption: pipe(
+    options,
+    A.findIndex((o) => o.default),
+    O.map(String),
+    O.getOrElse(() => "0")
+  ),
+})
+
+export const toExtrasDefaults = ({
+  content,
+  options,
+  min,
+  max,
+  ...extras
+}: z.input<typeof Extras>): DefaultValues<ExtrasSchema> => ({
+  ...extras,
+  content: toContent(content),
+  options: pipe(
+    options,
+    A.map(({ content, ...o }) => ({
+      ...o,
+      content: toContent(content),
+    }))
+  ),
+  min: min ?? 0,
+  max: max ?? 0,
+})
+
+const getDefaultValues = constant<DefaultValues<ItemSchema>>({
+  identifier: "",
+  price: 0,
+  en: { name: "", description: "" },
+  he: { name: "", description: "" },
+  image: { src: "" },
+  modifiers: [],
+})
+
+const byPosition = pipe(
+  N.Ord,
+  Ord.contramap((mod: ItemModifier) => mod.position)
+)
+
+export type GetItemResult = PromiseReturnType<typeof getItem>
+
+export const toDefaults = O.match<GetItemResult, DefaultValues<ItemSchema>>(
+  getDefaultValues,
+  ({ identifier, categoryId, price, content, image, blurDataUrl, modifiers }) => ({
+    identifier,
+    categoryId,
+    price,
+    en: content.find((it) => it.locale === Locale.en),
+    he: content.find((it) => it.locale === Locale.he),
+    image: {
+      src: image,
+      blur: blurDataUrl ?? undefined,
+    },
+    modifiers: pipe(
+      modifiers,
+      A.sort(byPosition),
+      A.map((m) => ({
+        modifierId: m.id,
+        config: pipe(m.config, ModifierConfig.parse, ModifierConfig.unparse, (m) =>
+          match(m)
+            .with({ _tag: "oneOf" }, toOneOfDefaults)
+            .with({ _tag: "extras" }, toExtrasDefaults)
+            .exhaustive()
+        ),
+      }))
+    ),
+  })
+)
 
 const ItemSchemaImgTransform = ItemSchema.extend({ image: Image.transform((it) => it.src) })
 
 export const CreateItem = ItemSchemaImgTransform.transform(({ en, he, categoryId, ...rest }) => ({
   ...rest,
   category: { connect: { id: categoryId } },
-  content: { createMany: { data: [en, he] } },
+  content: {
+    createMany: {
+      data: [tuple(Locale.en, en), tuple(Locale.he, he)].map(([locale, data]) => ({
+        ...data,
+        locale,
+      })),
+    },
+  },
 }))
 
 export const UpdateItem = ItemSchemaImgTransform.extend({ id: Id }).transform(
@@ -44,9 +212,10 @@ export const UpdateItem = ItemSchemaImgTransform.extend({ id: Id }).transform(
     return {
       ...rest,
       content: {
-        updateMany: [en, he]
-          .filter(isExists)
-          .map((it) => ({ where: { locale: it.locale }, data: it })),
+        updateMany: [tuple(Locale.en, en), tuple(Locale.he, he)].map(([locale, data]) => ({
+          where: { locale },
+          data,
+        })),
       },
     }
   }

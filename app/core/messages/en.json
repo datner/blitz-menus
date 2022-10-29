@@ -25,8 +25,8 @@
         "hebrew description": "Hebrew Description",
         "upload": "Uploading Image...",
         "update": {
-          "initial": "Update Item",
-          "item": "Updating Item..."
+          "initial": "Save Changes",
+          "item": "Saving Changes..."
         },
         "create": {
           "initial": "Create Item",

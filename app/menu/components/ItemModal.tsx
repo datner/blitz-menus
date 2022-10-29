@@ -122,7 +122,7 @@ export function ItemModal(props: Props) {
               setOpen(false)
               const modmap = RR.fromFoldableMap(last<[number, Modifier]>(), RA.Foldable)(
                 order.item.modifiers,
-                (mod) => [mod.config.ref, tuple(mod.id, mod)]
+                (mod) => [mod.config.identifier, tuple(mod.id, mod)]
               )
 
               const getId = (ref: string) =>
@@ -138,8 +138,8 @@ export function ItemModal(props: Props) {
                   O.map(T.snd),
                   O.chain((m) =>
                     pipe(
-                      m.config.options as { ref: string; price: number }[],
-                      A.findFirst((o) => o.ref === choice)
+                      m.config.options as { identifier: string; price: number }[],
+                      A.findFirst((o) => o.identifier === choice)
                     )
                   ),
                   O.map((m) => m.price),
@@ -156,9 +156,9 @@ export function ItemModal(props: Props) {
                     RR.collect(Ord)(
                       (_, of): ModifierItem => ({
                         ...of,
-                        id: getId(of.ref),
-                        price: getPrice(of.ref, of.choice),
-                        refType: "oneOf",
+                        id: getId(of.identifier),
+                        price: getPrice(of.identifier, of.choice),
+                        _tag: "oneOf",
                       })
                     )
                   ),
@@ -169,10 +169,10 @@ export function ItemModal(props: Props) {
                         ex.choices,
                         RR.collect(Ord)(
                           (choice, amount): ModifierItem => ({
-                            ref: ex.ref,
-                            refType: "extras",
-                            id: getId(ex.ref),
-                            price: getPrice(ex.ref, choice),
+                            identifier: ex.identifier,
+                            _tag: "extras",
+                            id: getId(ex.identifier),
+                            price: getPrice(ex.identifier, choice),
                             choice,
                             amount,
                           })

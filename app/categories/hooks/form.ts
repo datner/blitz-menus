@@ -8,6 +8,7 @@ import { CategorySchema } from "../validations"
 import { pipe } from "fp-ts/function"
 import * as T from "fp-ts/Task"
 import * as RT from "fp-ts/ReaderTask"
+import { Prisma } from "@prisma/client"
 
 interface GenericOptions {
   redirect?: boolean
@@ -23,15 +24,11 @@ export const category = {
         RT.ask<CategorySchema>(),
         RT.chainTaskK((data) => () => create(data)),
         RT.chainFirstTaskK((c) => () => setQueryData(getCategory, { identifier: c.identifier }, c)),
-        RT.apFirst(
-          () => () => invalidateQuery(getCurrentVenueCategories, { orderBy: { identifier: "asc" } })
-        ),
-        RT.bindTo("category"),
-        RT.apS("router", RT.fromIO(useRouter)),
-        RT.chainTaskK(({ category, router }) =>
-          redirect
-            ? () => router.push(Routes.AdminItemsItem({ identifier: category.identifier }))
-            : T.of(true)
+        RT.chainFirstTaskK(
+          () => () =>
+            invalidateQuery(getCurrentVenueCategories, {
+              orderBy: { identifier: Prisma.SortOrder.asc },
+            })
         )
       ),
     }

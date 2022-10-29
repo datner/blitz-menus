@@ -9,13 +9,13 @@ import { MonoidSum, Ord as ordN } from "fp-ts/number"
 import { geq, leq } from "fp-ts/Ord"
 
 export const OneOfItem = z.object({
-  ref: z.string(),
+  identifier: z.string(),
   amount: z.number().int().nonnegative(),
   choice: z.string(),
 })
 
 export const ExtrasItem = z.object({
-  ref: z.string(),
+  identifier: z.string(),
   choices: z.record(z.number()),
 })
 
@@ -43,7 +43,7 @@ export const getItemFormSchema = (modifiers: Modifier[]) =>
           (ex) =>
             pipe(
               modifiers,
-              RA.findFirst((m) => m.config.ref === ex.ref),
+              RA.findFirst((m) => m.config.identifier === ex.identifier),
               O.chain((m) => (m.config._tag === "extras" ? O.some(m.config) : O.none)),
               O.map((m) =>
                 pipe(

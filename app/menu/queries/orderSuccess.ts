@@ -6,20 +6,8 @@ import * as E from "fp-ts/Either"
 import * as O from "fp-ts/Option"
 import * as TE from "fp-ts/TaskEither"
 import db from "db"
+import { Option } from "app/core/helpers/zod"
 import { prismaNotFound } from "app/core/helpers/prisma"
-
-const None = z.object({
-  _tag: z.literal("None"),
-})
-
-const Some = <T extends z.ZodTypeAny>(schema: T) =>
-  z.object({
-    _tag: z.literal("Some"),
-    value: schema,
-  })
-
-const Option = <T extends z.ZodTypeAny>(schema: T) =>
-  z.discriminatedUnion("_tag", [None, Some(schema)])
 
 const OrderSuccess = z.object({
   txId: Option(z.string()),

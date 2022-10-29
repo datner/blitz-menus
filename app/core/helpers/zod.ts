@@ -26,6 +26,30 @@ export const IdOrSlug = z.union([
   BaseEntity.pick({ identifier: true }),
 ])
 
+type ZodIso<A extends z.ZodTypeAny> = {
+  unparse(input: z.output<A>): z.input<A>
+}
+
+export function zodIso<A extends z.ZodTypeAny>(
+  schema: A,
+  unparse: (o: z.output<A>) => z.input<A>
+): A & ZodIso<A> {
+  return Object.assign(schema, { unparse })
+}
+
+export const None = z.object({
+  _tag: z.literal("None"),
+})
+
+export const Some = <T extends z.ZodTypeAny>(schema: T) =>
+  z.object({
+    _tag: z.literal("Some"),
+    value: schema,
+  })
+
+export const Option = <T extends z.ZodTypeAny>(schema: T) =>
+  z.discriminatedUnion("_tag", [None, Some(schema)])
+
 export type ZodParseError<T> = {
   tag: "zodParseError"
   error: z.ZodError<T>

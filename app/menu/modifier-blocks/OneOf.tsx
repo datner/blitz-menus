@@ -17,7 +17,7 @@ type Props = {
 
 const radio = (locale: Locale) =>
   map<OneOfOption, ReactNode>((o) => (
-    <Radio key={o.ref} value={o.ref} label={getLabel(o)(locale)} />
+    <Radio key={o.identifier} value={o.identifier} label={getLabel(o)(locale)} />
   ))
 
 const oneOfUs = pipe(L.id<ItemForm["modifiers"]["oneOf"][string]>(), L.prop("choice"))
@@ -25,7 +25,7 @@ const oneOfUs = pipe(L.id<ItemForm["modifiers"]["oneOf"][string]>(), L.prop("cho
 export const OneOfComponent = (props: Props) => {
   const { modifier } = props
   const { field } = useController<ItemForm, `modifiers.oneOf.${string}`>({
-    name: `modifiers.oneOf.${modifier.ref}`,
+    name: `modifiers.oneOf.${modifier.identifier}`,
   })
   const locale = useLocale()
   return (

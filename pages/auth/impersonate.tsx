@@ -2,20 +2,15 @@ import { useRouter } from "next/router"
 import { Routes } from "@blitzjs/next"
 import { getQueryClient, useMutation, useQuery } from "@blitzjs/rpc"
 import { useZodForm } from "app/core/hooks/useZodForm"
-import {
-  UseFormReturn,
-  FieldPath,
-  DeepPartial,
-  FieldValues,
-  FieldPathValue,
-  useController,
-} from "react-hook-form"
+import { useController } from "react-hook-form"
 import { z } from "zod"
 import impersonateUser from "app/auth/mutations/impersonateUser"
 import {
   Paper,
   Button,
+  Input,
   Loader,
+  Container,
   Autocomplete,
   SegmentedControl,
   LoadingOverlay,
@@ -29,42 +24,12 @@ import * as O from "fp-ts/Option"
 import * as NA from "fp-ts/NonEmptyArray"
 import * as A from "fp-ts/Array"
 import { pipe } from "fp-ts/function"
-import {
-  forwardRef,
-  ForwardRefExoticComponent,
-  RefAttributes,
-  Suspense,
-  useEffect,
-  useMemo,
-  useState,
-} from "react"
-import { useEvent } from "app/core/hooks/useEvent"
+import { forwardRef, ForwardRefExoticComponent, RefAttributes, Suspense, useMemo } from "react"
 
 /*
  * This file is just for a pleasant getting started page for your new app.
  * You can delete everything in here and start from scratch if you like.
  */
-
-function useStableFormValue<F extends FieldValues, P extends FieldPath<F>>(
-  form: UseFormReturn<F>,
-  path: P,
-  getValue: (v: DeepPartial<F>) => FieldPathValue<F, P>
-) {
-  const { getValues, watch } = form
-  const get = useEvent(getValue)
-  const [stable, setValue] = useState(() => getValues(path))
-
-  useEffect(
-    () =>
-      pipe(
-        watch((value, { name }) => (name === path ? setValue(get(value)) : void 0)),
-        (sub) => () => sub.unsubscribe()
-      ),
-    [watch, get, path]
-  )
-
-  return stable
-}
 
 const eqThing = Eq.struct({
   group: S.Eq,
@@ -109,6 +74,7 @@ const UserAutocomplete: ForwardRefExoticComponent<
 
   return (
     <Autocomplete
+      label="Pick a User"
       ref={ref}
       {...rest}
       data={data}
@@ -137,7 +103,6 @@ function ImpersonateUserForm() {
   const onSubmit = handleSubmit(
     async (data) => {
       try {
-        console.log(data)
         await impersonateUserMutation(data)
         getQueryClient().clear()
         router.push(Routes.AdminHome())
@@ -149,23 +114,28 @@ function ImpersonateUserForm() {
   )
 
   return (
-    <Paper component="form" withBorder shadow="md" p={30} mt={30} radius="md" onSubmit={onSubmit}>
-      <fieldset disabled={form.formState.isSubmitting}>
-        <Suspense fallback={<Autocomplete data={[]} rightSection={<Loader size={16} />} />}>
-          <UserAutocomplete {...email} groupBy={groupBy.value} />
-        </Suspense>
-        <SegmentedControl
-          {...groupBy}
-          data={[
-            { label: "Venue", value: "venue" },
-            { label: "Organization", value: "organization" },
-          ]}
-        />
-      </fieldset>
-      <Button type="submit" fullWidth mt="xl">
-        {form.formState.isSubmitting ? <Loader /> : "Sign In"}
-      </Button>
-    </Paper>
+    <Container size="xs">
+      <Paper component="form" withBorder shadow="md" p={30} mt={30} radius="md" onSubmit={onSubmit}>
+        <fieldset className="space-y-6" disabled={form.formState.isSubmitting}>
+          <Input.Wrapper label="Arrange Users By">
+            <SegmentedControl
+              fullWidth
+              {...groupBy}
+              data={[
+                { label: "Venue", value: "venue" },
+                { label: "Organization", value: "organization" },
+              ]}
+            />
+          </Input.Wrapper>
+          <Suspense fallback={<Autocomplete data={[]} rightSection={<Loader size={16} />} />}>
+            <UserAutocomplete {...email} groupBy={groupBy.value} />
+          </Suspense>
+        </fieldset>
+        <Button type="submit" fullWidth mt="xl">
+          {form.formState.isSubmitting ? <Loader /> : "Sign In"}
+        </Button>
+      </Paper>
+    </Container>
   )
 }
 
