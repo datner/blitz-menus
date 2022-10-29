@@ -33,7 +33,7 @@ export const revalidateMany = (paths: string[]) =>
     TE.chainW(
       TE.tryCatchK(
         (secret) => {
-          const url = new URL("/api/revalidate", "http://localhost:3000")
+          const url = new URL("/api/revalidate", host)
           url.searchParams.append("secret", secret)
           paths.forEach((path) => url.searchParams.append("path", path))
           return fetch(url.toString())

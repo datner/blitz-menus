@@ -1,6 +1,7 @@
 import { resolver } from "@blitzjs/rpc"
 import db from "db"
 import * as A from "fp-ts/Array"
+import * as TE from "fp-ts/TaskEither"
 import { pipe, tuple } from "fp-ts/function"
 import { enforceSuperAdminIfNotCurrentOrganization } from "app/auth/helpers/enforceSuperAdminIfNoCurrentOrganization"
 import { setDefaultOrganizationId } from "app/auth/helpers/setDefaultOrganizationId"
@@ -62,7 +63,7 @@ export default resolver.pipe(
                       config._tag === "oneOf"
                         ? {
                             ...o,
-                            default: config.defaultOption === o.identifier,
+                            default: config.defaultOption === String(p),
                           }
                         : o
                     )
