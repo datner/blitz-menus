@@ -44,13 +44,20 @@ export type OrderFamilyAtom = PrimitiveAtom<OrderItem>
 
 export const orderAtomsAtom = splitAtom(orderAtom)
 
-export const priceAtom = atom((get) =>
-  pipe(
-    get(orderItemsAtom),
-    A.map((it) => it.amount * it.item.price),
-    sum
+export const priceAtom = atom((get) => {
+  const order = get(orderItemsAtom)
+  return pipe(
+    order,
+    A.foldMap(N.MonoidSum)(
+      (it) =>
+        it.amount * it.item.price +
+        pipe(
+          it.modifiers,
+          A.foldMap(N.MonoidSum)((m) => m.price * m.amount)
+        )
+    )
   )
-)
+})
 
 export const amountAtom = atom((get) =>
   pipe(

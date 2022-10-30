@@ -10,6 +10,7 @@ import { useController } from "react-hook-form"
 import { ItemForm } from "../validations/item"
 
 import * as L from "monocle-ts/Lens"
+import { toShekel } from "app/core/helpers/content"
 
 type Props = {
   modifier: OneOf
@@ -17,7 +18,25 @@ type Props = {
 
 const radio = (locale: Locale) =>
   map<OneOfOption, ReactNode>((o) => (
-    <Radio key={o.identifier} value={o.identifier} label={getLabel(o)(locale)} />
+    <Radio
+      key={o.identifier}
+      value={o.identifier}
+      classNames={{
+        label: "flex grow h-11 items-center",
+        labelWrapper: "flex grow",
+        body: "items-center",
+        inner: "pt-1.5",
+        icon: "mt-[3px]",
+      }}
+      label={
+        <>
+          <span className="grow">{getLabel(o)(locale)}</span>
+          <span className="text-sm text-emerald-600 px-4">
+            {o.price > 0 ? `+ ${toShekel(o.price)}` : ""}
+          </span>
+        </>
+      }
+    />
   ))
 
 const oneOfUs = pipe(L.id<ItemForm["modifiers"]["oneOf"][string]>(), L.prop("choice"))

@@ -1,10 +1,11 @@
 import * as O from "monocle-ts/Optional"
+import * as L from "monocle-ts/Lens"
 import { ModifierItem } from "app/menu/jotai/order"
 import { constNull, pipe } from "fp-ts/function"
 import { ReadonlyNonEmptyArray } from "fp-ts/ReadonlyNonEmptyArray"
 import { findFirst } from "fp-ts/ReadonlyArray"
 import { getOrElseW, getOrElse, chainNullableK } from "fp-ts/Option"
-import { OptionContent } from "db/itemModifierConfig"
+import { BaseOption, OptionContent } from "db/itemModifierConfig"
 import { Locale } from "db"
 
 export const lensOneOf = (ref: string) =>
@@ -34,6 +35,8 @@ export const getLabel =
       chainNullableK((c) => c.name),
       getOrElse(() => "unknown")
     )
+
+export const getModifierPrice = pipe(L.id<BaseOption>(), L.prop("price"))
 
 export const getDescription =
   <C extends WithContent>(o: C) =>

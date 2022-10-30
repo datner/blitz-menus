@@ -3,6 +3,7 @@ import { a, useSpring } from "@react-spring/web"
 import { useLocale } from "app/core/hooks/useLocale"
 import { decrement, increment, pipe } from "fp-ts/function"
 import * as L from "monocle-ts/Lens"
+import * as A from "fp-ts/Array"
 import { ItemData } from "./ItemData"
 import { memo } from "react"
 import { useDrag } from "@use-gesture/react"
@@ -11,8 +12,9 @@ import { useIsRtl } from "app/core/hooks/useIsRtl"
 import { clamp } from "app/core/helpers/number"
 import { useAtomValue } from "jotai"
 import { OrderFamilyAtom, OrderItem } from "app/menu/jotai/order"
-import { max, multiply } from "app/core/helpers/number"
+import { max, multiply, add } from "app/core/helpers/number"
 import { useUpdateOrderItem } from "../hooks/useUpdateOrderItem"
+import { MonoidSum } from "fp-ts/lib/number"
 
 type Props = {
   atom: OrderFamilyAtom
@@ -63,7 +65,12 @@ export const ListItem = memo(function ListItem(props: Props) {
     opacity: isInOrder ? 1 : 0,
   })
 
-  const price = pipe(order.amount, max(1), multiply(order.item.price))
+  const modPrice = pipe(
+    order.modifiers,
+    A.foldMap(MonoidSum)((m) => m.price * m.amount)
+  )
+
+  const price = pipe(order.amount, max(1), multiply(order.item.price), add(modPrice))
 
   if (!content) return null
 

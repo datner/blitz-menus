@@ -20,6 +20,7 @@ import * as RA from "fp-ts/ReadonlyArray"
 import * as RR from "fp-ts/ReadonlyRecord"
 import * as L from "monocle-ts/Lens"
 import { useTranslations } from "next-intl"
+import { toShekel } from "app/core/helpers/content"
 
 type Props = {
   modifier: Extras
@@ -47,10 +48,19 @@ const checkbox =
               key={o.identifier}
               disabled={value.choices[o.identifier]! > 0 ? false : overMax}
               value={o.identifier}
-              classNames={{ label: "flex grow h-11 items-center" }}
+              classNames={{
+                label: "flex grow h-11 items-center",
+                labelWrapper: "flex grow",
+                body: "items-center",
+              }}
               label={
                 <>
-                  <span className="grow">{getLabel(o)(locale)}</span>
+                  <div className="grow flex flex-col">
+                    <span>{getLabel(o)(locale)}</span>
+                    <span className="text-sm text-emerald-600">
+                      {o.price > 0 ? `+ ${toShekel(o.price)}` : ""}
+                    </span>
+                  </div>
                   {pipe(
                     value.choices,
                     RR.lookup(o.identifier),
