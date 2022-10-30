@@ -12,12 +12,13 @@ import { XMarkIcon } from "@heroicons/react/24/solid"
 type Props = {
   control: Control<ItemSchema>
   update: UseFieldArrayUpdate<ItemSchema, "modifiers">
+  onDuplicate(): void
   field: { config: ExtrasSchema }
   index: number
 }
 
 export const ExtrasForm = (props: Props) => {
-  const { index, update, field } = props
+  const { index, update, field, onDuplicate } = props
   const { register, reset, control, handleSubmit, formState } = useZodForm({
     schema: ExtrasSchema,
     defaultValues: field.config,
@@ -40,6 +41,11 @@ export const ExtrasForm = (props: Props) => {
     <div className="grow overflow-auto min-h-0 p-4 bg-gray-50">
       <div className="flex gap-4">
         <TextInput {...register(`identifier`)} label="Modifier Ref" />
+        <div className="flex grow justify-end">
+          <Button type="button" onClick={onDuplicate} className="justify-self-end">
+            Duplicate
+          </Button>
+        </div>
       </div>
       <div className="flex gap-4 [&>*]:flex-1 mt-2">
         <TextInput {...register(`content.en.name`)} label="English Name" />

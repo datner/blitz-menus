@@ -1,4 +1,5 @@
-import { ItemSchema } from "app/items/validations"
+import { ItemSchema, ModifierSchema } from "app/items/validations"
+import * as L from "monocle-ts/Lens"
 import * as A from "fp-ts/Array"
 import * as O from "fp-ts/Option"
 import * as T from "fp-ts/Task"
@@ -6,7 +7,7 @@ import * as TO from "fp-ts/TaskOption"
 import * as NA from "fp-ts/NonEmptyArray"
 import { pipe } from "fp-ts/function"
 import { match } from "ts-pattern"
-import { useFieldArray, UseFieldArrayUpdate, useFormContext } from "react-hook-form"
+import { useFieldArray, useFormContext } from "react-hook-form"
 import { ModifiersSortableList } from "./ModifiersSortableList"
 import { useStableO } from "fp-ts-react-stable-hooks"
 import { ModifierField } from "app/items/helpers/form"
@@ -61,6 +62,13 @@ const getInitialModifierValues = (mod: {
   }
 }
 
+const addCopy = pipe(
+  L.id<ModifierSchema>(),
+  L.prop("config"),
+  L.prop("identifier"),
+  L.modify((id) => `${id}-copy`)
+)
+
 export function ModifierPanel() {
   const modal = useModal(NewModifierModal)
   const { control, getValues } = useFormContext<ItemSchema>()
@@ -95,6 +103,12 @@ export function ModifierPanel() {
         O.bind("field", ({ index }) => A.lookup(index)(fields)),
         O.let("update", () => updateConfig),
         O.let("control", () => control),
+        O.let(
+          "onDuplicate",
+          ({ field: { id, ...rest } }) =>
+            () =>
+              pipe(rest, addCopy, append)
+        ),
         O.match(
           () => <PickAction />,
           (props) =>

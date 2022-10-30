@@ -197,6 +197,7 @@ export const getStaticProps = gSP(async (context: GetStaticPropsContext) => {
         restaurant: typedRestaurant,
         messages: (await import(`app/core/messages/${context.locale}.json`)).default,
       },
+      revalidate: 60,
     }
   }
 
@@ -205,5 +206,6 @@ export const getStaticProps = gSP(async (context: GetStaticPropsContext) => {
       restaurant: typedRestaurant,
       messages: (await import(`app/core/messages/${context.locale}.json`)).default,
     },
+    revalidate: 60,
   }
 })

@@ -81,20 +81,21 @@ export const ExtrasSchema = z.object({
 export type OneOfSchema = z.infer<typeof OneOfSchema>
 export type ExtrasSchema = z.infer<typeof ExtrasSchema>
 
+export const ModifierSchema = z.object({
+  modifierId: z.number().optional(),
+  config: z.discriminatedUnion("_tag", [
+    OneOfSchema,
+    ExtrasSchema,
+  ]) /* leaving room for management integration */,
+})
+export type ModifierSchema = z.infer<typeof ModifierSchema>
+
 export const ItemSchema = ContentSchema.extend({
   image: Image,
   price: z.number().int().min(50).multipleOf(50, "Price should only be multiples of 50"),
   identifier: Slug,
   categoryId: Id,
-  modifiers: z
-    .object({
-      modifierId: z.number().optional(),
-      config: z.discriminatedUnion("_tag", [
-        OneOfSchema,
-        ExtrasSchema,
-      ]) /* leaving room for management integration */,
-    })
-    .array(),
+  modifiers: ModifierSchema.array(),
 })
 
 export const toContent = (
