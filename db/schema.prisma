@@ -155,13 +155,13 @@ model Restaurant {
 }
 
 model RestaurantI18L {
-  id           Int        @id @default(autoincrement())
-  restaurantId Int
+  id           Int         @id @default(autoincrement())
+  restaurantId Int?
   locale       Locale
   name         String
   venueId      Int?
-  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
-  Venue        Venue?     @relation(fields: [venueId], references: [id])
+  restaurant   Restaurant? @relation(fields: [restaurantId], references: [id])
+  Venue        Venue?      @relation(fields: [venueId], references: [id])
 }
 
 model Menu {
@@ -257,7 +257,7 @@ model Item {
 
   referencedIn OrderItem[]
 
-  @@unique([restaurantId, identifier])
+  @@unique([organizationId, identifier])
 }
 
 model ItemModifier {
