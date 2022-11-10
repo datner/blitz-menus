@@ -2,7 +2,6 @@ import { ItemModifier, Locale } from "@prisma/client"
 import { Slug } from "app/auth/validations"
 import { z } from "zod"
 import { Id } from "app/core/helpers/zod"
-import { isExists } from "app/core/helpers/common"
 import { Extras, ModifierConfig, OneOf, OptionContent } from "db/itemModifierConfig"
 import { DefaultValues } from "react-hook-form"
 import * as O from "fp-ts/Option"
@@ -67,16 +66,6 @@ export const ExtrasSchema = z.object({
   min: z.number(),
   max: z.number(),
 })
-
-// export const ExtrasSchema = Extras.omit({ ref: true, max: true, min: true }).extend({
-//   _tag: z.literal("extras"),
-//   identifier: Slug,
-//   content: ContentSchema,
-//   options: OneOfOptionSchema.array().refine(A.isNonEmpty),
-//   defaultOption: z.string(),
-//   max: z.number().optional(),
-//   min: z.number().optional(),
-// })
 
 export type OneOfSchema = z.infer<typeof OneOfSchema>
 export type ExtrasSchema = z.infer<typeof ExtrasSchema>
