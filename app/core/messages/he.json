@@ -53,7 +53,8 @@
       "VenueSettings": {
         "address": "כתובת",
         "phone number": "מספר טלפון",
-        "update": "עדכן"
+        "update": "עדכן",
+        "update": "מעדכן..."
       }
     }
   },

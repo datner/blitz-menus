@@ -1,10 +1,9 @@
-import { Button, Container, Loader, Paper, TextInput } from "@mantine/core"
-import { useZodForm } from "app/core/hooks/useZodForm"
+import { Button, Container, Paper, TextInput } from "@mantine/core"
 import { useTranslations } from "next-intl"
-import { Settings } from "app/admin/validations/settings"
 import { useMutation } from "@blitzjs/rpc"
+import { useZodForm } from "app/core/hooks/useZodForm"
+import { Settings } from "app/admin/validations/settings"
 import updateAddress from "app/admin/mutations/updateAddress"
-import { useAuthenticatedSession } from "@blitzjs/auth"
 
 export function VenueSettings() {
   const t = useTranslations("admin.Components.VenueSettings")
@@ -16,11 +15,11 @@ export function VenueSettings() {
   const handleSubmit = form.handleSubmit(async (data) => {
     await updateSettings(data)
   })
-  console.log(useAuthenticatedSession())
 
   return (
     <Container p="lg">
       <Paper
+        sx={{ width: 440 }}
         component="form"
         withBorder
         shadow="md"
@@ -33,8 +32,8 @@ export function VenueSettings() {
           <TextInput {...form.register("address")} label={t("address")} />
           <TextInput {...form.register("phone")} label={t("phone number")} />
         </fieldset>
-        <Button mt={16} type="submit">
-          {form.formState.isSubmitting ? <Loader /> : t("update")}
+        <Button mt={16} type="submit" loading={form.formState.isSubmitting}>
+          {form.formState.isSubmitting ? t("updating") : t("update")}
         </Button>
       </Paper>
     </Container>

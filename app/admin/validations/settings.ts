@@ -1,7 +1,7 @@
 import { z } from "zod"
 
 export const Settings = z.object({
-  address: z.string().min(3),
+  address: z.string().trim().min(3),
   phone: z
     .string()
     .trim()

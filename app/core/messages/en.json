@@ -53,7 +53,8 @@
       "VenueSettings": {
         "address": "Address",
         "phone number": "Phone Number",
-        "update": "Update"
+        "update": "Update",
+        "updating": "Updating..."
       }
     }
   },
