@@ -17,10 +17,11 @@ export default resolver.pipe(
   setDefaultVenueId,
   ensureVenueRelatedToOrganization,
   async ({ where: _where, orderBy, skip = 0, take = 100, venueId, organizationId }) => {
-    const where = {
+    const where: Prisma.CategoryWhereInput = {
       venueId,
       organizationId,
       deleted: null,
+      categoryItems: { some: { Item: { deleted: null } } },
       ..._where,
     }
 
@@ -38,12 +39,30 @@ export default resolver.pipe(
           ...paginateArgs,
           include: {
             content: true,
+            categoryItems: {
+              orderBy: { position: Prisma.SortOrder.asc },
+              where: {
+                Item: { deleted: null },
+              },
+              include: {
+                Item: {
+                  include: {
+                    content: true,
+                  },
+                },
+              },
+            },
             items: { where: { deleted: null }, include: { content: true } },
           },
           where,
           orderBy,
         }),
     })
+
+    // temp
+    for (const category of categories) {
+      category.items = category.categoryItems.map((c) => c.Item)
+    }
 
     return {
       categories,

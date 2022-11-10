@@ -12,11 +12,10 @@ import { Loader, LoadingOverlay } from "@mantine/core"
 function AsideDirectory() {
   const locale = useLocale()
   const t = useTranslations("admin.Components.Aside")
-  const [{ categories }, ...rest] = useQuery(getCurrentVenueCategories, {
+  const [queryBag, { isLoading, isRefetching }] = useQuery(getCurrentVenueCategories, {
     orderBy: { identifier: Prisma.SortOrder.asc },
   })
-  // typescript is acting dumb
-  const [{ isLoading, isRefetching }] = rest
+  const { categories } = queryBag
 
   const title = titleFor(locale)
 
@@ -28,13 +27,13 @@ function AsideDirectory() {
         {isRefetching && <Loader color="teal" variant="dots" />}
       </div>
       <nav className="grow min-h-0 overflow-y-auto" aria-label="Directory">
-        {categories.map(({ items, identifier, ...rest }) => (
+        {categories.map(({ categoryItems: items, identifier, ...rest }) => (
           <div key={identifier} className="relative">
             <div className="z-10 sticky top-0 border-t border-b border-gray-200 bg-gray-50 px-6 py-1 text-sm font-medium text-gray-500">
               <h3>{title(rest)}</h3>
             </div>
             <ul role="list" className="relative z-0 divide-y divide-gray-200">
-              {items.map((item) => (
+              {items.map(({ Item: item }) => (
                 <li key={item.id} className="bg-white">
                   <div className="relative px-6 py-5 flex items-center gap-3 hover:bg-gray-50 focus-within:ring-2 focus-within:ring-inset focus-within:ring-emerald-500">
                     <div className="flex-shrink-0">

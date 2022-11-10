@@ -149,7 +149,24 @@ export const getStaticProps = gSP(async (context: GetStaticPropsContext) => {
     include: {
       content: true,
       categories: {
+        where: { categoryItems: { some: { Item: { deleted: null } } } },
         include: {
+          categoryItems: {
+            orderBy: { position: Prisma.SortOrder.asc },
+            where: {
+              Item: { deleted: null },
+            },
+            include: {
+              Item: {
+                include: {
+                  content: true,
+                  modifiers: {
+                    orderBy: { position: Prisma.SortOrder.asc },
+                  },
+                },
+              },
+            },
+          },
           content: true,
           items: {
             where: {
@@ -174,7 +191,7 @@ export const getStaticProps = gSP(async (context: GetStaticPropsContext) => {
     ...restaurant,
     categories: restaurant.categories.map((c) => ({
       ...c,
-      items: c.items.map((i) => ({
+      items: c.categoryItems.map(({ Item: i }) => ({
         ...i,
         modifiers: i.modifiers
           .map((m) => ({
