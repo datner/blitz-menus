@@ -115,7 +115,16 @@ function ImpersonateUserForm() {
 
   return (
     <Container size="xs">
-      <Paper component="form" withBorder shadow="md" p={30} mt={30} radius="md" onSubmit={onSubmit}>
+      <Paper
+        sx={{ width: 460 }}
+        component="form"
+        withBorder
+        shadow="md"
+        p={30}
+        mt={30}
+        radius="md"
+        onSubmit={onSubmit}
+      >
         <fieldset className="space-y-6" disabled={form.formState.isSubmitting}>
           <Input.Wrapper label="Arrange Users By">
             <SegmentedControl
@@ -127,12 +136,20 @@ function ImpersonateUserForm() {
               ]}
             />
           </Input.Wrapper>
-          <Suspense fallback={<Autocomplete data={[]} rightSection={<Loader size={16} />} />}>
+          <Suspense
+            fallback={
+              <Autocomplete
+                label="Loading users..."
+                data={[]}
+                rightSection={<Loader size={16} />}
+              />
+            }
+          >
             <UserAutocomplete {...email} groupBy={groupBy.value} />
           </Suspense>
         </fieldset>
-        <Button type="submit" fullWidth mt="xl">
-          {form.formState.isSubmitting ? <Loader /> : "Sign In"}
+        <Button type="submit" fullWidth mt="xl" loading={form.formState.isSubmitting}>
+          {form.formState.isSubmitting ? "Impersonating..." : "Sign In"}
         </Button>
       </Paper>
     </Container>
