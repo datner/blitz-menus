@@ -57,7 +57,10 @@ const navLinks = sidebarNavigation.map((item) => (
 ))
 
 const navigation = (
-  <Navbar sx={(theme) => ({ backgroundColor: theme.colors.teal[7] })} width={{ sm: 112 }}>
+  <Navbar
+    sx={(theme) => ({ backgroundColor: theme.colors.teal[7], border: 0 })}
+    width={{ sm: 112 }}
+  >
     <Navbar.Section>
       <div className="h-16"></div>
     </Navbar.Section>
