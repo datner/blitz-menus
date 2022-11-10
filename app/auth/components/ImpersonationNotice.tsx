@@ -1,12 +1,14 @@
-import { useSession } from "@blitzjs/auth"
+import { useAuthenticatedSession } from "@blitzjs/auth"
+import { Routes } from "@blitzjs/next"
 import { invoke, getQueryClient } from "@blitzjs/rpc"
-import { isNone, none } from "fp-ts/Option"
+import { isNone } from "fp-ts/Option"
+import { useRouter } from "next/router"
 import stopImpersonating from "../mutations/stopImpersonating"
 
 export const ImpersonationNotice = () => {
-  const { impersonatingFromUserId = none, userId } = useSession()
+  const { impersonatingFromUserId, userId } = useAuthenticatedSession()
+  const router = useRouter()
   if (isNone(impersonatingFromUserId)) return null
-  if (userId == null) return null
 
   return (
     <div className="bg-yellow-400 px-2 py-2 text-center font-semibold">
@@ -14,8 +16,9 @@ export const ImpersonationNotice = () => {
       <button
         className="appearance-none bg-transparent text-black uppercase ml-2"
         onClick={async () => {
-          await invoke(stopImpersonating, {})
+          await invoke(stopImpersonating, null)
           getQueryClient().clear()
+          router.push(Routes.Impersonate())
         }}
       >
         Exit
