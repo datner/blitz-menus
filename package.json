@@ -9,7 +9,8 @@
     "lint": "next lint",
     "test": "jest",
     "test:watch": "jest --watch",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "upgrade:prisma": "yarn add prisma @prisma/client"
   },
   "prisma": {
     "schema": "db/schema.prisma"
@@ -42,7 +43,7 @@
     "@mantine/nprogress": "5.5.5",
     "@next/bundle-analyzer": "12.1.6",
     "@plaiceholder/next": "2.5.0",
-    "@prisma/client": "4.4.0",
+    "@prisma/client": "4.6.1",
     "@react-spring/web": "9.4.4",
     "@tailwindcss/forms": "0.5.2",
     "@tailwindcss/line-clamp": "0.4.0",
@@ -70,7 +71,7 @@
     "nprogress": "0.2.0",
     "plaiceholder": "2.5.0",
     "postcss": "8.x",
-    "prisma": "4.4.0",
+    "prisma": "4.6.1",
     "react": "latest",
     "react-confetti": "6.1.0",
     "react-dom": "latest",
