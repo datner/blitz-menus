@@ -11,6 +11,20 @@ import { AuthenticationError, AuthorizationError } from "blitz"
 import { createEmotionCache, MantineProvider } from "@mantine/core"
 import { rtlCache } from "app/core/helpers/rtl-cache"
 import { RouterTransition } from "app/admin/components/RouterTransition"
+import clsx from "clsx"
+import { Secular_One, Noto_Sans } from "@next/font/google"
+
+const secularOne = Secular_One({
+  weight: "400",
+  subsets: ["hebrew", "latin"],
+  variable: "--font-secular-one",
+})
+
+const notoSans = Noto_Sans({
+  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
+  subsets: ["latin"],
+  variable: "--font-noto-sans",
+})
 
 const renuCache = createEmotionCache({ key: "renu" })
 
@@ -59,7 +73,9 @@ export default withBlitz(function App({
           FallbackComponent={RootErrorFallback}
           onReset={useQueryErrorResetBoundary().reset}
         >
-          {getLayout(<Component {...rest} />)}
+          <div className={clsx(secularOne.variable, notoSans.variable, "flex grow min-h-0")}>
+            {getLayout(<Component {...rest} />)}
+          </div>
         </ErrorBoundary>
       </MantineProvider>
     </NextIntlProvider>

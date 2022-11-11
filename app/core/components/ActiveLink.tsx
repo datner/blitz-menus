@@ -24,5 +24,9 @@ export const ActiveLink = ({ children, ...props }: ActiveLinkProps) => {
     }
   }, [asPath, isReady, props.as, props.href])
 
-  return <Link {...props}>{children({ active })}</Link>
+  return (
+    <Link {...props} legacyBehavior>
+      {children({ active })}
+    </Link>
+  )
 }

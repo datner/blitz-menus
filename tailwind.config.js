@@ -24,8 +24,8 @@ module.exports = {
         },
       },
       fontFamily: {
-        title: ['"Secular One"', ...defaultTheme.fontFamily.sans],
-        sans: ['"Noto Sans"', ...defaultTheme.fontFamily.sans],
+        title: ["var(--font-secular-one)", ...defaultTheme.fontFamily.sans],
+        sans: ["var(--font-noto-sans)", ...defaultTheme.fontFamily.sans],
       },
     },
   },

@@ -39,13 +39,14 @@ export function FormDropzone() {
       <div className="mt-2 relative grow">
         {field.value.src && (
           <Image
+            className="object-cover"
             unoptimized={fieldState.isDirty}
             alt="preview"
-            objectFit="cover"
-            layout="fill"
             placeholder={!fieldState.isDirty && field.value.blur ? "blur" : "empty"}
             src={field.value.src}
             blurDataURL={field.value.blur}
+            fill
+            sizes="100vw"
           />
         )}
       </div>

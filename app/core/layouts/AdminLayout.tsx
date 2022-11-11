@@ -8,6 +8,7 @@ import {
   // CircleStackIcon as CollectionIcon,
   HomeIcon,
   BuildingStorefrontIcon,
+  ClipboardIcon,
   // PhotoIcon as PhotographIcon,
   // UserGroupIcon,
 } from "@heroicons/react/24/solid"
@@ -15,7 +16,7 @@ import { ImpersonationNotice } from "app/auth/components/ImpersonationNotice"
 import { ToastContainer } from "react-toastify"
 import NiceModal from "@ebay/nice-modal-react"
 import { useIsRtl } from "../hooks/useIsRtl"
-import { AppShell, Navbar } from "@mantine/core"
+import { Navbar } from "@mantine/core"
 
 import "react-toastify/dist/ReactToastify.css"
 import { ActiveLink } from "../components/ActiveLink"
@@ -24,9 +25,9 @@ type Props = { children?: ReactNode }
 
 const sidebarNavigation = [
   { name: "Home", href: Routes.AdminHome(), icon: HomeIcon },
+  { name: "Menus", href: "/admin/menus", icon: ClipboardIcon },
   { name: "Inventory", href: Routes.AdminItems(), icon: Square2StackIcon },
   { name: "Venue", href: Routes.AdminVenue(), icon: BuildingStorefrontIcon },
-  // { name: "Shared", href: "/admin/shared", icon: UserGroupIcon, current: false },
   // { name: "Albums", href: "/admin/albums", icon: CollectionIcon, current: false },
   // { name: "Settings", href: "/admin/settings", icon: CogIcon, current: false },
 ]

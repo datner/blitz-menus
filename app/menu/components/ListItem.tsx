@@ -113,15 +113,15 @@ export const ListItem = memo(function ListItem(props: Props) {
         <div className="w-32 relative xs:w-48 m-2 rounded-md overflow-hidden h-32">
           {order.item.image && (
             <Image
+              className="object-cover"
+              fill
               src={order.item.image}
-              layout="fill"
-              sizes="(min-width: 370px) 12rem,
-              8rem"
               placeholder={order.item.blurDataUrl ? "blur" : "empty"}
               blurDataURL={order.item.blurDataUrl ?? undefined}
               quality={20}
-              objectFit="cover"
               alt={order.item.identifier}
+              sizes="(min-width: 370px) 12rem,
+              8rem"
             />
           )}
         </div>

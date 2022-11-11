@@ -63,13 +63,13 @@ export const Menu: BlitzPage<InferGetStaticPropsType<typeof getStaticProps>> = (
         ref={navbar.setContainer}
         onScroll={navbar.onScroll}
         className={clsx(
-          "relative h-full bg-gray-50 scroll-smooth",
+          "relative flex flex-col grow min-h-0 bg-gray-50 scroll-smooth",
           open || reviewOrder ? "overflow-hidden" : "overflow-auto"
         )}
       >
         <nav
           aria-label="Categories"
-          className="sticky top-0 z-20 flex w-full overflow-auto bg-white shadow snap-x snap-mandatory scroll-smooth gap-2 p-2 "
+          className="sticky top-0 z-20 flex min-h-0 shrink-0 w-full overflow-x-auto bg-white shadow snap-x snap-mandatory scroll-smooth gap-2 p-2 "
         >
           {categories?.map((it, index) => (
             <button

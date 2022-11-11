@@ -1,13 +1,13 @@
 import { BlitzPage, Routes } from "@blitzjs/next"
-import SpecificItem from "./items/[identifier]"
 import { Aside } from "app/admin/components/Aside"
 import { Content } from "app/admin/components/Content"
 import { Suspense } from "react"
 import { LoadingOverlay } from "@mantine/core"
 import { gSSP } from "app/blitz-server"
+import { AdminLayout } from "app/core/layouts/AdminLayout"
 import * as O from "fp-ts/Option"
 
-const AdminItems: BlitzPage = () => {
+const AdminMenus: BlitzPage = () => {
   return (
     <Content
       main={
@@ -24,9 +24,11 @@ const AdminItems: BlitzPage = () => {
   )
 }
 
-AdminItems.authenticate = SpecificItem.authenticate
+AdminMenus.authenticate = {
+  redirectTo: Routes.Authentication(),
+}
 
-AdminItems.getLayout = SpecificItem.getLayout
+AdminMenus.getLayout = (page) => <AdminLayout>{page}</AdminLayout>
 
 export const getServerSideProps = gSSP(async (bag) => {
   const { locale, ctx } = bag
@@ -45,4 +47,4 @@ export const getServerSideProps = gSSP(async (bag) => {
   }
 })
 
-export default AdminItems
+export default AdminMenus

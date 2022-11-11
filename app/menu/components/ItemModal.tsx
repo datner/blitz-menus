@@ -93,12 +93,13 @@ export function ItemModal(props: Props) {
           >
             {order.item.image && (
               <Image
+                className="object-cover"
+                fill
                 src={order.item.image}
-                layout="fill"
-                objectFit="cover"
                 placeholder={order.item.blurDataUrl ? "blur" : "empty"}
                 blurDataURL={order.item.blurDataUrl ?? undefined}
                 alt={order.item.identifier}
+                sizes="100vw"
               />
             )}
           </a.div>

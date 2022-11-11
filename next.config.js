@@ -14,9 +14,18 @@ const config = {
     defaultLocale: Locale.en,
   },
   images: {
-    loader: "imgix",
-    path: "https://renu.imgix.net/",
-    domains: ["renu.imgix.net", "", "images.unsplash.com"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "renu.imgix.net",
+      },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
+    ],
+    loader: "custom",
+    loaderFile: "./imgix-loader.js",
   },
   async redirects() {
     return [

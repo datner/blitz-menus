@@ -6,7 +6,7 @@ import { AdminLayout } from "app/core/layouts/AdminLayout"
 import { Suspense } from "react"
 import { Aside } from "app/admin/components/Aside"
 import { UpdateItemForm } from "app/admin/components/UpdateItemForm"
-import { LoadingOverlay, Container } from "@mantine/core"
+import { LoadingOverlay } from "@mantine/core"
 import { useRouter } from "next/router"
 
 const AdminItemsItem: BlitzPage = () => {

@@ -113,11 +113,12 @@ export const RestaurantForm = (props: SignupFormProps) => {
               {file && (
                 <div className="mt-2 relative grow">
                   <Image
+                    className="object-cover"
                     unoptimized
+                    fill
                     alt="preview"
-                    objectFit="cover"
-                    layout="fill"
                     src={file.preview}
+                    sizes="100vw"
                   />
                 </div>
               )}

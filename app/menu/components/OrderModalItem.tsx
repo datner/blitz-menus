@@ -1,7 +1,7 @@
 import { useChain, useSpring, useSpringRef, a } from "@react-spring/web"
 import { price, titleFor, toShekel } from "app/core/helpers/content"
 import { useLocale } from "app/core/hooks/useLocale"
-import Image from "next/future/image"
+import Image from "next/image"
 import { useState } from "react"
 import useMeasure from "react-use-measure"
 import { ResizeObserver } from "@juggle/resize-observer"
@@ -9,16 +9,13 @@ import { AmountButtons, AmountButtonsProps } from "./AmountButtons"
 import { PrimitiveAtom, useAtomValue, useSetAtom } from "jotai"
 import { OrderItem } from "app/menu/jotai/order"
 import { useUpdateOrderItem } from "../hooks/useUpdateOrderItem"
-import { ImageLoader } from "next/image"
+import { ImageLoader } from "next/legacy/image"
 import { useUpdateAtom } from "jotai/utils"
 import { itemAtom, itemModalOpenAtom } from "app/menu/jotai/item"
 
 type Props = {
   atom: PrimitiveAtom<OrderItem>
 }
-
-const loader: ImageLoader = ({ src, width, quality = 75 }) =>
-  `https://renu.imgix.net/${src}?w=${width}&q=${quality}`
 
 export function OrderModalItem(props: Props) {
   const { atom } = props
@@ -43,11 +40,10 @@ export function OrderModalItem(props: Props) {
           <div className="flex">
             <div className="h-16 w-24 relative rounded-md overflow-hidden mx-2">
               <Image
-                fill
                 priority
                 src={item.image}
                 className="object-cover"
-                loader={loader}
+                fill
                 sizes="(min-width: 370px) 12rem,
               8rem"
                 placeholder={item.blurDataUrl ? "blur" : "empty"}

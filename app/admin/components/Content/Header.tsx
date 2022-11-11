@@ -13,7 +13,7 @@ import { Transition } from "@headlessui/react"
 import { LogoutButton } from "app/admin/components/LogoutButton"
 import Link from "next/link"
 import { Routes } from "@blitzjs/next"
-import Image from "next/future/image"
+import Image from "next/image"
 
 export function Header() {
   const router = useRouter()
@@ -93,17 +93,20 @@ export function Header() {
               </Transition>
             </Menu>
 
-            <Link href={Routes.AdminItemsNew()}>
-              <a className="flex shrink-0 bg-emerald-600 p-1 rounded-full items-center justify-center text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500">
-                <PlusSmallIcon className="h-6 w-6" aria-hidden="true" />
-                <span className="sr-only">Add Item</span>
-              </a>
+            <Link
+              href={Routes.AdminItemsNew()}
+              className="flex shrink-0 bg-emerald-600 p-1 rounded-full items-center justify-center text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+            >
+              <PlusSmallIcon className="h-6 w-6" aria-hidden="true" />
+              <span className="sr-only">Add Item</span>
             </Link>
-            <Link href={router.asPath} locale={locale === "en" ? "he" : "en"}>
-              <a className="flex shrink-0 bg-emerald-600 p-1 rounded-full items-center justify-center text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500">
-                <GlobeAltIcon className="h-6 w-6" aria-hidden="true" />
-                <span className="sr-only">change locale</span>
-              </a>
+            <Link
+              href={router.asPath}
+              locale={locale === "en" ? "he" : "en"}
+              className="flex shrink-0 bg-emerald-600 p-1 rounded-full items-center justify-center text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+            >
+              <GlobeAltIcon className="h-6 w-6" aria-hidden="true" />
+              <span className="sr-only">change locale</span>
             </Link>
           </div>
         </div>

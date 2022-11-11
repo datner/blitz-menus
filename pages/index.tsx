@@ -72,7 +72,7 @@ function LoginForm() {
           mt="md"
         />
         <Group position="apart" mt="md">
-          <Link passHref href={Routes.ForgotPasswordPage()}>
+          <Link passHref href={Routes.ForgotPasswordPage()} legacyBehavior>
             <Anchor<"a"> size="sm">Forgot Password?</Anchor>
           </Link>
         </Group>
@@ -92,7 +92,7 @@ const Authentication: BlitzPage = () => {
       </Title>
       <Text color="dimmed" size="sm" align="center" mt={5}>
         Do you not have an account yet?{" "}
-        <Link passHref href={Routes.UserSignupPage()}>
+        <Link passHref href={Routes.UserSignupPage()} legacyBehavior>
           <Anchor<"a"> size="sm">Create Account</Anchor>
         </Link>
       </Text>

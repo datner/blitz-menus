@@ -4,7 +4,6 @@ import { Routes } from "@blitzjs/next"
 import { useQuery } from "@blitzjs/rpc"
 import { priceShekel, titleFor } from "app/core/helpers/content"
 import { useLocale } from "app/core/hooks/useLocale"
-import { Prisma } from "@prisma/client"
 import { useTranslations } from "next-intl"
 import getCurrentVenueCategories from "app/categories/queries/getCurrentVenueCategories"
 import { Loader, LoadingOverlay } from "@mantine/core"
@@ -12,9 +11,7 @@ import { Loader, LoadingOverlay } from "@mantine/core"
 function AsideDirectory() {
   const locale = useLocale()
   const t = useTranslations("admin.Components.Aside")
-  const [queryBag, { isLoading, isRefetching }] = useQuery(getCurrentVenueCategories, {
-    orderBy: { identifier: Prisma.SortOrder.asc },
-  })
+  const [queryBag, { isLoading, isRefetching }] = useQuery(getCurrentVenueCategories, {})
   const { categories } = queryBag
 
   const title = titleFor(locale)
@@ -41,8 +38,7 @@ function AsideDirectory() {
                         <Image
                           src={item.image}
                           alt={item.identifier}
-                          className="h-10 w-10 rounded-full"
-                          objectFit="cover"
+                          className="h-10 w-10 rounded-full object-cover"
                           height={40}
                           width={40}
                           placeholder={item.blurDataUrl ? "blur" : "empty"}
@@ -51,13 +47,15 @@ function AsideDirectory() {
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <Link shallow href={Routes.AdminItemsItem({ identifier: item.identifier })}>
-                        <a className="focus:outline-none">
-                          {/* Extend touch target to entire panel */}
-                          <span className="absolute inset-0" aria-hidden="true" />
-                          <p className="text-sm font-medium text-gray-900">{title(item)}</p>
-                          <p className="text-sm text-gray-500 truncate">{priceShekel(item)}</p>
-                        </a>
+                      <Link
+                        shallow
+                        href={Routes.AdminItemsItem({ identifier: item.identifier })}
+                        className="focus:outline-none"
+                      >
+                        {/* Extend touch target to entire panel */}
+                        <span className="absolute inset-0" aria-hidden="true" />
+                        <p className="text-sm font-medium text-gray-900">{title(item)}</p>
+                        <p className="text-sm text-gray-500 truncate">{priceShekel(item)}</p>
                       </Link>
                     </div>
                   </div>
