@@ -21,7 +21,6 @@ export default resolver.pipe(
       venueId,
       organizationId,
       deleted: null,
-      categoryItems: { some: { Item: { deleted: null } } },
       ..._where,
     }
 
