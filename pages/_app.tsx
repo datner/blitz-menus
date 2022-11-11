@@ -28,6 +28,7 @@ const notoSans = Noto_Sans({
 
 const renuCache = createEmotionCache({ key: "renu" })
 
+// @ts-expect-error -- blitz broke the types here
 export default withBlitz(function App({
   Component,
   pageProps,
