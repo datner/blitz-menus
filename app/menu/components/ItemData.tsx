@@ -1,6 +1,5 @@
 import { animated, useSpring } from "@react-spring/web"
 import { toShekel } from "app/core/helpers/content"
-import { ItemI18L } from "db"
 import { useTranslations } from "next-intl"
 import { memo } from "react"
 import { ResizeObserver } from "@juggle/resize-observer"
@@ -11,7 +10,7 @@ import useMeasure from "react-use-measure"
 
 type Props = {
   price: number
-  content: ItemI18L
+  content: { name: string; description: string }
   amount: number
 }
 

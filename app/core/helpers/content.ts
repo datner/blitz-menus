@@ -1,4 +1,4 @@
-import { Locale, Item } from "db"
+import { Locale } from "db"
 import { get } from "./common"
 import { flow, pipe } from "fp-ts/function"
 import * as O from "monocle-ts/Optional"
@@ -31,7 +31,11 @@ export const shekel = Intl.NumberFormat("he-IL", {
   unitDisplay: "narrow",
 })
 
-export const priceOption = pipe(O.id<Item | null>(), O.fromNullable, O.prop("price")).getOption
+export const priceOption = pipe(
+  O.id<{ price: number } | null>(),
+  O.fromNullable,
+  O.prop("price")
+).getOption
 
 export const price = get(priceOption, 0)
 export const toShekel = flow(divide(100), shekel.format)

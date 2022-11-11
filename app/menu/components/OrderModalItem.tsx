@@ -9,7 +9,6 @@ import { AmountButtons, AmountButtonsProps } from "./AmountButtons"
 import { PrimitiveAtom, useAtomValue, useSetAtom } from "jotai"
 import { OrderItem } from "app/menu/jotai/order"
 import { useUpdateOrderItem } from "../hooks/useUpdateOrderItem"
-import { ImageLoader } from "next/legacy/image"
 import { useUpdateAtom } from "jotai/utils"
 import { itemAtom, itemModalOpenAtom } from "app/menu/jotai/item"
 

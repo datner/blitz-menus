@@ -146,37 +146,58 @@ export const getStaticProps = gSP(async (context: GetStaticPropsContext) => {
   const { restaurant: identifier } = Query.parse(context.params)
   const restaurant = await db.venue.findUnique({
     where: { identifier },
-    include: {
-      content: true,
+    select: {
+      open: true,
+      simpleContactInfo: true,
+      content: {
+        select: {
+          locale: true,
+          name: true,
+        },
+      },
       categories: {
         where: { categoryItems: { some: { Item: { deleted: null } } } },
-        include: {
+        select: {
+          id: true,
+          identifier: true,
+          content: {
+            select: {
+              locale: true,
+              name: true,
+              description: true,
+            },
+          },
           categoryItems: {
             orderBy: { position: Prisma.SortOrder.asc },
             where: {
               Item: { deleted: null },
             },
-            include: {
+            select: {
+              position: true,
               Item: {
-                include: {
-                  content: true,
+                select: {
+                  id: true,
+                  image: true,
+                  price: true,
+                  identifier: true,
+                  blurDataUrl: true,
+                  categoryId: true,
+                  content: {
+                    select: {
+                      locale: true,
+                      name: true,
+                      description: true,
+                    },
+                  },
                   modifiers: {
                     orderBy: { position: Prisma.SortOrder.asc },
+                    select: {
+                      id: true,
+                      position: true,
+                      config: true,
+                    },
                   },
                 },
-              },
-            },
-          },
-          content: true,
-          items: {
-            where: {
-              deleted: null,
-              image: { not: identifier.startsWith("zelda") ? "gibbrish" : "" },
-            },
-            include: {
-              content: true,
-              modifiers: {
-                orderBy: { position: Prisma.SortOrder.asc },
               },
             },
           },

@@ -1,7 +1,12 @@
 import { titleFor } from "app/core/helpers/content"
 import { useLocale } from "app/core/hooks/useLocale"
 import { forwardRef, memo } from "react"
-import { Category__Content } from "../types/menu"
+import { Locale } from "db"
+
+type Category__Content = {
+  identifier: string
+  content: { name: string; locale: Locale }[]
+}
 
 type Props = {
   category: Category__Content
