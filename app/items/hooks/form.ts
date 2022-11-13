@@ -50,6 +50,7 @@ const useCreate = (redirect = false) =>
                 { tag: "RevalidationFailedError" },
                 constant("Failed to revalidate your venue.. :(")
               )
+              .with({ tag: "prismaNotFoundError" }, constant("this should not happen.. :("))
               .with({ tag: "prismaValidationError" }, ({ error }) => error.message)
               .exhaustive()
           )

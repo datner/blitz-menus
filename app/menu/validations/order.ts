@@ -3,6 +3,7 @@ import { Id } from "app/core/helpers/zod"
 import { zLocale } from "app/core/hooks/useLocale"
 import { ModifierEnum } from "db/itemModifierConfig"
 import * as Dorix from "integrations/dorix/types"
+import { PAYMENT_TYPES } from "integrations/dorix/types"
 import { z } from "zod"
 
 export const OrderModifierItem = z.object({
@@ -28,7 +29,7 @@ export type SendOrderItem = z.infer<typeof SendOrderItem>
 export const Transaction: z.ZodType<Dorix.Transaction> = z.object({
   id: z.string(),
   amount: z.number(),
-  type: z.literal("CREDIT"),
+  type: z.nativeEnum(PAYMENT_TYPES),
 })
 
 export const UpdateManagement = z.object({
