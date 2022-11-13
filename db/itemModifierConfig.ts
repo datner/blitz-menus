@@ -4,7 +4,7 @@ import { isNonEmpty, filter } from "fp-ts/Array"
 import * as A from "fp-ts/Array"
 import { identity, pipe } from "fp-ts/function"
 import { z } from "zod"
-import { zodIso } from "app/core/helpers/zod"
+import { zodIso } from "src/core/helpers/zod"
 import { match } from "ts-pattern"
 
 // export interface OptionContent {

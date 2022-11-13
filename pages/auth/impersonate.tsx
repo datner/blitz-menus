@@ -1,10 +1,10 @@
 import { useRouter } from "next/router"
 import { Routes } from "@blitzjs/next"
 import { getQueryClient, useMutation, useQuery } from "@blitzjs/rpc"
-import { useZodForm } from "app/core/hooks/useZodForm"
+import { useZodForm } from "src/core/hooks/useZodForm"
 import { useController } from "react-hook-form"
 import { z } from "zod"
-import impersonateUser from "app/auth/mutations/impersonateUser"
+import impersonateUser from "src/auth/mutations/impersonateUser"
 import {
   Paper,
   Button,
@@ -16,7 +16,7 @@ import {
   LoadingOverlay,
   AutocompleteProps,
 } from "@mantine/core"
-import getOrgUsers from "app/users/queries/getOrgUsers"
+import getOrgUsers from "src/users/queries/getOrgUsers"
 import { Prisma } from "@prisma/client"
 import * as S from "fp-ts/string"
 import * as Eq from "fp-ts/Eq"

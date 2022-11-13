@@ -1,34 +1,34 @@
-import { gSP } from "app/blitz-server"
+import { gSP } from "src/blitz-server"
 import { GetStaticPaths, GetStaticPropsContext, InferGetStaticPropsType } from "next"
 import clsx from "clsx"
 import db, { Locale, Prisma } from "db"
 import { Suspense, useState } from "react"
-import { useLocale, zLocale } from "app/core/hooks/useLocale"
-import { titleFor } from "app/core/helpers/content"
-import { ListItem } from "app/menu/components/ListItem"
-import { CategoryHeader } from "app/menu/components/CategoryHeader"
-import { useNavBar } from "app/menu/hooks/useNavBar"
-// import { useZodParams } from "app/core/hooks/useParams"
+import { useLocale, zLocale } from "src/core/hooks/useLocale"
+import { titleFor } from "src/core/helpers/content"
+import { ListItem } from "src/menu/components/ListItem"
+import { CategoryHeader } from "src/menu/components/CategoryHeader"
+import { useNavBar } from "src/menu/hooks/useNavBar"
+// import { useZodParams } from "src/core/hooks/useParams"
 import { fromNullable, getEq, some, matchW } from "fp-ts/Option"
 import { Eq as eqStr } from "fp-ts/string"
 import { constNull } from "fp-ts/function"
 import { NotFoundError } from "blitz"
 import dynamic from "next/dynamic"
-import { Query } from "app/menu/validations/page"
+import { Query } from "src/menu/validations/page"
 import Head from "next/head"
 import { BlitzPage } from "@blitzjs/auth"
-import MenuLayout from "app/core/layouts/MenuLayout"
-import { OrderItem, orderAtomFamily } from "app/menu/jotai/order"
+import MenuLayout from "src/core/layouts/MenuLayout"
+import { OrderItem, orderAtomFamily } from "src/menu/jotai/order"
 import { useAtom } from "jotai"
-import { itemAtom, itemModalOpenAtom } from "app/menu/jotai/item"
+import { itemAtom, itemModalOpenAtom } from "src/menu/jotai/item"
 import { ModifierConfig } from "db/itemModifierConfig"
 import { Routes } from "@blitzjs/next"
 
-const LazyViewOrderButton = dynamic(() => import("app/menu/components/ViewOrderButton"), {
+const LazyViewOrderButton = dynamic(() => import("src/menu/components/ViewOrderButton"), {
   suspense: true,
 })
-const LazyItemModal = dynamic(() => import("app/menu/components/ItemModal"), { suspense: true })
-const LazyOrderModal = dynamic(() => import("app/menu/components/OrderModal"), { suspense: true })
+const LazyItemModal = dynamic(() => import("src/menu/components/ItemModal"), { suspense: true })
+const LazyOrderModal = dynamic(() => import("src/menu/components/OrderModal"), { suspense: true })
 
 const eqOptionStr = getEq(eqStr)
 
@@ -233,7 +233,7 @@ export const getStaticProps = gSP(async (context: GetStaticPropsContext) => {
       // to satisfy typescript
       props: {
         restaurant: typedRestaurant,
-        messages: (await import(`app/core/messages/${context.locale}.json`)).default,
+        messages: (await import(`src/core/messages/${context.locale}.json`)).default,
       },
       revalidate: 60,
     }
@@ -242,7 +242,7 @@ export const getStaticProps = gSP(async (context: GetStaticPropsContext) => {
   return {
     props: {
       restaurant: typedRestaurant,
-      messages: (await import(`app/core/messages/${context.locale}.json`)).default,
+      messages: (await import(`src/core/messages/${context.locale}.json`)).default,
     },
     revalidate: 60,
   }

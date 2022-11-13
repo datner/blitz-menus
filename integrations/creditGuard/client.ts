@@ -13,7 +13,7 @@ import {
   request,
 } from "integrations/httpClient"
 import { JSDOM } from "jsdom"
-import { getEnvVar } from "app/core/helpers/env"
+import { getEnvVar } from "src/core/helpers/env"
 
 type ClearCardError = HttpError | HttpResponseContentTypeError | CreditGuardResponseMalformedError
 

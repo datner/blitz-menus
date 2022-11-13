@@ -1,11 +1,11 @@
-import { gSSP } from "app/blitz-server"
+import { gSSP } from "src/blitz-server"
 import { GetServerSidePropsContext } from "next"
 import { BlitzPage, ErrorBoundary, Routes, useParam } from "@blitzjs/next"
-import { Content } from "app/admin/components/Content"
-import { AdminLayout } from "app/core/layouts/AdminLayout"
+import { Content } from "src/admin/components/Content"
+import { AdminLayout } from "src/core/layouts/AdminLayout"
 import { Suspense } from "react"
-import { Aside } from "app/admin/components/Aside"
-import { UpdateItemForm } from "app/admin/components/UpdateItemForm"
+import { Aside } from "src/admin/components/Aside"
+import { UpdateItemForm } from "src/admin/components/UpdateItemForm"
 import { LoadingOverlay } from "@mantine/core"
 import { useRouter } from "next/router"
 
@@ -49,7 +49,7 @@ export const getServerSideProps = gSSP(async (ctx: GetServerSidePropsContext) =>
   }
 
   return {
-    props: { messages: (await import(`app/core/messages/${locale}.json`)).default },
+    props: { messages: (await import(`src/core/messages/${locale}.json`)).default },
   }
 })
 

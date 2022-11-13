@@ -1,10 +1,10 @@
 import { BlitzPage, Routes } from "@blitzjs/next"
 import SpecificItem from "./items/[identifier]"
-import { Aside } from "app/admin/components/Aside"
-import { Content } from "app/admin/components/Content"
+import { Aside } from "src/admin/components/Aside"
+import { Content } from "src/admin/components/Content"
 import { Suspense } from "react"
 import { LoadingOverlay } from "@mantine/core"
-import { gSSP } from "app/blitz-server"
+import { gSSP } from "src/blitz-server"
 import * as O from "fp-ts/Option"
 
 const AdminItems: BlitzPage = () => {
@@ -41,7 +41,7 @@ export const getServerSideProps = gSSP(async (bag) => {
     }
   }
   return {
-    props: { messages: (await import(`app/core/messages/${locale}.json`)).default },
+    props: { messages: (await import(`src/core/messages/${locale}.json`)).default },
   }
 })
 

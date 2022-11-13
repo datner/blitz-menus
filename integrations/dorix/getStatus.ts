@@ -1,5 +1,5 @@
 import { Order } from "@prisma/client"
-import { getBranchId } from "app/core/helpers/dorix"
+import { getBranchId } from "src/core/helpers/dorix"
 import { pipe } from "fp-ts/function"
 import * as TE from "fp-ts/TaskEither"
 import { match } from "ts-pattern"

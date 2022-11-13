@@ -19,7 +19,7 @@ import {
   ValidateTransaction,
   ValidationError,
 } from "integrations/clearingProvider"
-import { ensureType } from "app/core/helpers/zod"
+import { ensureType } from "src/core/helpers/zod"
 
 const checkStatus = pipe(
   E.fromPredicate(

@@ -1,8 +1,8 @@
 import Link from "next/link"
-import login from "app/auth/mutations/login"
+import login from "src/auth/mutations/login"
 import { useMutation } from "@blitzjs/rpc"
 import { BlitzPage, Routes } from "@blitzjs/next"
-import Layout from "app/core/layouts/Layout"
+import Layout from "src/core/layouts/Layout"
 import {
   Container,
   Title,
@@ -14,8 +14,8 @@ import {
   Group,
   Button,
 } from "@mantine/core"
-import { useZodForm } from "app/core/hooks/useZodForm"
-import { Login } from "app/auth/validations"
+import { useZodForm } from "src/core/hooks/useZodForm"
+import { Login } from "src/auth/validations"
 import { AuthenticationError } from "blitz"
 import { useRouter } from "next/router"
 

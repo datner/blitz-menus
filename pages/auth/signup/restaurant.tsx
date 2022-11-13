@@ -1,7 +1,7 @@
 import { BlitzPage, Routes } from "@blitzjs/next"
 import { useRouter } from "next/router"
-import Layout from "app/core/layouts/Layout"
-import { RestaurantForm } from "app/auth/components/ResuaurantForm"
+import Layout from "src/core/layouts/Layout"
+import { RestaurantForm } from "src/auth/components/ResuaurantForm"
 
 const RestaurantSignupPage: BlitzPage = () => {
   const router = useRouter()

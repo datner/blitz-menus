@@ -1,10 +1,10 @@
 import { BlitzPage, Routes } from "@blitzjs/next"
-import { Aside } from "app/admin/components/Aside"
-import { Content } from "app/admin/components/Content"
+import { Aside } from "src/admin/components/Aside"
+import { Content } from "src/admin/components/Content"
 import { Suspense } from "react"
 import { LoadingOverlay } from "@mantine/core"
-import { gSSP } from "app/blitz-server"
-import { AdminLayout } from "app/core/layouts/AdminLayout"
+import { gSSP } from "src/blitz-server"
+import { AdminLayout } from "src/core/layouts/AdminLayout"
 import * as O from "fp-ts/Option"
 
 const AdminMenus: BlitzPage = () => {
@@ -43,7 +43,7 @@ export const getServerSideProps = gSSP(async (bag) => {
     }
   }
   return {
-    props: { messages: (await import(`app/core/messages/${locale}.json`)).default },
+    props: { messages: (await import(`src/core/messages/${locale}.json`)).default },
   }
 })
 

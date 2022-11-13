@@ -1,9 +1,9 @@
-import { gSSP } from "app/blitz-server"
+import { gSSP } from "src/blitz-server"
 import { BlitzPage, Routes } from "@blitzjs/next"
-import { AdminLayout } from "app/core/layouts/AdminLayout"
+import { AdminLayout } from "src/core/layouts/AdminLayout"
 import { Suspense } from "react"
-import { Content } from "app/admin/components/Content"
-import { ToggleVenueOpen } from "app/admin/components/ToggleVenueOpen"
+import { Content } from "src/admin/components/Content"
+import { ToggleVenueOpen } from "src/admin/components/ToggleVenueOpen"
 import { LoadingOverlay } from "@mantine/core"
 import * as O from "fp-ts/lib/Option"
 
@@ -38,7 +38,7 @@ export const getServerSideProps = gSSP(async (bag) => {
     }
   }
   return {
-    props: { messages: (await import(`app/core/messages/${locale}.json`)).default },
+    props: { messages: (await import(`src/core/messages/${locale}.json`)).default },
   }
 })
 

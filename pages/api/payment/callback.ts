@@ -1,4 +1,4 @@
-import { PayPlusCallback } from "app/payments/payplus"
+import { PayPlusCallback } from "src/payments/payplus"
 import { Method } from "axios"
 import { pipe } from "fp-ts/function"
 import * as O from "fp-ts/Option"
@@ -8,9 +8,9 @@ import * as S from "fp-ts/string"
 import * as B from "fp-ts/boolean"
 import { NextApiRequest, NextApiResponse } from "next"
 import db, { Order, OrderState, Prisma } from "db"
-import { prismaNotFound, prismaNotValid } from "app/core/helpers/prisma"
+import { prismaNotFound, prismaNotValid } from "src/core/helpers/prisma"
 import * as dorix from "integrations/dorix"
-import { ensureType } from "app/core/helpers/zod"
+import { ensureType } from "src/core/helpers/zod"
 import { match } from "ts-pattern"
 
 type NoMethodError = {

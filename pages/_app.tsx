@@ -1,18 +1,19 @@
-import { withBlitz } from "app/blitz-client"
+import { withBlitz } from "src/blitz-client"
 import { useQueryErrorResetBoundary } from "@blitzjs/rpc"
 import { AppProps, ErrorBoundary, ErrorComponent, ErrorFallbackProps } from "@blitzjs/next"
-import { LoginForm } from "app/auth/components/LoginForm"
-import "app/core/styles/index.css"
+import { LoginForm } from "src/auth/components/LoginForm"
 import { NextIntlProvider } from "next-intl"
-import { useLocale } from "app/core/hooks/useLocale"
+import { useLocale } from "src/core/hooks/useLocale"
 import { Locale } from "@prisma/client"
-import { useIsomorphicLayoutEffect } from "app/core/hooks/useIsomorphicLayoutEffect"
+import { useIsomorphicLayoutEffect } from "src/core/hooks/useIsomorphicLayoutEffect"
 import { AuthenticationError, AuthorizationError } from "blitz"
 import { createEmotionCache, MantineProvider } from "@mantine/core"
-import { rtlCache } from "app/core/helpers/rtl-cache"
-import { RouterTransition } from "app/admin/components/RouterTransition"
+import { rtlCache } from "src/core/helpers/rtl-cache"
+import { RouterTransition } from "src/admin/components/RouterTransition"
 import clsx from "clsx"
 import { Secular_One, Noto_Sans } from "@next/font/google"
+
+import "src/core/styles/index.css"
 
 const secularOne = Secular_One({
   weight: "400",

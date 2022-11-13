@@ -4,7 +4,7 @@ import * as E from "fp-ts/lib/Either"
 import { Telegram, TelegramError } from "telegraf"
 import { Task } from "fp-ts/Task"
 import { log } from "blitz"
-import { getEnvVar } from "app/core/helpers/env"
+import { getEnvVar } from "src/core/helpers/env"
 
 const telegram = new Telegram(process.env.TELEGRAM_BOT_TOKEN)
 

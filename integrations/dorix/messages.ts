@@ -1,5 +1,5 @@
 import { Order } from "@prisma/client"
-import { NoEnvVarError } from "app/core/helpers/env"
+import { NoEnvVarError } from "src/core/helpers/env"
 import { Json } from "fp-ts/Json"
 import { AxiosRequestError, HttpResponseStatusError, ZodParseError } from "integrations/httpClient"
 import { sendMessage } from "integrations/telegram/sendMessage"

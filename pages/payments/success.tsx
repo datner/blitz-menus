@@ -1,7 +1,7 @@
 import { useRouter } from "next/router"
 import { useQuery } from "@blitzjs/rpc"
 import { CheckIcon, EllipsisHorizontalIcon, XMarkIcon } from "@heroicons/react/24/solid"
-import orderSuccess from "app/menu/queries/orderSuccess"
+import orderSuccess from "src/menu/queries/orderSuccess"
 import { pipe } from "fp-ts/function"
 import * as O from "fp-ts/Option"
 

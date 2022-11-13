@@ -6,7 +6,7 @@ import {
   ValidateTransaction,
   ValidationError,
 } from "integrations/clearingProvider"
-import { ensureType } from "app/core/helpers/zod"
+import { ensureType } from "src/core/helpers/zod"
 import { Credentials } from "./lib"
 
 interface GetInquireTransactionInput {

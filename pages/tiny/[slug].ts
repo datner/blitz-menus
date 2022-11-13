@@ -1,4 +1,4 @@
-import { gSSP } from "app/blitz-server"
+import { gSSP } from "src/blitz-server"
 import db from "db"
 
 const Nothing = () => null

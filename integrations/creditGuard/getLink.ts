@@ -8,10 +8,10 @@ import { log } from "blitz"
 import { match } from "ts-pattern"
 import { Reader } from "fp-ts/lib/Reader"
 import { getClearingIntegration, GetLink } from "integrations/clearingProvider"
-import { ensureType } from "app/core/helpers/zod"
+import { ensureType } from "src/core/helpers/zod"
 import { cancelUrl, errorUrl, getAmount, successUrl } from "integrations/helpers"
 import { Credentials } from "./lib"
-import { host } from "app/core/helpers/env"
+import { host } from "src/core/helpers/env"
 
 // not gonna change any time soon tbh
 const CURRENCY = "ILS"

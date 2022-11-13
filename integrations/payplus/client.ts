@@ -18,7 +18,7 @@ import {
   toTyped,
   ZodParseError,
 } from "integrations/httpClient"
-import { getEnvVar } from "app/core/helpers/env"
+import { getEnvVar } from "src/core/helpers/env"
 import { now } from "fp-ts/Date"
 import { addDays, subDays, format } from "date-fns/fp"
 import { z } from "zod"

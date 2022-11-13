@@ -3,7 +3,7 @@ import * as E from "fp-ts/Either"
 import * as A from "fp-ts/Array"
 import * as TE from "fp-ts/TaskEither"
 import { NextApiHandler, NextApiRequest, NextApiResponse } from "next"
-import { getEnvVar } from "app/core/helpers/env"
+import { getEnvVar } from "src/core/helpers/env"
 import { match } from "ts-pattern"
 
 type UnknownTokenError = {

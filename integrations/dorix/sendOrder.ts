@@ -1,5 +1,5 @@
 import { Order, OrderItem, OrderItemModifier } from "@prisma/client"
-import { OrderUtils } from "app/orders/utils"
+import { OrderUtils } from "src/orders/utils"
 import { addMinutes, formatISO } from "date-fns/fp"
 import { now } from "fp-ts/Date"
 import { pipe, flow } from "fp-ts/function"
@@ -19,7 +19,7 @@ import {
   reportGenericError,
   reportEnvVarError,
 } from "./messages"
-import { getBranchId } from "app/core/helpers/dorix"
+import { getBranchId } from "src/core/helpers/dorix"
 
 export type RequestVariables = Pick<Dorix.Order, "externalId" | "payment" | "items">
 

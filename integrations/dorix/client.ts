@@ -14,7 +14,7 @@ import {
   toTyped,
   ZodParseError,
 } from "integrations/httpClient"
-import { getEnvVar } from "app/core/helpers/env"
+import { getEnvVar } from "src/core/helpers/env"
 
 type PostOrderError = HttpError | DorixResponseError | ZodParseError
 
