@@ -183,18 +183,61 @@ export const toDefaults = O.match<GetItemResult, DefaultValues<ItemSchema>>(
 
 const ItemSchemaImgTransform = ItemSchema.extend({ image: Image.transform((it) => it.src) })
 
-export const CreateItem = ItemSchemaImgTransform.transform(({ en, he, categoryId, ...rest }) => ({
-  ...rest,
-  category: { connect: { id: categoryId } },
-  content: {
-    createMany: {
-      data: [tuple(Locale.en, en), tuple(Locale.he, he)].map(([locale, data]) => ({
-        ...data,
-        locale,
-      })),
+export const CreateItem = ItemSchemaImgTransform.transform(
+  ({ en, he, categoryId, modifiers, ...rest }) => ({
+    ...rest,
+    category: { connect: { id: categoryId } },
+    categoryItems: {
+      create: {
+        position: -1,
+        Category: { connect: { id: categoryId } },
+      },
     },
-  },
-}))
+    content: {
+      createMany: {
+        data: [
+          { locale: Locale.en, ...en },
+          { locale: Locale.he, ...he },
+        ],
+      },
+      modifiers: {
+        create: pipe(
+          modifiers,
+          A.filter((m) => m.modifierId == null),
+          A.mapWithIndex((p, { config: { content, ...c } }) => ({
+            position: p,
+            config: {
+              ...c,
+              content: [
+                { locale: Locale.en, ...content.en },
+                { locale: Locale.he, ...content.he },
+              ],
+              options: pipe(
+                c.options,
+                A.mapWithIndex((i, o) => ({
+                  ...o,
+                  position: i,
+                  content: [
+                    { locale: Locale.en, ...o.content.en },
+                    { locale: Locale.he, ...o.content.he },
+                  ],
+                })),
+                A.map((o) =>
+                  c._tag === "oneOf"
+                    ? {
+                        ...o,
+                        default: c.defaultOption === o.identifier,
+                      }
+                    : o
+                )
+              ),
+            },
+          }))
+        ),
+      },
+    },
+  })
+)
 
 export const UpdateItem = ItemSchemaImgTransform.extend({ id: Id }).transform(
   ({ en, he, ...rest }) => {
