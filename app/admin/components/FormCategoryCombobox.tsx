@@ -19,9 +19,7 @@ export function FormCategoryCombobox() {
   const modal = useModal(CreateCategoryModal)
   const locale = useLocale()
   const t = useTranslations("admin.Components.FormCategoryCombobox")
-  const [queryBag, { isRefetching }] = useQuery(getCurrentVenueCategories, {
-    orderBy: { identifier: Prisma.SortOrder.asc },
-  })
+  const [queryBag, { isRefetching }] = useQuery(getCurrentVenueCategories, {})
 
   const { field } = useController<ItemSchema, "categoryId">({
     name: "categoryId",
