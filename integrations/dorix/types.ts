@@ -1,16 +1,6 @@
 import { z } from "zod"
 
-export interface Transaction {
-  /** payment reference number */
-  id: string
-
-  /** in shekels..... */
-  amount: number
-
-  type: "CREDIT"
-}
-
-export type Payment<T extends "PICKUP" = "PICKUP"> = {
+export type Payment<T extends DELIVERY_TYPES = DELIVERY_TYPES.PICKUP> = {
   // in shekels.....
   totalAmount: number
 
@@ -18,9 +8,11 @@ export type Payment<T extends "PICKUP" = "PICKUP"> = {
 } & T extends "PICKUP"
   ? {}
   : {
-      // TODO: finish this interface
-      price: number
-      tip: number
+      delivery: {
+        // TODO: finish this interface
+        price: number
+        tip: number
+      }
     }
 
 export interface Item {
@@ -42,7 +34,7 @@ export interface Item {
 
 export interface Modifier {
   /** will be added "soon" */
-  modifierId?: string
+  modifierId?: number | string
 
   /** title of the modifier ex. "Toppings", "Chicken or Beef" */
   modifierText?: string
@@ -64,9 +56,12 @@ export interface Modifier {
    * false - price is calculated witht the modifier, do not add
    */
   included: boolean
+
+  /* not sure what this is for */
+  modifiers?: Item[]
 }
 
-export interface Request<T extends "PICKUP" = "PICKUP"> {
+export interface Order<T extends DELIVERY_TYPES = DELIVERY_TYPES.PICKUP> {
   /** Id of the POS */
   branchId: string
 
@@ -86,19 +81,6 @@ export interface Request<T extends "PICKUP" = "PICKUP"> {
 
   type: T
 
-  /** customer information */
-  customer: {
-    firstName: string
-    lastName: string
-    email: string
-    phone: string
-  }
-
-  /**
-   * @deprecated unused
-   */
-  discounts: object[]
-
   payment: Payment<T>
 
   /** any additional data you would like to add to the order - this data is returned in status webhooks/request */
@@ -110,9 +92,90 @@ export interface Request<T extends "PICKUP" = "PICKUP"> {
   }
 
   items: Item[]
+
+  /** customer information */
+  customer: OrderCustomer
+
+  delivery?: OrderDelivery
+
+  /**
+   * @deprecated unused
+   */
+  discounts: Discount[]
 }
 
 export const DorixVendorData = z.object({
   branchId: z.string(),
 })
 export type DorixVendorData = z.infer<typeof DorixVendorData>
+
+export enum ORDER_STATUS {
+  PENDING_ORDER_COMPLETION = "PENDING_ORDER_COMPLETION",
+  AWAITING_TO_BE_RECEIVED = "AWAITING_TO_BE_RECEIVED",
+  RECEIVED = "RECEIVED",
+  PREPARATION = "PREPARATION",
+  AWAITING_DELIVERY_ASSIGNMENT = "AWAITING_DELIVERY_ASSIGNMENT",
+  IN_DELIVERY = "IN_DELIVERY",
+  PENDING_CLEARANCE = "PENDING_CLEARANCE",
+  COMPLETED = "COMPLETED",
+  CANCELED = "CANCELED",
+  UNREACHABLE = "UNREACHABLE",
+  FAILED = "FAILED",
+}
+
+export enum DISCOUNT_TYPES {
+  ABSOLUTE = "ABSOLUTE",
+  PERCENT = "PERCENT",
+}
+
+export enum PAYMENT_TYPES {
+  CASH = "CASH",
+  CREDIT = "CREDIT",
+  EXTERNAL = "EXTERNAL",
+  TENBIS = "TENBIS",
+}
+
+export interface Discount {
+  notes: string
+  amount: number
+  type: DISCOUNT_TYPES
+}
+
+export interface Transaction {
+  type: PAYMENT_TYPES
+  amount: number
+  /** payment reference number */
+  id?: string
+  transactionInfo?: Record<string, unknown>
+}
+
+export const enum DELIVERY_TYPES {
+  DELIVERY = "DELIVERY",
+  PICKUP = "PICKUP",
+  INPLACE = "INPLACE",
+  TAKEAWAY = "TAKEAWAY",
+}
+
+export interface OrderCustomer {
+  firstName: string
+  lastName: string
+  phone: string
+  email: string
+}
+
+export interface OrderDelivery {
+  address: OrderDeliveryAddress
+  notes: string
+}
+
+export interface OrderDeliveryAddress {
+  country: string
+  city: string
+  street: string
+  zipcode?: string
+  number: number
+  floor?: number
+  entrance?: string
+  apartmentNumber?: string
+  plain: string
+}

@@ -2,7 +2,7 @@ import * as TE from "fp-ts/TaskEither"
 import * as RTE from "fp-ts/ReaderTaskEither"
 import * as E from "fp-ts/Either"
 import * as R from "fp-ts/Reader"
-import { Request } from "./types"
+import { Order } from "./types"
 import { pipe } from "fp-ts/lib/function"
 import { z } from "zod"
 import {
@@ -23,7 +23,7 @@ type GetStatusError = HttpError | ZodParseError
 export type GetStatusParams = { orderId: number; branchId: string }
 
 interface DorixService {
-  postOrder(data: Request): TE.TaskEither<PostOrderError, true>
+  postOrder(data: Order): TE.TaskEither<PostOrderError, true>
   getStatus(params: GetStatusParams): TE.TaskEither<GetStatusError, z.infer<typeof StatusResponse>>
 }
 
@@ -53,7 +53,7 @@ const parseOrderResponse = (
     ? E.right(true)
     : E.left({ tag: "dorixResponseError", message: orderResponse.message })
 
-const postOrder = (data: Request) =>
+const postOrder = (data: Order) =>
   pipe(
     request({ method: "POST", url: "/v1/order", data }),
     RTE.chainEitherKW(ensureStatus(200, 300)),

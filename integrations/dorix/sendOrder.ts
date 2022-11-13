@@ -9,6 +9,7 @@ import * as TE from "fp-ts/TaskEither"
 import { match } from "ts-pattern"
 import { dorixService } from "./client"
 import type * as Dorix from "./types"
+import { PAYMENT_TYPES, DELIVERY_TYPES } from "./types"
 import {
   reportOrderZodError,
   reportDorixOrderError,
@@ -20,7 +21,7 @@ import {
 } from "./messages"
 import { getBranchId } from "app/core/helpers/dorix"
 
-export type RequestVariables = Pick<Dorix.Request, "externalId" | "payment" | "items">
+export type RequestVariables = Pick<Dorix.Order, "externalId" | "payment" | "items">
 
 export function toItems(items: (OrderItem & { modifiers: OrderItemModifier[] })[]) {
   return items.map(({ id, itemId, comment, price, orderId, ...rest }) => ({
@@ -37,7 +38,7 @@ export const toTransaction = (
 ): Dorix.Transaction => ({
   id: order.txId,
   amount: OrderUtils.total(order) / 100,
-  type: "CREDIT",
+  type: PAYMENT_TYPES.CASH,
 })
 
 export function toPayment(transaction: Dorix.Transaction): Dorix.Payment {
@@ -76,7 +77,7 @@ export const sendOrder = (
         branchId,
         notes: "Sent from Renu",
         desiredTime: getDesiredTime(),
-        type: "PICKUP",
+        type: DELIVERY_TYPES.PICKUP,
         customer: { firstName: "", lastName: "", email: "", phone: "" },
         discounts: [],
         metadata: {},
