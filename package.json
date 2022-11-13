@@ -10,7 +10,8 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "prepare": "husky install",
-    "upgrade:prisma": "yarn add prisma @prisma/client"
+    "upgrade:prisma": "yarn add prisma @prisma/client",
+    "typecheck": "tsc"
   },
   "prisma": {
     "schema": "db/schema.prisma"
@@ -100,7 +101,7 @@
     "prettier-plugin-prisma": "3.12.0",
     "pretty-quick": "3.1.3",
     "preview-email": "3.0.5",
-    "typescript": "4.7.4",
+    "typescript": "4.8.4",
     "vitest": "0.18.1"
   },
   "private": true
