@@ -1,12 +1,12 @@
 import { resolver } from "@blitzjs/rpc"
 import { paginate } from "blitz"
-import db, { Prisma } from "db"
+import db, { GlobalRole, Prisma } from "db"
 
 interface GetOrganizationsInput
   extends Pick<Prisma.OrganizationFindManyArgs, "where" | "orderBy" | "skip" | "take"> {}
 
 export default resolver.pipe(
-  resolver.authorize(),
+  resolver.authorize(GlobalRole.SUPER),
   async ({ where, orderBy, skip = 0, take = 100 }: GetOrganizationsInput) => {
     // TODO: in multi-tenant app, you must add validation to ensure correct tenant
     const {
