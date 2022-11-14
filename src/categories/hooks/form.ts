@@ -24,12 +24,7 @@ export const category = {
         RT.ask<CategorySchema>(),
         RT.chainTaskK((data) => () => create(data)),
         RT.chainFirstTaskK((c) => () => setQueryData(getCategory, { identifier: c.identifier }, c)),
-        RT.chainFirstTaskK(
-          () => () =>
-            invalidateQuery(getCurrentVenueCategories, {
-              orderBy: { identifier: Prisma.SortOrder.asc },
-            })
-        )
+        RT.chainFirstTaskK(() => () => invalidateQuery(getCurrentVenueCategories, {}))
       ),
     }
   },

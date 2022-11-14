@@ -1,7 +1,6 @@
 import { useRouter } from "next/router"
 import { Routes } from "@blitzjs/next"
 import { useMutation, useQuery } from "@blitzjs/rpc"
-import { Prisma } from "@prisma/client"
 import createItem from "../mutations/createItem"
 import updateItem from "../mutations/updateItem"
 import getItem from "../queries/getItem"
@@ -17,9 +16,7 @@ import getCurrentVenueCategories from "src/categories/queries/getCurrentVenueCat
 
 const invalidateQueries = T.sequenceArray([
   fpInvalidateQuery(getItems),
-  fpInvalidateQuery(getCurrentVenueCategories, {
-    orderBy: { identifier: Prisma.SortOrder.asc },
-  }),
+  fpInvalidateQuery(getCurrentVenueCategories, {}),
 ])
 
 const useCreate = (redirect = false) =>

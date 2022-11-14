@@ -200,41 +200,42 @@ export const CreateItem = ItemSchemaImgTransform.transform(
           { locale: Locale.he, ...he },
         ],
       },
-      modifiers: {
-        create: pipe(
-          modifiers,
-          A.filter((m) => m.modifierId == null),
-          A.mapWithIndex((p, { config: { content, ...c } }) => ({
-            position: p,
-            config: {
-              ...c,
-              content: [
-                { locale: Locale.en, ...content.en },
-                { locale: Locale.he, ...content.he },
-              ],
-              options: pipe(
-                c.options,
-                A.mapWithIndex((i, o) => ({
-                  ...o,
-                  position: i,
-                  content: [
-                    { locale: Locale.en, ...o.content.en },
-                    { locale: Locale.he, ...o.content.he },
-                  ],
-                })),
-                A.map((o) =>
-                  c._tag === "oneOf"
-                    ? {
-                        ...o,
-                        default: c.defaultOption === o.identifier,
-                      }
-                    : o
-                )
-              ),
-            },
-          }))
-        ),
-      },
+    },
+
+    modifiers: {
+      create: pipe(
+        modifiers,
+        A.filter((m) => m.modifierId == null),
+        A.mapWithIndex((p, { config: { content, ...c } }) => ({
+          position: p,
+          config: {
+            ...c,
+            content: [
+              { locale: Locale.en, ...content.en },
+              { locale: Locale.he, ...content.he },
+            ],
+            options: pipe(
+              c.options,
+              A.mapWithIndex((i, o) => ({
+                ...o,
+                position: i,
+                content: [
+                  { locale: Locale.en, ...o.content.en },
+                  { locale: Locale.he, ...o.content.he },
+                ],
+              })),
+              A.map((o) =>
+                c._tag === "oneOf"
+                  ? {
+                      ...o,
+                      default: c.defaultOption === o.identifier,
+                    }
+                  : o
+              )
+            ),
+          },
+        }))
+      ),
     },
   })
 )

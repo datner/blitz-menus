@@ -215,7 +215,7 @@ function Forms() {
         <CreateVenueForm
           onSubmit={async ({ logo, ...data }) => {
             const { url, headers: h } = await getUrl({
-              name: `${logo}-${nanoid()}.${logo.name.split(".").pop()}`,
+              name: `${logo.name}-${nanoid()}.${logo.name.split(".").pop()}`,
               venue: data.identifier,
             })
             const headers = new Headers(h)

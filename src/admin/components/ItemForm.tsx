@@ -17,10 +17,11 @@ import { useStableEffect } from "fp-ts-react-stable-hooks"
 import { eqItem } from "src/items/helpers/eqItem"
 import { nanoid } from "nanoid"
 import { toast } from "react-toastify"
-import { Button, NumberInput, Paper, Tabs, Textarea, TextInput } from "@mantine/core"
+import { Alert, Button, NumberInput, Paper, Tabs, Textarea, TextInput } from "@mantine/core"
 import { DocumentTextIcon, AdjustmentsVerticalIcon } from "@heroicons/react/20/solid"
 import { ModifierPanel } from "./ModifierPanel"
 import { shekelFormatter, shekelParser } from "src/core/helpers/form"
+import { ExclamationCircleIcon } from "@heroicons/react/24/solid"
 
 type Props = {
   item: O.Option<GetItemResult>
@@ -58,7 +59,7 @@ export function ItemForm(props: Props) {
   const [getAssetUrl, uploadUrl] = useMutation(getUploadUrl)
   const [isRemoving, remove] = useReducer(() => true, false)
 
-  const { handleSubmit, setFormError, formState, reset, control } = form
+  const { handleSubmit, setFormError, formState, reset, control, formError } = form
   const { isSubmitting, isDirty } = formState
 
   useStableEffect(
@@ -138,6 +139,8 @@ export function ItemForm(props: Props) {
   )
 
   const { field: priceProps } = useController({ control, name: "price" })
+
+  if (formError) console.log(formError)
 
   return (
     <FormProvider {...form}>
