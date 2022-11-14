@@ -5,6 +5,7 @@ import { nanoid } from "nanoid"
 import { InviteMemberSchema } from "../validations"
 import { addHours } from "date-fns/fp"
 import { pipe } from "fp-ts/function"
+import db from "db"
 
 const RESET_PASSWORD_TOKEN_EXPIRATION_IN_HOURS = 4
 const getExpiresAt = () => pipe(new Date(), addHours(RESET_PASSWORD_TOKEN_EXPIRATION_IN_HOURS))

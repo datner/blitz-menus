@@ -2,6 +2,7 @@ import { SecurePassword } from "@blitzjs/auth"
 import { resolver } from "@blitzjs/rpc"
 import { GlobalRole } from "@prisma/client"
 import { CreateClientSchema } from "../validations"
+import db from "db"
 
 export default resolver.pipe(
   resolver.zod(CreateClientSchema),

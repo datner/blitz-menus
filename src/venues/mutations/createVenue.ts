@@ -1,6 +1,7 @@
 import { resolver } from "@blitzjs/rpc"
 import { GlobalRole, Locale, MembershipRole } from "@prisma/client"
 import { CreateVenueSchema } from "../validations"
+import db from "db"
 
 export default resolver.pipe(
   resolver.zod(CreateVenueSchema),
