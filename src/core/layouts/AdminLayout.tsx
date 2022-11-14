@@ -9,6 +9,7 @@ import {
   HomeIcon,
   BuildingStorefrontIcon,
   ClipboardIcon,
+  BuildingOffice2Icon,
   // PhotoIcon as PhotographIcon,
   // UserGroupIcon,
 } from "@heroicons/react/24/solid"
@@ -25,10 +26,15 @@ type Props = { children?: ReactNode }
 
 const sidebarNavigation = [
   { name: "Home", href: Routes.AdminHome(), icon: HomeIcon },
-  { name: "Menus", href: "/admin/menus", icon: ClipboardIcon },
+  { name: "Menus", href: Routes.AdminMenus(), icon: ClipboardIcon, disabled: true },
   { name: "Inventory", href: Routes.AdminItems(), icon: Square2StackIcon },
   { name: "Venue", href: Routes.AdminVenue(), icon: BuildingStorefrontIcon },
-  // { name: "Albums", href: "/admin/albums", icon: CollectionIcon, current: false },
+  {
+    name: "Organization",
+    href: Routes.AdminOrganization(),
+    icon: BuildingOffice2Icon,
+    disabled: true,
+  },
   // { name: "Settings", href: "/admin/settings", icon: CogIcon, current: false },
 ]
 
@@ -36,17 +42,27 @@ const navLinks = sidebarNavigation.map((item) => (
   <ActiveLink key={item.name} href={item.href}>
     {({ active }) => (
       <a
+        onClick={(e) => {
+          if (item.disabled) e.preventDefault()
+        }}
         className={clsx(
           active
             ? "bg-emerald-800 text-white"
+            : item.disabled
+            ? "text-emerald-600 cursor-not-allowed"
             : "text-emerald-100 hover:bg-emerald-800 hover:text-white",
+
           "group w-full p-3 rounded-md flex flex-col items-center text-xs font-medium"
         )}
         aria-current={active ? "page" : undefined}
       >
         <item.icon
           className={clsx(
-            active ? "text-white" : "text-emerald-300 group-hover:text-white",
+            active
+              ? "text-white"
+              : item.disabled
+              ? "text-emerald-600"
+              : "text-emerald-300 group-hover:text-white",
             "h-6 w-6"
           )}
           aria-hidden="true"
