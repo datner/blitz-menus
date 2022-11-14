@@ -1,45 +1,47 @@
 import { resolver } from "@blitzjs/rpc"
 import { z } from "zod"
 import { identity, pipe } from "fp-ts/function"
-import { Order } from "@prisma/client"
+import { Order, OrderState } from "@prisma/client"
 import * as E from "fp-ts/Either"
 import * as O from "fp-ts/Option"
 import * as TE from "fp-ts/TaskEither"
 import db from "db"
-import { Option } from "src/core/helpers/zod"
+import { Id, Option } from "src/core/helpers/zod"
 import { prismaNotFound } from "src/core/helpers/prisma"
+import { getOrder } from "integrations/helpers"
 
 const OrderSuccess = z.object({
+  orderId: Option(Id),
   txId: Option(z.string()),
 })
+
+type OrderSuccess = {
+  orderId: O.Option<number>
+  txId: O.Option<string>
+}
 
 type MissingParamError = {
   tag: "missingParamError"
   param: string
 }
 
-type OrderSuccess = {
-  txId: O.Option<string>
+type StateNotConfirmedError = {
+  tag: "StateNotConfirmedError"
+  state: OrderState
 }
-
-const getOrderByTxId = (txId: string) =>
-  TE.tryCatch(() => db.order.findUniqueOrThrow({ where: { txId } }), prismaNotFound)
 
 const ensureOrderState = <O extends Order>(order: O) =>
   E.fromPredicate(
     (o: Order) => o.state === "Confirmed",
-    () => ({ tag: "StateNotConfirmedError", state: order.state })
+    () => ({ tag: "StateNotConfirmedError", state: order.state } as StateNotConfirmedError)
   )(order)
 
 const orderSuccess = (input: OrderSuccess) =>
   pipe(
-    input.txId,
+    input.orderId,
     TE.fromOption<MissingParamError>(() => ({ tag: "missingParamError", param: "txId" })),
-    TE.chainW(getOrderByTxId),
-    TE.chainEitherKW(ensureOrderState),
-    TE.matchW((e) => {
-      throw new Error(e.tag)
-    }, identity)
+    TE.chainW(getOrder),
+    TE.chainEitherKW(ensureOrderState)
   )
 
 export default resolver.pipe(resolver.zod(OrderSuccess), orderSuccess, (task) => task())

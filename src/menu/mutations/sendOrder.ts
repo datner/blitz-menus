@@ -32,6 +32,7 @@ const createNewOrder: CreateNewOrder =
         db.order.create({
           data: {
             venueId,
+            state: "Init",
             items: {
               create: orderItems.map((oi) => ({
                 name: oi.name,

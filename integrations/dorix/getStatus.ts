@@ -33,7 +33,7 @@ export const getStatus = (order: Order) =>
           )
         )
         .exhaustive()()
-      return TE.of(e)
+      return TE.left(e)
     }),
     TE.map((p) => p.order.status)
   )

@@ -53,6 +53,7 @@ export const Option = <T extends z.ZodTypeAny>(schema: T) =>
 export type ZodParseError<T> = {
   tag: "zodParseError"
   error: z.ZodError<T>
+  raw: unknown
 }
 
 export const ensureType =
@@ -61,5 +62,5 @@ export const ensureType =
     pipe(schema.safeParse(data), (result) =>
       result.success
         ? E.right(result.data as z.output<Schema>)
-        : E.left({ tag: "zodParseError", error: result.error })
+        : E.left({ tag: "zodParseError", error: result.error, raw: data })
     )

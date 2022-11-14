@@ -2,9 +2,10 @@ import { constFalse, pipe } from "fp-ts/function"
 import * as E from "fp-ts/Either"
 import * as A from "fp-ts/Array"
 import * as TE from "fp-ts/TaskEither"
-import { NextApiHandler, NextApiRequest, NextApiResponse } from "next"
+import { NextApiRequest, NextApiResponse } from "next"
 import { getEnvVar } from "src/core/helpers/env"
 import { match } from "ts-pattern"
+import { api } from "src/blitz-server"
 
 type UnknownTokenError = {
   tag: "UnknownTokenError"
@@ -73,7 +74,7 @@ const revalidatePaths = (res: NextApiResponse) =>
     )
   )
 
-const handler: NextApiHandler = (req, res) =>
+const handler = api((req, res) =>
   pipe(
     E.of(req),
     E.chainW(ensureTokenMatch),
@@ -99,5 +100,6 @@ const handler: NextApiHandler = (req, res) =>
       () => res.json({ revalidated: true })
     )
   )()
+)
 
 export default handler

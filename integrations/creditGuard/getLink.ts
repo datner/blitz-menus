@@ -3,7 +3,7 @@ import * as T from "fp-ts/Task"
 import { Order, OrderItem } from "@prisma/client"
 import { pipe } from "fp-ts/function"
 import { creditGuardService } from "./client"
-import { fp } from "integrations/telegram"
+import { sendMessage } from "integrations/telegram/sendMessage"
 import { log } from "blitz"
 import { match } from "ts-pattern"
 import { Reader } from "fp-ts/lib/Reader"
@@ -86,7 +86,7 @@ export const getLink: GetLink = (order) =>
       )
     ),
     TE.orElseFirst((err) =>
-      TE.fromTask(fp.sendMessage(`clear card fucking failed for ${order.id} with tag ${err.tag}`))
+      TE.fromTask(sendMessage(`clear card fucking failed for ${order.id} with tag ${err.tag}`))
     ),
     TE.getOrElse((err) => {
       match(err)

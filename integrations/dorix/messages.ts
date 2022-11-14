@@ -4,16 +4,17 @@ import { Json } from "fp-ts/Json"
 import { AxiosRequestError, HttpResponseStatusError, ZodParseError } from "integrations/httpClient"
 import { sendMessage } from "integrations/telegram/sendMessage"
 import { DorixResponseError } from "./client"
+import { Format } from "telegraf"
 
 export const reportOrderAxiosError = (order: Order) => (e: AxiosRequestError) =>
-  sendMessage(`
-Oh no, we couldn't reach Dorix to update order ${order.id} of venue ${order.venueId}\\.
-
-Error details:
-\`\`\`
-${e.error.message}
-\`\`\`
-`)
+  sendMessage(
+    Format.fmt(
+      `Oh no, we couldn't reach Dorix to update order ${order.id} of venue ${order.venueId}.`,
+      "\n\n",
+      "Error details:\n",
+      Format.pre("none")(e.error.message)
+    )
+  )
 
 export const reportOrderResponseStatusError = (order: Order) => (e: HttpResponseStatusError) =>
   sendMessage(`

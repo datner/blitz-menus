@@ -11,10 +11,10 @@ import {
   HttpClientEnv,
   HttpError,
   request,
-  toTyped,
   ZodParseError,
 } from "integrations/httpClient"
 import { getEnvVar } from "src/core/helpers/env"
+import { ensureType } from "src/core/helpers/zod"
 
 type PostOrderError = HttpError | DorixResponseError | ZodParseError
 
@@ -57,7 +57,8 @@ const postOrder = (data: Order) =>
   pipe(
     request({ method: "POST", url: "/v1/order", data }),
     RTE.chainEitherKW(ensureStatus(200, 300)),
-    RTE.chainEitherKW(toTyped(OrderResponse)),
+    RTE.map((res) => res.data),
+    RTE.chainEitherKW(ensureType(OrderResponse)),
     RTE.chainEitherKW(parseOrderResponse)
   )
 
@@ -65,7 +66,8 @@ const getStatus = ({ orderId, branchId }: GetStatusParams) =>
   pipe(
     request({ url: `/v1/order/${orderId}/status`, params: { branchId, source: "RENU" } }),
     RTE.chainEitherKW(ensureStatus(200, 300)),
-    RTE.chainEitherKW(toTyped(StatusResponse))
+    RTE.map((res) => res.data),
+    RTE.chainEitherKW(ensureType(StatusResponse))
   )
 
 const createDorixService: R.Reader<HttpClientEnv, DorixService> = pipe(
@@ -88,11 +90,11 @@ export const OrderStatus = z.enum([
 const StatusResponse = z.object({
   branch: z.object({
     id: z.string(),
-    name: z.string(),
+    name: z.string().nullish(),
   }),
   order: z.object({
     status: OrderStatus,
-    id: z.string(),
+    id: z.string().nullish(),
     externalId: z.string(),
     source: z.literal("RENU"),
     metadata: z.object({}).optional(),
@@ -109,7 +111,7 @@ const StatusResponse = z.object({
       message: z.string(),
       stack: z.string(),
     })
-    .optional(),
+    .partial(),
 })
 
 const OrderResponse = z.discriminatedUnion("ack", [

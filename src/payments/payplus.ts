@@ -24,35 +24,39 @@ export const PayPlusCallback = z.object({
     }),
     approval_number: z.string(), // not actually a number, can start with 0
     voucher_number: z.string(), // again not number, a code XX-XXX-XX
-    more_info: z.string(),
-    more_info_1: z.string(),
-    more_info_2: z.string(),
-    more_info_3: z.string(),
-    more_info_4: z.string(),
-    more_info_5: z.string(),
-    recurring_charge_information: z.object({
-      recurring_uid: z.string(),
-      charge_uid: z.string(),
-    }),
+    more_info: z.string().transform(Number),
+    more_info_1: z.string().transform(Number),
+    more_info_2: z.string().nullish(),
+    more_info_3: z.string().nullish(),
+    more_info_4: z.string().nullish(),
+    more_info_5: z.string().nullish(),
+    recurring_charge_information: z
+      .object({
+        recurring_uid: z.string(),
+        charge_uid: z.string(),
+      })
+      .nullish(),
   }),
   data: z.object({
     customer_uid: z.string(),
     terminal_uid: z.string(),
-    cashier_uid: z.string(),
+    cashier_uid: z.string().nullish(),
     items: z
       .object({
+        vat: z.number().nullish(),
+        name: z.string(),
+        barcode: z.string().nullish(),
+        quantity: z.number(),
         amount_pay: z.number(),
+        product_uid: z.string(),
+        quantity_price: z.number(),
         discount_amount: z.number(),
         discount_type: z.null(), // todo: figure this one out
-        discount_value: z.number(),
-        quantity: z.number(),
-        quantity_price: z.number(),
-        product_uid: z.string().nullish(), // presented as uuid, I suspect that this will be null / "" instead for undefined products
-        name: z.string(),
+        discount_value: z.number().nullish(),
       })
       .array(),
     card_information: z.object({
-      card_holder_name: z.string(),
+      card_holder_name: z.string().nullish(),
       four_digits: z.string(), // "1792"
       expiry_month: z.string(), // "01"
       expiry_year: z.string(), // 26
@@ -63,14 +67,16 @@ export const PayPlusCallback = z.object({
       card_bin: z.string(),
     }),
   }),
-  invoice: z.object({
-    uuid: z.string(),
-    docu_number: z.string(),
-    original_url: z.string().url(),
-    copy_url: z.string().url(),
-    integrator_name: z.string(),
-    status: z.string(), // can be Success or................. what?
-  }),
+  invoice: z
+    .object({
+      uuid: z.string(),
+      docu_number: z.string(),
+      original_url: z.string().url(),
+      copy_url: z.string().url(),
+      integrator_name: z.string(),
+      status: z.string(), // can be Success or................. what?
+    })
+    .nullish(),
 })
 
 export type PayPlusCallback = z.infer<typeof PayPlusCallback>

@@ -3,8 +3,7 @@ import * as TE from "fp-ts/TaskEither"
 import { match } from "ts-pattern"
 import { client, TelegramResponseError } from "./client"
 import { NoEnvVarError } from "src/core/helpers/env"
-import * as L from "src/core/helpers/server"
-import { TelegramError } from "telegraf"
+import { TelegramError, Format } from "telegraf"
 import { log } from "blitz"
 
 const onLeft = (err: TelegramResponseError | NoEnvVarError) =>
@@ -13,15 +12,15 @@ const onLeft = (err: TelegramResponseError | NoEnvVarError) =>
     .with({ tag: "telegramError" }, ({ error }) => log.error(`Telegram: ${error.message}`))
     .exhaustive()
 
-export const sendMessage = (msg: string) =>
+export const sendMessage = (msg: string | Format.FmtString) =>
   pipe(
     client,
     TE.fromEither,
     TE.chainW(({ telegram, chatId }) =>
       TE.tryCatch(
-        () => telegram.sendMessage(chatId, msg, { parse_mode: "MarkdownV2" }),
+        () => telegram.sendMessage(chatId, msg),
         (err): TelegramResponseError => ({ tag: "telegramError", error: err as TelegramError })
       )
     ),
-    TE.match(onLeft, L.success("Reported to Telegram"))
+    TE.match(onLeft, () => log.success("Reported to Telegram successfully"))
   )
