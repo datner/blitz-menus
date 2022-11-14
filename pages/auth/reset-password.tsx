@@ -1,26 +1,25 @@
 import Link from "next/link"
 import { useMutation } from "@blitzjs/rpc"
-import { useRouter } from "next/router"
-import { BlitzPage, Routes } from "@blitzjs/next"
+import { BlitzPage, Routes, useRouterQuery } from "@blitzjs/next"
 import Layout from "src/core/layouts/Layout"
 import { FORM_ERROR } from "src/core/components/Form"
 import { ResetPassword } from "src/auth/validations"
 import resetPassword from "src/auth/mutations/resetPassword"
 import { useZodForm } from "src/core/hooks/useZodForm"
-import { Button, PasswordInput } from "@mantine/core"
+import { Button, Paper, PasswordInput, Container } from "@mantine/core"
 import { useEffect } from "react"
 
 const ResetPasswordPage: BlitzPage = () => {
-  const query = useRouter().query
+  const token = (useRouterQuery().token as string) ?? ""
   const [resetPasswordMutation, { isSuccess }] = useMutation(resetPassword)
   const form = useZodForm({
+    reValidateMode: "onChange",
+    defaultValues: {
+      token,
+    },
     schema: ResetPassword,
   })
-  const { register } = form
-
-  useEffect(() => {
-    register("token", { value: query.token as string })
-  })
+  const { register, getFieldState, formState } = form
 
   const onSubmit = form.handleSubmit(
     async (values) => {
@@ -41,29 +40,40 @@ const ResetPasswordPage: BlitzPage = () => {
     (a) => console.log(a)
   )
 
-  return (
-    <div>
-      <h1>Set a New Password</h1>
+  useEffect(() => {
+    register("token", { value: token })
+  })
 
-      {isSuccess ? (
-        <div>
-          <h2>Password Reset Successfully</h2>
-          <p>
-            Go to the <Link href={Routes.Authentication()}>homepage</Link>
-          </p>
-        </div>
-      ) : (
-        <form onSubmit={onSubmit}>
-          <PasswordInput label="New Password" {...register("password")} />
-          <PasswordInput
-            {...register("passwordConfirmation")}
-            name="passwordConfirmation"
-            label="Confirm New Password"
-          />
-          <Button type="submit">Submit</Button>
-        </form>
-      )}
-    </div>
+  return (
+    <Container size="xs">
+      <Paper sx={{ width: 460 }} withBorder shadow="md" p={30} mt={30} radius="md">
+        {isSuccess ? (
+          <div>
+            <h2>Password Reset Successfully</h2>
+            <p>
+              Go to the <Link href={Routes.Authentication()}>homepage</Link>
+            </p>
+          </div>
+        ) : (
+          <form onSubmit={onSubmit} className="space-y-6">
+            <h1 className="text-lg font-medium">Set a New Password</h1>
+            <fieldset className="space-y-6">
+              <PasswordInput
+                label="New Password"
+                {...register("password")}
+                error={getFieldState("password", formState).error?.message}
+              />
+              <PasswordInput
+                label="Confirm New Password"
+                {...register("passwordConfirmation")}
+                error={getFieldState("passwordConfirmation", formState).error?.message}
+              />
+            </fieldset>
+            <Button type="submit">Submit</Button>
+          </form>
+        )}
+      </Paper>
+    </Container>
   )
 }
 
