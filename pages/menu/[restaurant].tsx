@@ -4,7 +4,7 @@ import clsx from "clsx"
 import db, { Locale, Prisma } from "db"
 import { Suspense, useState } from "react"
 import { useLocale, zLocale } from "src/core/hooks/useLocale"
-import { titleFor } from "src/core/helpers/content"
+import { contentOption, titleFor } from "src/core/helpers/content"
 import { ListItem } from "src/menu/components/ListItem"
 import { CategoryHeader } from "src/menu/components/CategoryHeader"
 import { useNavBar } from "src/menu/hooks/useNavBar"
@@ -23,6 +23,7 @@ import { useAtom } from "jotai"
 import { itemAtom, itemModalOpenAtom } from "src/menu/jotai/item"
 import { ModifierConfig } from "db/itemModifierConfig"
 import { Routes } from "@blitzjs/next"
+import { Closed } from "src/menu/components/Closed"
 
 const LazyViewOrderButton = dynamic(() => import("src/menu/components/ViewOrderButton"), {
   suspense: true,
@@ -52,6 +53,18 @@ export const Menu: BlitzPage<InferGetStaticPropsType<typeof getStaticProps>> = (
   const itemModal = matchW<null, OrderItem["item"], JSX.Element>(constNull, (item) => (
     <LazyItemModal atom={orderAtomFamily(item)} />
   ))
+
+  if (!restaurant.open) {
+    return (
+      <>
+        <Head>
+          <title>{getTitle(restaurant) + " | Renu"}</title>
+          <link rel="icon" href="/favicon.ico" />
+        </Head>
+        <Closed venue={contentOption("name", locale)(restaurant)} />
+      </>
+    )
+  }
 
   return (
     <>
@@ -142,7 +155,6 @@ export const getStaticPaths: GetStaticPaths = async () => {
 }
 
 export const getStaticProps = gSP(async (context: GetStaticPropsContext) => {
-  const locale = zLocale.parse(context.locale)
   const { restaurant: identifier } = Query.parse(context.params)
   const restaurant = await db.venue.findUnique({
     where: { identifier },
@@ -222,21 +234,6 @@ export const getStaticProps = gSP(async (context: GetStaticPropsContext) => {
           .sort((a, b) => a.position - b.position),
       })),
     })),
-  }
-
-  if (!restaurant.open) {
-    return {
-      redirect: {
-        destination: Routes.Closed({ venue: titleFor(locale)(restaurant) }),
-        permanent: false,
-      },
-      // to satisfy typescript
-      props: {
-        restaurant: typedRestaurant,
-        messages: (await import(`src/core/messages/${context.locale}.json`)).default,
-      },
-      revalidate: 60,
-    }
   }
 
   return {
