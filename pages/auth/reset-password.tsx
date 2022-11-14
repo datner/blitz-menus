@@ -57,7 +57,7 @@ const ResetPasswordPage: BlitzPage = () => {
         ) : (
           <form onSubmit={onSubmit} className="space-y-6">
             <h1 className="text-lg font-medium">Set a New Password</h1>
-            <fieldset className="space-y-6">
+            <fieldset className="space-y-6" disabled={formState.isSubmitting}>
               <PasswordInput
                 label="New Password"
                 {...register("password")}
@@ -69,7 +69,9 @@ const ResetPasswordPage: BlitzPage = () => {
                 error={getFieldState("passwordConfirmation", formState).error?.message}
               />
             </fieldset>
-            <Button type="submit">Submit</Button>
+            <Button type="submit" loading={formState.isSubmitting}>
+              {formState.isSubmitting ? "Changing password..." : "Submit"}
+            </Button>
           </form>
         )}
       </Paper>
