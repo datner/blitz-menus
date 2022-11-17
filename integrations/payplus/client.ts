@@ -15,14 +15,12 @@ import {
   HttpClientEnv,
   HttpError,
   request,
-  toTyped,
-  ZodParseError,
 } from "integrations/httpClient"
 import { getEnvVar } from "src/core/helpers/env"
 import { now } from "fp-ts/Date"
 import { addDays, subDays, format } from "date-fns/fp"
 import { z } from "zod"
-import { AxiosResponse } from "axios"
+import { ensureType, ZodParseError } from "src/core/helpers/zod"
 
 type GeneratePageLinkError = HttpError | ZodParseError
 
@@ -62,7 +60,8 @@ const generatePageLink = ([Authorization, data]: [Authorization, GeneratePayment
       data,
     }),
     RTE.chainEitherKW(ensureStatus(200, 300)),
-    RTE.chainEitherKW(toTyped(GeneratePaymentLinkResponse))
+    RTE.map((res) => res.data),
+    RTE.chainEitherKW(ensureType(GeneratePaymentLinkResponse))
   )
 
 const formatDate = format("yyyy-MM-dd")
@@ -86,13 +85,16 @@ export type PayPlusNotFound = {
 
 const ensureNotFailure =
   (txId: string) =>
-  <R extends AxiosResponse<any, any>>(res: R): E.Either<PayPlusNotFound, R> => {
-    const e = toTyped(z.literal("cannot-find-invoice-for-this-transaction"))(res)
-    if (E.isRight(e)) {
-      return E.left({ tag: "payPlusNotFound", txId })
-    }
-    return E.right(res)
-  }
+  <R>(data: R) =>
+    pipe(
+      data,
+      ensureType(z.literal("cannot-find-invoice-for-this-transaction")),
+      E.bimap(
+        () => data,
+        () => ({ tag: "payPlusNotFound", txId } as PayPlusNotFound)
+      ),
+      E.swap
+    )
 
 const getStatus = ([Authorization, txId]: [Authorization, string]) =>
   pipe(
@@ -110,8 +112,9 @@ const getStatus = ([Authorization, txId]: [Authorization, string]) =>
       })
     ),
     RTE.chainEitherKW(ensureStatus(200, 300)),
+    RTE.map((res) => res.data),
     RTE.chainEitherKW(ensureNotFailure(txId)),
-    RTE.chainEitherKW(toTyped(GetStatusResponse))
+    RTE.chainEitherKW(ensureType(GetStatusResponse))
   )
 
 const refund = () => null

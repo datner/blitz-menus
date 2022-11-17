@@ -2,10 +2,11 @@ import { Order } from "@prisma/client"
 import { NoEnvVarError } from "src/core/helpers/env"
 import { PrismaNotFoundError } from "src/core/type/prisma"
 import { Json } from "fp-ts/Json"
-import { AxiosRequestError, HttpResponseStatusError, ZodParseError } from "integrations/httpClient"
+import { AxiosRequestError, HttpResponseStatusError } from "integrations/httpClient"
 import { sendMessage } from "integrations/telegram/sendMessage"
 import { PayPlusNotFound } from "./client"
 import { InvoiceStatusError } from "./types"
+import { ZodParseError } from "src/core/helpers/zod"
 
 export const reportPageLinkAxiosError = (order: Order) => (e: AxiosRequestError) =>
   sendMessage(`
