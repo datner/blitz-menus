@@ -11,10 +11,9 @@ import {
   HttpClientEnv,
   HttpError,
   request,
-  ZodParseError,
 } from "integrations/httpClient"
 import { getEnvVar } from "src/core/helpers/env"
-import { ensureType } from "src/core/helpers/zod"
+import { ensureType, ZodParseError } from "src/core/helpers/zod"
 
 type PostOrderError = HttpError | DorixResponseError | ZodParseError
 
@@ -111,7 +110,8 @@ const StatusResponse = z.object({
       message: z.string(),
       stack: z.string(),
     })
-    .partial(),
+    .partial()
+    .optional(),
 })
 
 const OrderResponse = z.discriminatedUnion("ack", [
