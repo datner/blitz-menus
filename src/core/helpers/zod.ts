@@ -50,7 +50,7 @@ export const Some = <T extends z.ZodTypeAny>(schema: T) =>
 export const Option = <T extends z.ZodTypeAny>(schema: T) =>
   z.discriminatedUnion("_tag", [None, Some(schema)])
 
-export type ZodParseError<T> = {
+export type ZodParseError<T = unknown> = {
   tag: "zodParseError"
   error: z.ZodError<T>
   raw: unknown
