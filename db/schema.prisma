@@ -257,6 +257,8 @@ model Item {
 
   referencedIn OrderItem[]
 
+  managementRepresentation Json @default("{}")
+
   @@unique([organizationId, identifier])
 }
 
