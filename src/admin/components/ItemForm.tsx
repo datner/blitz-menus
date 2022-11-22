@@ -17,11 +17,12 @@ import { useStableEffect } from "fp-ts-react-stable-hooks"
 import { eqItem } from "src/items/helpers/eqItem"
 import { nanoid } from "nanoid"
 import { toast } from "react-toastify"
-import { Alert, Button, NumberInput, Paper, Tabs, Textarea, TextInput } from "@mantine/core"
+import { Button, NumberInput, Paper, Tabs, Textarea, TextInput } from "@mantine/core"
 import { DocumentTextIcon, AdjustmentsVerticalIcon } from "@heroicons/react/20/solid"
 import { ModifierPanel } from "./ModifierPanel"
 import { shekelFormatter, shekelParser } from "src/core/helpers/form"
-import { ExclamationCircleIcon } from "@heroicons/react/24/solid"
+import { PuzzlePieceIcon } from "@heroicons/react/24/solid"
+import { IntegrationsPanel } from "./IntegrationsPanel"
 
 type Props = {
   item: O.Option<GetItemResult>
@@ -41,6 +42,9 @@ const ItemFormTabs: FC<PropsWithChildren<unknown>> = ({ children }) => (
       </Tabs.Tab>
       <Tabs.Tab value="modifiers" icon={<AdjustmentsVerticalIcon className="h-5 w-5" />}>
         Modifiers
+      </Tabs.Tab>
+      <Tabs.Tab value="integrations" icon={<PuzzlePieceIcon className="h-5 w-5" />}>
+        Integrations
       </Tabs.Tab>
     </Tabs.List>
     {children}
@@ -212,6 +216,9 @@ export function ItemForm(props: Props) {
             </Tabs.Panel>
             <Tabs.Panel value="modifiers">
               <ModifierPanel />
+            </Tabs.Panel>
+            <Tabs.Panel value="integrations">
+              <IntegrationsPanel />
             </Tabs.Panel>
             <div className="p-3">
               <Button type="submit" disabled={!isDirty} loading={isSubmitting}>
