@@ -9,12 +9,12 @@ import * as B from "fp-ts/boolean"
 import { NextApiRequest, NextApiResponse } from "next"
 import db, { Order, OrderState, Prisma } from "db"
 import { prismaNotFound, prismaNotValid } from "src/core/helpers/prisma"
-import * as dorix from "integrations/dorix"
 import { ensureType } from "src/core/helpers/zod"
-import { match } from "ts-pattern"
 import { sendMessage } from "integrations/telegram/sendMessage"
 import { log } from "blitz"
 import { Format } from "telegraf"
+import { clients, getOrderStatus, reportOrder } from "integrations/management"
+import { fetchClient } from "integrations/http/fetchHttpClient"
 
 type NoMethodError = {
   tag: "NoMethodError"
@@ -51,19 +51,17 @@ const ensureSuccess = (ppc: PayPlusCallback) =>
         status: ppc.transaction.status_code,
       })
 
-export const updateOrder = (txId: string) => (id: number) =>
-  TE.tryCatch(
-    () =>
-      db.order.update({
-        where: { id },
-        data: {
-          txId,
-          state: "PaidFor",
-        },
-        include: { items: { include: { modifiers: true } } },
-      }),
-    (e) => (e instanceof Prisma.PrismaClientValidationError ? prismaNotValid(e) : prismaNotFound(e))
-  )
+const updateOrder = TE.tryCatchK(
+  (ppc: PayPlusCallback) =>
+    db.order.update({
+      where: { id: ppc.transaction.more_info },
+      data: {
+        txId: ppc.transaction.uid,
+      },
+      include: { items: { include: { modifiers: true } } },
+    }),
+  (e) => (e instanceof Prisma.PrismaClientValidationError ? prismaNotValid(e) : prismaNotFound(e))
+)
 
 export const changeOrderState =
   (state: OrderState) =>
@@ -77,6 +75,11 @@ export const changeOrderState =
       (e) =>
         e instanceof Prisma.PrismaClientValidationError ? prismaNotValid(e) : prismaNotFound(e)
     )
+
+const getManagementIntegrationByVenueId = TE.tryCatchK(
+  (venueId: number) => db.managementIntegration.findUniqueOrThrow({ where: { venueId } }),
+  prismaNotFound
+)
 
 // implement refund
 declare const refund: () => TE.TaskEither<Error, void>
@@ -95,27 +98,22 @@ const refundIfNeeded = (order: Order) =>
 
 const onCharge = (ppc: PayPlusCallback) =>
   pipe(
-    TE.right(ppc.transaction.more_info),
-    TE.chainW(updateOrder(ppc.transaction.uid)),
-    TE.chainFirstW(dorix.sendOrder),
-    TE.chainW(changeOrderState("Unconfirmed")),
-    TE.chainFirstW((order) =>
-      pipe(
-        dorix.getStatus(order),
-        TE.map((a) => {
-          log.success(`got status ${a} from dorix`)
-          return a
-        }),
-        TE.map((status) =>
-          match(status)
-            .with("FAILED", () => changeOrderState("Cancelled"))
-            .with("UNREACHABLE", () => changeOrderState("Cancelled"))
-            .with("AWAITING_TO_BE_RECEIVED", () => changeOrderState("Unconfirmed"))
-            .otherwise(() => changeOrderState("Confirmed"))
-        )
-      )
+    TE.Do,
+    TE.apS("order", updateOrder(ppc)),
+    TE.apS("httpClient", TE.of(fetchClient)),
+    TE.bindW("managementIntegration", ({ order }) => getManagementIntegrationByVenueId(order.id)),
+    TE.let(
+      "managementClient",
+      ({ managementIntegration }) => clients[managementIntegration.provider]
     ),
-    TE.chainW(refundIfNeeded)
+    TE.chainFirstW(({ order, ...env }) => reportOrder(order)(env)),
+    TE.chainFirstW(({ order }) => changeOrderState(OrderState.Unconfirmed)(order)),
+    TE.chainW(({ order, ...env }) =>
+      pipe(
+        getOrderStatus(order)(env),
+        TE.chainW((status) => changeOrderState(status)(order))
+      )
+    )
   )
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) =>
