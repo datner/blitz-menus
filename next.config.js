@@ -2,13 +2,13 @@
 const { withBlitz } = require("@blitzjs/next")
 const { withPlaiceholder } = require("@plaiceholder/next")
 const { Locale } = require("@prisma/client")
+const { pipe } = require("fp-ts/function")
 
 /**
- * @type {import('next').NextConfig}
+ * @type {import('@blitzjs/next').BlitzConfig}
  **/
 const config = {
   reactStrictMode: true,
-  swcMinify: true,
   i18n: {
     locales: Object.values(Locale),
     defaultLocale: Locale.en,
@@ -50,4 +50,4 @@ const config = {
   },
 }
 
-module.exports = withPlaiceholder(withBlitz(config))
+module.exports = pipe(config, withBlitz, withPlaiceholder)
