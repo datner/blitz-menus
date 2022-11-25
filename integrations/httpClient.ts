@@ -36,20 +36,22 @@ export interface HttpClientEnv {
   httpClient: HttpClient
 }
 
-export const createHttpClient = (global?: AxiosRequestConfig): HttpClient => ({
-  request: (config) =>
-    TE.tryCatch(
-      () => axios.create(global)(config),
-      flow(
-        // TODO: match against all error types in AxiosError
-        E.fromPredicate(axios.isAxiosError, identity),
-        E.matchW(
-          (error): HttpRequestError => ({ tag: "httpRequestError", error }),
-          (error): AxiosRequestError => ({ tag: "axiosRequestError", error })
+export const createHttpClient = (global?: AxiosRequestConfig): HttpClient => {
+  return {
+    request: (config) =>
+      TE.tryCatch(
+        () => axios.create(global)(config),
+        flow(
+          // TODO: match against all error types in AxiosError
+          E.fromPredicate(axios.isAxiosError, identity),
+          E.matchW(
+            (error): HttpRequestError => ({ tag: "httpRequestError", error }),
+            (error): AxiosRequestError => ({ tag: "axiosRequestError", error })
+          )
         )
-      )
-    ),
-})
+      ),
+  }
+}
 
 export const request = (
   config: AxiosRequestConfig

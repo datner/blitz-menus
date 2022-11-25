@@ -3,7 +3,6 @@ import { NoEnvVarError } from "src/core/helpers/env"
 import { Json } from "fp-ts/Json"
 import { AxiosRequestError, HttpResponseStatusError } from "integrations/httpClient"
 import { sendMessage } from "integrations/telegram/sendMessage"
-import { DorixResponseError } from "./client"
 import { Format } from "telegraf"
 import { ZodParseError } from "src/core/helpers/zod"
 
@@ -38,7 +37,7 @@ export const reportOrderZodError = (order: Order) => (e: ZodParseError) =>
     )
   )
 
-export const reportDorixOrderError = (order: Order) => (e: DorixResponseError) =>
+export const reportDorixOrderError = (order: Order) => (e: Error) =>
   sendMessage(
     Format.fmt(
       `
