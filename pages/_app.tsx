@@ -7,9 +7,7 @@ import { useLocale } from "src/core/hooks/useLocale"
 import { Locale } from "@prisma/client"
 import { useIsomorphicLayoutEffect } from "src/core/hooks/useIsomorphicLayoutEffect"
 import { AuthenticationError, AuthorizationError } from "blitz"
-import { createEmotionCache, MantineProvider } from "@mantine/core"
-import { rtlCache } from "src/core/helpers/rtl-cache"
-import { RouterTransition } from "src/admin/components/RouterTransition"
+import { MantineProvider } from "src/core/components/MantineProvider"
 import clsx from "clsx"
 import { Secular_One, Noto_Sans } from "@next/font/google"
 
@@ -26,8 +24,6 @@ const notoSans = Noto_Sans({
   subsets: ["latin"],
   variable: "--font-noto-sans",
 })
-
-const renuCache = createEmotionCache({ key: "renu" })
 
 // @ts-expect-error -- blitz broke the types here
 export default withBlitz(function App({
@@ -47,30 +43,8 @@ export default withBlitz(function App({
 
   return (
     <NextIntlProvider messages={messages}>
-      <MantineProvider
-        withGlobalStyles
-        withNormalizeCSS
-        emotionCache={rtl ? rtlCache : renuCache}
-        theme={{
-          dir,
-          primaryColor: "teal",
-          colors: {
-            teal: [
-              "#70AD99",
-              "#CFE4DD",
-              "#BDDFD5",
-              "#A0C9BB",
-              "#70AD99",
-              "#419277",
-              "#117755",
-              "#0D5940",
-              "#093C2B",
-              "#041E15",
-            ],
-          },
-        }}
-      >
-        <RouterTransition />
+      {/* This MantineProvider is a local component */}
+      <MantineProvider>
         <ErrorBoundary
           FallbackComponent={RootErrorFallback}
           onReset={useQueryErrorResetBoundary().reset}
