@@ -111,6 +111,7 @@ model Venue {
   simpleContactInfo     String?
   open                  Boolean                @default(true)
   Affiliation           Affiliation[]
+  orders                Order[]
 }
 
 model ClearingIntegration {
@@ -289,6 +290,7 @@ model ShortenedUrl {
 
 model Order {
   id      Int         @id @default(autoincrement())
+  venue   Venue       @relation(fields: [venueId], references: [id])
   venueId Int
   txId    String?     @unique
   items   OrderItem[]
@@ -352,6 +354,7 @@ enum ClearingProvider {
 
 enum ManagementProvider {
   DORIX
+  RENU
 }
 
 enum ModifierType {
