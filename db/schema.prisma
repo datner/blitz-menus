@@ -352,7 +352,6 @@ enum MembershipRole {
 enum ClearingProvider {
   CREDIT_GUARD
   PAY_PLUS
-  NONE
 }
 
 enum ManagementProvider {
