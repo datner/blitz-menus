@@ -9,12 +9,11 @@ beforeEach(async () => {
   await db.$reset()
 })
 
-const generatedToken = "plain-token"
-vi.mock("blitz", async () => ({
-  ...(await vi.importActual<Record<string, unknown>>("blitz")),
-  generateToken: () => generatedToken,
-}))
-vi.mock("preview-email", () => vi.fn())
+vi.mock("@blitzjs/auth", async () => {
+  const blitzjsAuth = await vi.importActual<object>("@blitzjs/auth")
+  return { ...blitzjsAuth, generateToken: vi.fn().mockReturnValue("test-token") }
+})
+vi.mock("preview-email")
 
 describe.skip("forgotPassword mutation", () => {
   it("does not throw error if user doesn't exist", async () => {
@@ -59,7 +58,7 @@ describe.skip("forgotPassword mutation", () => {
     expect(token.id).not.toBe(user.tokens[0].id)
     expect(token.type).toBe("RESET_PASSWORD")
     expect(token.sentTo).toBe(user.email)
-    expect(token.hashedToken).toBe(hash256(generatedToken))
+    expect(token.hashedToken).toBe(hash256("test-token"))
     expect(token.expiresAt > new Date()).toBe(true)
     expect(previewEmail).toBeCalled()
   })
