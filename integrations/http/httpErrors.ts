@@ -1,25 +1,41 @@
-export type HttpError = HttpRequestError | HttpContentError
+type ParseTarget = "json" | "text"
 
-export type HttpRequestError = {
-  tag: "HttpRequestError"
-  response: Response
-}
-
-export type HttpContentError = {
+export type HttpContentError<Target extends ParseTarget = ParseTarget> = {
   tag: "HttpContentError"
+  target: Target
+  raw: unknown
   error: unknown
-  response: Response
 }
 
-export const httpRequestError = (error: Response): HttpRequestError => ({
-  tag: "HttpRequestError",
-  response: error.clone(),
-})
-
-export const httpContentError =
-  (response: Response) =>
-  (error: unknown): HttpContentError => ({
-    tag: "HttpContentError",
+const taggedError =
+  <T extends string>(tag: T) =>
+  (error: unknown): TaggedError<T> => ({
+    tag,
     error,
-    response: response.clone(),
   })
+
+type InferError<E extends ReturnType<typeof taggedError>> = ReturnType<E>
+
+type TaggedError<T extends string> = {
+  tag: T
+  error: unknown
+}
+
+export type BreakerError = InferError<typeof breakerError>
+export const breakerError = taggedError("BreakerError")
+
+export type HttpRequestError = InferError<typeof httpRequestError>
+export const httpRequestError = taggedError("HttpRequestError")
+
+export type HttpClientError = InferError<typeof httpClientError>
+export const httpClientError = taggedError("HttpClientError")
+
+export type HttpServerError = InferError<typeof httpServerError>
+export const httpServerError = taggedError("HttpServerError")
+
+export type HttpError =
+  | HttpRequestError
+  | HttpServerError
+  | HttpClientError
+  | HttpContentError
+  | BreakerError
