@@ -7,9 +7,10 @@ import {
   OrderState,
 } from "@prisma/client"
 import { HttpClientEnv } from "integrations/http/httpClient"
-import { HttpError } from "integrations/http/httpErrors"
 import { ManagementError, ReportOrderFailedError } from "./managementErrors"
+import { GenericError } from "integrations/helpers"
 import { ZodParseError } from "src/core/helpers/zod"
+import { HttpError } from "integrations/http/httpErrors"
 
 export type FullOrder = Order & { items: (OrderItem & { modifiers: OrderItemModifier[] })[] }
 
@@ -18,14 +19,14 @@ export interface ManagementClient {
     order: FullOrder
   ): RTE.ReaderTaskEither<
     HttpClientEnv & ManagementIntegrationEnv,
-    HttpError | ManagementError | ZodParseError | ReportOrderFailedError,
+    HttpError | ZodParseError | ManagementError | ReportOrderFailedError | GenericError,
     void
   >
   getOrderStatus(
     order: Order
   ): RTE.ReaderTaskEither<
     HttpClientEnv & ManagementIntegrationEnv,
-    HttpError | ManagementError | ZodParseError,
+    HttpError | ZodParseError | ManagementError | GenericError,
     OrderState
   >
 }
