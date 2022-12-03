@@ -6,7 +6,7 @@ import {
   Authorization,
   GeneratePaymentLinkInput,
   GeneratePaymentLinkResponse,
-  GetStatusResponse,
+  InvoiceResponse,
 } from "./types"
 import { flow, pipe, apply } from "fp-ts/function"
 import {
@@ -32,7 +32,7 @@ interface PayPlusService {
   ): TE.TaskEither<GeneratePageLinkError, GeneratePaymentLinkResponse>
   getStatus(
     transactionTuple: [Authorization, string]
-  ): TE.TaskEither<GetStatusError, GetStatusResponse>
+  ): TE.TaskEither<GetStatusError, z.infer<typeof InvoiceResponse>>
 }
 
 const api = ([url]: TemplateStringsArray) => "/api/v1.0" + url
@@ -114,10 +114,8 @@ const getStatus = ([Authorization, txId]: [Authorization, string]) =>
     RTE.chainEitherKW(ensureStatus(200, 300)),
     RTE.map((res) => res.data),
     RTE.chainEitherKW(ensureNotFailure(txId)),
-    RTE.chainEitherKW(ensureType(GetStatusResponse))
+    RTE.chainEitherKW(ensureType(InvoiceResponse))
   )
-
-const refund = () => null
 
 const createPayPlusService = pipe(
   R.ask<HttpClientEnv>(),

@@ -1,23 +1,20 @@
 import * as E from "fp-ts/Either"
 import * as RE from "fp-ts/ReaderEither"
 import * as RTE from "fp-ts/ReaderTaskEither"
-import { constVoid, pipe } from "fp-ts/function"
-import { request, toJson } from "integrations/http/httpClient"
+import { constVoid, pipe, tuple, tupled } from "fp-ts/function"
+import { RequestOptions } from "integrations/http/httpClient"
 import { sequenceS } from "fp-ts/Apply"
 import { getEnvVar } from "src/core/helpers/env"
 import {
   ManagementClient,
   ManagementIntegrationEnv,
 } from "integrations/management/managementClient"
-import { z, ZodTypeAny } from "zod"
+import { z } from "zod"
 import { ensureType } from "src/core/helpers/zod"
 import { DELIVERY_TYPES, DorixVendorData } from "./types"
 import { ManagementProvider, OrderState } from "@prisma/client"
-import {
-  genericOperationalError,
-  ReportOrderFailedError,
-} from "integrations/management/managementErrors"
-import { ensureIntegrationMatch } from "integrations/management/managementGuards"
+import { ReportOrderFailedError } from "integrations/management/managementErrors"
+import { ensureManagementMatch } from "integrations/management/managementGuards"
 import {
   getDesiredTime,
   OrderResponse,
@@ -27,67 +24,61 @@ import {
   toTransaction,
 } from "./dorixHelpers"
 import { Order as DorixOrder } from "./types"
-
-const baseUrl = pipe(
-  getEnvVar("DORIX_API_URL"),
-  E.map((baseUrl) => new URL(baseUrl))
-)
+import {
+  BreakerOptions,
+  singletonBreaker,
+  withBreakerOptions,
+} from "integrations/http/circuitBreaker"
 
 const headers = pipe(
   getEnvVar("DORIX_API_KEY"),
   E.map((apiKey) => ({ Authorization: `Bearer ${apiKey}` }))
 )
 
-export const dorixRequest = (info: RequestInfo | URL, init?: RequestInit | undefined) =>
+const baseOptions = pipe(
+  sequenceS(E.Apply)({
+    prefixUrl: getEnvVar("DORIX_API_URL"),
+    headers,
+  })
+)
+
+const dorixBreaker = singletonBreaker()
+export const dorixBreakerOptions: BreakerOptions = {
+  name: "Dorix",
+  maxBreakerRetries: 3,
+  resetTimeoutSecs: 30,
+}
+
+export const dorixRequest = (url: string | URL, options?: RequestOptions | undefined) =>
   pipe(
-    sequenceS(E.Apply)({
-      baseUrl,
-      headers,
-    }),
-    E.mapLeft(genericOperationalError),
-    E.map(({ baseUrl, headers }) => {
-      let req = new Request(info, init)
-      const url = new URL(req.url, baseUrl)
-      req.headers.append("Authorization", headers.Authorization)
-      return new Request(url, req)
-    }),
+    baseOptions,
+    E.map((opts) =>
+      tuple(new URL(url, opts.prefixUrl), {
+        ...options,
+        headers: Object.assign(opts.headers, options?.headers),
+      })
+    ),
     RTE.fromEither,
-    RTE.chainW(request)
-  )
-
-export const dorixGet = <Z extends ZodTypeAny>(
-  path: string,
-  schema: Z,
-  params?: Record<string, string>
-) =>
-  pipe(
-    params ? `${path}?${new URLSearchParams(params)}` : path,
-    dorixRequest,
-    RTE.chainTaskEitherKW(toJson),
-    RTE.chainEitherKW(ensureType(schema))
-  )
-
-export const dorixPost = <Z extends ZodTypeAny>(path: string, schema: Z, body: any) =>
-  pipe(
-    dorixRequest(path, {
-      method: "POST",
-      body: JSON.stringify(body),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }),
-    RTE.chainTaskEitherKW(toJson),
-    RTE.chainEitherKW(ensureType(schema))
+    RTE.chainW(tupled(dorixBreaker))
   )
 
 const getStatus = (orderId: number, branchId: string) =>
-  dorixGet(`/v1/order/${orderId}/status`, StatusResponse, { branchId, vendor: "RENU" })
+  pipe(
+    dorixRequest(`/v1/order/${orderId}/status`, { searchParams: { branchId, vendor: "RENU" } }),
+    RTE.chainTaskEitherKW((res) => res.json),
+    RTE.chainEitherKW(ensureType(StatusResponse))
+  )
 
-const postOrder = (body: DorixOrder) => dorixPost(`/v1/order`, OrderResponse, body)
+const postOrder = (json: DorixOrder) =>
+  pipe(
+    dorixRequest(`/v1/order`, { json, method: "POST" }),
+    RTE.chainTaskEitherKW((res) => res.json),
+    RTE.chainEitherKW(ensureType(OrderResponse))
+  )
 
 const getVendorData = pipe(
   RE.asks((e: ManagementIntegrationEnv) => e.managementIntegration),
-  RE.chainEitherKW(ensureIntegrationMatch(ManagementProvider.DORIX)),
+  RE.chainEitherKW(ensureManagementMatch(ManagementProvider.DORIX)),
   RE.map((i) => i.vendorData),
   RE.chainEitherKW(ensureType(DorixVendorData))
 )
@@ -98,6 +89,12 @@ const ensureSuccess = (
   orderResponse.ack
     ? E.right(constVoid())
     : E.left({ tag: "ReportOrderFailedError", error: new Error(orderResponse.message) })
+
+const breakerOptions: BreakerOptions = {
+  resetTimeoutSecs: 30,
+  maxBreakerRetries: 3,
+  name: "Dorix",
+}
 
 export const dorixClient: ManagementClient = {
   reportOrder: (order) =>
@@ -118,7 +115,8 @@ export const dorixClient: ManagementClient = {
           metadata: {},
         })
       ),
-      RTE.chainEitherKW(ensureSuccess)
+      RTE.chainEitherKW(ensureSuccess),
+      withBreakerOptions(breakerOptions)
     ),
 
   getOrderStatus: (order) =>
@@ -137,6 +135,7 @@ export const dorixClient: ManagementClient = {
           default:
             return OrderState.Confirmed
         }
-      })
+      }),
+      withBreakerOptions(breakerOptions)
     ),
 }

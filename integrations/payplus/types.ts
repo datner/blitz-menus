@@ -1,4 +1,4 @@
-import { getAmount } from "integrations/helpers"
+import { callbackUrl, errorUrl, getAmount, successUrl } from "integrations/helpers"
 import { z } from "zod"
 
 export const PaymentItem = z
@@ -26,9 +26,9 @@ export const GeneratePaymentLinkBody = z
     more_info_3: z.string().optional(),
     more_info_4: z.string().optional(),
     more_info_5: z.string().optional(),
-    refURL_success: z.string().optional(),
-    refURL_failure: z.string().optional(),
-    refURL_callback: z.string().optional(),
+    refURL_success: z.string().optional().default(successUrl),
+    refURL_failure: z.string().optional().default(errorUrl),
+    refURL_callback: z.string().optional().default(callbackUrl),
     customer: z
       .object({
         customer_name: z.string(),
@@ -79,10 +79,13 @@ export const Invoice = z.object({
 })
 
 export type Invoice = z.infer<typeof Invoice>
+export const InvoiceNotFound = z.literal("cannot-find-invoice-for-this-transaction")
 
-export const GetStatusResponse = z.object({
+export const InvoiceResponse = z.object({
   invoices: Invoice.array(),
 })
+
+export const GetStatusResponse = z.union([InvoiceResponse, InvoiceNotFound])
 
 export type GetStatusResponse = z.infer<typeof GetStatusResponse>
 
