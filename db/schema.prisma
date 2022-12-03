@@ -289,12 +289,14 @@ model ShortenedUrl {
 }
 
 model Order {
-  id      Int         @id @default(autoincrement())
-  venue   Venue       @relation(fields: [venueId], references: [id])
-  venueId Int
-  txId    String?     @unique
-  items   OrderItem[]
-  state   OrderState  @default(Init)
+  id        Int         @id @default(autoincrement())
+  venue     Venue       @relation(fields: [venueId], references: [id])
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @default(now()) @updatedAt
+  venueId   Int
+  txId      String?     @unique
+  items     OrderItem[]
+  state     OrderState  @default(Init)
 }
 
 model OrderItem {
@@ -350,6 +352,7 @@ enum MembershipRole {
 enum ClearingProvider {
   CREDIT_GUARD
   PAY_PLUS
+  NONE
 }
 
 enum ManagementProvider {
