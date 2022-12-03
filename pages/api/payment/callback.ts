@@ -57,6 +57,7 @@ const updateOrder = TE.tryCatchK(
       where: { id: ppc.transaction.more_info },
       data: {
         txId: ppc.transaction.uid,
+        state: OrderState.PaidFor,
       },
       include: { items: { include: { modifiers: true } } },
     }),
