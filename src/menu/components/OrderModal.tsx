@@ -14,6 +14,7 @@ import { Locale } from "@prisma/client"
 import * as E from "fp-ts/Either"
 import { useAtomValue } from "jotai"
 import { amountAtom, orderAtomFamily, orderItemsAtom, priceAtom } from "src/menu/jotai/order"
+import { HTTPError } from "got"
 
 type Props = {
   open?: boolean
@@ -35,7 +36,19 @@ export function OrderModal(props: Props) {
   const { h } = useSpring({ h: height, immediate: isNoHeight })
   const [sendOrderMutation, { isIdle, reset }] = useMutation(sendOrder, {
     onSuccess: E.match(
-      (e) => console.log(e.error.message),
+      (e) => {
+        switch (e.tag) {
+          case "ClearingMismatchError":
+            return console.log("Clearing mismatch error", e)
+          case "NoEnvVarError":
+            return console.log("add missing env var", e.key)
+          default: {
+            console.group(e.tag)
+            console.error(String(e.error))
+            console.groupEnd()
+          }
+        }
+      },
       (url) => {
         reset()
         return window.location.assign(url)
