@@ -1,4 +1,3 @@
-import { pipe } from "fp-ts/function"
 import * as E from "fp-ts/Either"
 import { z } from "zod"
 
@@ -58,9 +57,9 @@ export type ZodParseError<T = unknown> = {
 
 export const ensureType =
   <Schema extends z.ZodTypeAny>(schema: Schema) =>
-  (data: unknown): E.Either<ZodParseError<Schema>, z.output<Schema>> =>
-    pipe(schema.safeParse(data), (result) =>
-      result.success
-        ? E.right(result.data as z.output<Schema>)
-        : E.left({ tag: "zodParseError", error: result.error, raw: data })
-    )
+  <D extends unknown>(data: D): E.Either<ZodParseError<Schema>, z.output<Schema>> => {
+    const result = schema.safeParse(data)
+    return result.success
+      ? E.right(result.data as z.output<Schema>)
+      : E.left({ tag: "zodParseError", error: result.error, raw: data })
+  }
