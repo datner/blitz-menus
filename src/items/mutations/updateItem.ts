@@ -58,11 +58,11 @@ export default resolver.pipe(
                         { locale: "he", ...o.content.he },
                       ],
                     })),
-                    A.map((o) =>
+                    A.mapWithIndex((i, o) =>
                       config._tag === "oneOf"
                         ? {
                             ...o,
-                            default: config.defaultOption === String(p),
+                            default: config.defaultOption === String(i),
                           }
                         : o
                     )
