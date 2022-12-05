@@ -1,13 +1,11 @@
 import { resolver } from "@blitzjs/rpc"
 import { z } from "zod"
-import { identity, pipe } from "fp-ts/function"
+import { pipe } from "fp-ts/function"
 import { Order, OrderState } from "@prisma/client"
 import * as E from "fp-ts/Either"
 import * as O from "fp-ts/Option"
 import * as TE from "fp-ts/TaskEither"
-import db from "db"
 import { Id, Option } from "src/core/helpers/zod"
-import { prismaNotFound } from "src/core/helpers/prisma"
 import { getOrder } from "integrations/helpers"
 
 const OrderSuccess = z.object({

@@ -1,10 +1,9 @@
 import { getPlaiceholder } from "plaiceholder"
-import { log } from "./logger"
 
 export async function getBlurDataUrl(image?: string) {
   if (!image) return undefined
 
-  log.info("Creating new plaiceholder")
+  console.log("Creating new plaiceholder")
   const url = new URL(`https://renu.imgix.net/${image}`)
   url.searchParams.append("q", "5") // quality = 5
   url.searchParams.append("auto", "compress")

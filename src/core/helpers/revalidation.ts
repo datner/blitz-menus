@@ -1,6 +1,5 @@
 import { pipe } from "fp-ts/function"
 import * as TE from "fp-ts/TaskEither"
-import fetch from "node-fetch"
 import { getEnvVar } from "./env"
 
 const host = process.env.NODE_ENV === "production" ? "https://renu.menu" : "http://localhost:3000"
