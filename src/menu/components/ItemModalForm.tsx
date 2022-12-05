@@ -1,7 +1,7 @@
 import { OrderItem } from "src/menu/jotai/order"
 import { LabeledTextArea } from "src/core/components/LabeledTextArea"
 import { toShekel } from "src/core/helpers/content"
-import { max, add } from "src/core/helpers/number"
+import { max } from "src/core/helpers/number"
 import { useZodForm } from "src/core/hooks/useZodForm"
 import clsx from "clsx"
 import { useTranslations } from "next-intl"
@@ -13,13 +13,16 @@ import { ExtrasItem, getItemFormSchema, ItemForm, OneOfItem } from "../validatio
 import { AmountButtons } from "./AmountButtons"
 import { ModifiersBlock } from "./ModifiersBlock"
 import { Extras, Modifier, OneOf } from "db/itemModifierConfig"
-import { constant, pipe } from "fp-ts/lib/function"
+import { constant, identity, pipe, tuple } from "fp-ts/lib/function"
 import { findFirst } from "fp-ts/Array"
 import * as A from "fp-ts/Array"
+import * as T from "fp-ts/Tuple"
+import * as s from "fp-ts/string"
 import * as RA from "fp-ts/ReadonlyArray"
 import { last } from "fp-ts/Semigroup"
 import * as RR from "fp-ts/ReadonlyRecord"
 import * as O from "fp-ts/Option"
+import * as N from "fp-ts/number"
 import { useMemo } from "react"
 
 interface ItemModalFormProps {
@@ -91,6 +94,9 @@ const makeDefaults = (order: OrderItem): ItemForm["modifiers"] => ({
   ),
 })
 
+const foldToSumWithIndex = RR.foldMapWithIndex(s.Ord)(O.getMonoid(N.SemigroupSum))
+const foldToSum = RR.foldMap(s.Ord)(O.getMonoid(N.SemigroupSum))
+
 export function ItemModalForm(props: ItemModalFormProps) {
   const { order, onSubmit, containerEl } = props
   const t = useTranslations("menu.Components.ItemModal")
@@ -120,51 +126,68 @@ export function ItemModalForm(props: ItemModalFormProps) {
         : OrderState.UPDATE
       : OrderState.NEW
 
-  const submitOrRemove = handleSubmit((data) => {
-    onSubmit(
-      orderState === OrderState.REMOVE
-        ? { amount: 0, comment: "", modifiers: { oneOf: {}, extras: {} } }
-        : data
-    )
-  })
+  const submitOrRemove = handleSubmit(
+    (data) => {
+      onSubmit(
+        orderState === OrderState.REMOVE
+          ? { amount: 0, comment: "", modifiers: { oneOf: {}, extras: {} } }
+          : data
+      )
+    },
+    (e) => console.log(e)
+  )
 
   const value = watch()
 
   const basePrice = value.amount * order.item.price
-  const oneOfMarkup = pipe(
-    value.modifiers.oneOf,
-    RR.toReadonlyArray,
-    RA.reduce(0, (acc, [identifier, mod]) =>
-      pipe(
-        order.item.modifiers,
-        oneOfs,
-        RA.findFirst((m) => m.identifier === identifier),
-        O.map((o) => o.options),
-        O.chain(A.findFirst((o) => o.identifier === mod.choice)),
-        O.map((a) => a.price * mod.amount),
-        O.getOrElse(() => 0),
-        add(acc)
-      )
-    )
-  )
-  const extrasMarkup = pipe(
-    value.modifiers.oneOf,
-    RR.toReadonlyArray,
-    RA.reduce(0, (acc, [identifier, mod]) =>
-      pipe(
-        order.item.modifiers,
-        extras,
-        RA.findFirst((m) => m.identifier === identifier),
-        O.map((o) => o.options),
-        O.chain(A.findFirst((o) => o.identifier === mod.choice)),
-        O.map((a) => a.price * mod.amount),
-        O.getOrElse(() => 0),
-        add(acc)
-      )
-    )
+
+  const configs = pipe(
+    order.item.modifiers,
+    RA.map((m) => m.config)
   )
 
-  const price = basePrice + oneOfMarkup + extrasMarkup
+  // upgrade to something like
+  // sequenceT(O.Apply)([markupOneOf, markupExtras, markupNewOne])
+  const markup = pipe(
+    tuple(value.modifiers.oneOf, value.modifiers.extras),
+    T.bimap(
+      foldToSum(({ identifier, choices }) =>
+        pipe(
+          configs,
+          RA.findFirst((m): m is Extras => m._tag === "extras" && m.identifier === identifier),
+          O.chain((mod) =>
+            pipe(
+              choices,
+              foldToSumWithIndex((modId, amount) =>
+                pipe(
+                  mod.options,
+                  A.findFirst((o) => o.identifier === modId),
+                  O.map((m) => m.price * amount)
+                )
+              )
+            )
+          )
+        )
+      ),
+      foldToSum(({ identifier, choice, amount }) =>
+        pipe(
+          configs,
+          RA.findFirst((m): m is OneOf => m._tag === "oneOf" && m.identifier === identifier),
+          O.chain((mod) =>
+            pipe(
+              mod.options,
+              A.findFirst((o) => o.identifier === choice),
+              O.map((m) => m.price * amount)
+            )
+          )
+        )
+      )
+    ),
+    RA.foldMap(O.getMonoid(N.MonoidSum))(identity),
+    O.getOrElse(() => 0)
+  )
+
+  const price = basePrice + markup
 
   return (
     <form id="item-form" onSubmit={submitOrRemove}>
@@ -176,7 +199,7 @@ export function ItemModalForm(props: ItemModalFormProps) {
       </FormProvider>
       {containerEl &&
         createPortal(
-          <div className="mt-6 sticky bottom-4 mx-2 flex gap-2">
+          <div className="mt-6 z-20 sticky bottom-4 mx-2 flex gap-2">
             <div className="basis-32">
               <AmountButtons
                 minimum={order.amount > 0 ? 0 : 1}

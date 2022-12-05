@@ -1,12 +1,7 @@
-import { animated, useSpring } from "@react-spring/web"
 import { toShekel } from "src/core/helpers/content"
 import { useTranslations } from "next-intl"
 import { memo } from "react"
-import { ResizeObserver } from "@juggle/resize-observer"
-import { useIsRtl } from "src/core/hooks/useIsRtl"
-import { usePrevious } from "src/core/hooks/usePrevious"
-import { max, min } from "src/core/helpers/number"
-import useMeasure from "react-use-measure"
+import { AmountCounter } from "./AmountCounter"
 
 type Props = {
   price: number
@@ -16,34 +11,13 @@ type Props = {
 
 export const ItemData = memo(function ItemData(props: Props) {
   const { price, content, amount } = props
-  const [ref, { width }] = useMeasure({ polyfill: ResizeObserver })
-  const isRtl = useIsRtl()
-  const rtlWidth = isRtl ? width : -width
-  const { opacity, x } = useSpring({
-    opacity: max(1)(amount),
-    x: amount > 0 ? 0 : rtlWidth,
-    from: {
-      opacity: 0,
-      x: rtlWidth,
-    },
-  })
   const t = useTranslations("menu.Components.ItemData")
-  const prevAmount = usePrevious(min(1)(amount))
 
   return (
     <dl className="z-10 flex h-full flex-col p-3">
       <dt className="sr-only">{t("name")}</dt>
       <dd className="text-sm sm:text-base text-gray-800 overflow-hidden">
-        <animated.div style={{ x }} className="flex flex-nowrap">
-          <animated.span
-            ref={ref}
-            style={{ opacity }}
-            className="font-semibold ltr:pr-1.5 px-1 rtl:pl-1.5 text-emerald-600"
-          >
-            x{max(prevAmount)(amount)}
-          </animated.span>
-          <animated.span className="block truncate">{content.name}</animated.span>
-        </animated.div>
+        <AmountCounter label={content.name} amount={amount} />
       </dd>
       <dt className="sr-only">{t("description")}</dt>
       <dd className="text-xs sm:text-sm text-gray-500 whitespace-normal line-clamp-2 ">

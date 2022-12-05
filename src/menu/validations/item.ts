@@ -53,7 +53,7 @@ export const getItemFormSchema = (modifiers: Modifier[]) =>
                   (am) => oLeq(m.min, am) && (O.isNone(m.max) || oGeq(m.max, am))
                 )
               ),
-              O.match(constFalse, identity)
+              O.getOrElse(constFalse)
             ),
           { message: "Please reach minimum!" }
         )

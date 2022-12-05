@@ -1,98 +1,108 @@
-import { Checkbox } from "@mantine/core"
+import { Transition } from "@headlessui/react"
 import { ExtrasOption, Extras } from "db/itemModifierConfig"
-import { ReactNode } from "react"
-import { getDescription, getLabel } from "./helpers"
+import { useState } from "react"
+import { getLabel } from "./helpers"
 import { useLocale } from "src/core/hooks/useLocale"
 import { Locale } from "db"
-import { SmallAmountButtons } from "src/menu/components/SmallAmountButton"
-import { max } from "src/core/helpers/number"
-import { useController } from "react-hook-form"
+import { useController, useFormContext, useFormState } from "react-hook-form"
 import { ItemForm } from "../validations/item"
-import { isSome, matchW, some, chain, none } from "fp-ts/Option"
-import { MonoidSum } from "fp-ts/number"
-import { apply, constFalse, identity, pipe } from "fp-ts/function"
-import { Ord as ordS } from "fp-ts/string"
-import { last } from "fp-ts/Semigroup"
-import { map } from "fp-ts/Array"
-import * as A from "fp-ts/Array"
+import { constFalse, constNull, identity, pipe } from "fp-ts/function"
+import * as s from "fp-ts/string"
+import * as n from "fp-ts/number"
 import * as O from "fp-ts/Option"
-import * as RA from "fp-ts/ReadonlyArray"
-import * as RR from "fp-ts/ReadonlyRecord"
-import * as L from "monocle-ts/Lens"
+import * as Ord from "fp-ts/Ord"
+import * as RR from "fp-ts/Record"
 import { useTranslations } from "next-intl"
 import { toShekel } from "src/core/helpers/content"
+import { useTimeout } from "@mantine/hooks"
+import { AmountCounter } from "../components/AmountCounter"
 
 type Props = {
   modifier: Extras
 }
 
-const checkbox =
-  (locale: Locale) =>
-  (
-    value: ItemForm["modifiers"]["extras"][string],
-    onChange: (choice: string) => (n: number) => void,
-    modifier: Extras
-  ) =>
-    pipe(
-      pipe(
-        modifier.max,
-        matchW(constFalse, (m) =>
-          pipe(value.choices, RR.foldMap(ordS)(MonoidSum)(identity), (amount) => amount >= m)
-        )
-      ),
-      (overMax) =>
-        pipe(
-          modifier.options,
-          map<ExtrasOption, ReactNode>((o) => (
-            <Checkbox
-              key={o.identifier}
-              disabled={value.choices[o.identifier]! > 0 ? false : overMax}
-              value={o.identifier}
-              classNames={{
-                label: "flex grow h-11 items-center",
-                labelWrapper: "flex grow",
-                body: "items-center",
-              }}
-              label={
-                <>
-                  <div className="grow flex flex-col">
-                    <span>{getLabel(o)(locale)}</span>
-                    <span className="text-sm text-emerald-600">
-                      {o.price > 0 ? `+ ${toShekel(o.price)}` : ""}
-                    </span>
-                  </div>
-                  {pipe(
-                    value.choices,
-                    RR.lookup(o.identifier),
-                    O.chain((a) => (a > 0 ? some(a) : none)),
-                    chain(o.multi ? some : () => none),
-                    matchW(
-                      () => null,
-                      (n) => (
-                        <span onClick={(e) => e.preventDefault()}>
-                          <SmallAmountButtons
-                            value={n}
-                            onChange={onChange(o.identifier)}
-                            disabled={overMax}
-                          />
-                        </span>
-                      )
-                    )
-                  )}
-                </>
-              }
-            />
-          ))
-        )
-    )
+const optNumberLt = pipe(n.Ord, O.getOrd, Ord.lt)
 
-const lensAmount = (choice: string) =>
-  pipe(
-    L.id<ItemForm["modifiers"]["extras"][string]>(),
-    L.prop("choices"),
-    L.prop(choice),
-    L.asOptional
+const ExtrasCheck = ({
+  option,
+  locale,
+  name,
+  maxReached,
+}: {
+  option: ExtrasOption
+  locale: Locale
+  name: string
+  maxReached: boolean
+}) => {
+  const { field } = useController({ name })
+  const handleChange = () => {
+    changeValue(field.value > 0 ? 0 : 1)
+  }
+  const handleClick = () => {
+    const surplus = maxReached ? 0 : 1
+    const value = option.multi ? field.value + surplus : field.value > 0 ? 0 : surplus
+
+    changeValue(value)
+  }
+  const [show, setShow] = useState(field.value > 0 && option.multi)
+  const { start, clear } = useTimeout(() => setShow(false), 1600)
+  const changeValue = (value: number) => {
+    field.onChange(value)
+    clear()
+    if (value > 0 && option.multi) {
+      setShow(true)
+      return start()
+    }
+    setShow(false)
+  }
+
+  return (
+    <div key={option.identifier} className="label relative gap-1 justify-start">
+      <input
+        id={`checkbox-${option.identifier}`}
+        disabled={field.value === 0 && maxReached}
+        checked={field.value > 0}
+        type="checkbox"
+        className="checkbox checkbox-primary z-20"
+        onChange={handleChange}
+      />
+      <div className="absolute inset-0 z-10" onClick={handleClick} />
+      <label htmlFor={`checkbox-${option.identifier}`} className="label-text grow">
+        <AmountCounter label={getLabel(option)(locale)} amount={field.value} />
+      </label>
+      {option.price > 0 && (
+        <span className="label-text">{toShekel(option.price * Math.max(1, field.value))}</span>
+      )}
+      <Transition
+        show={show}
+        className="absolute right-0 z-20"
+        leave="transition-all duration-150"
+        leaveFrom="opacity-100 translate-y-0"
+        leaveTo="opacity-0 translate-y-2"
+      >
+        <div className="btn-group bg-white">
+          <button
+            disabled={maxReached}
+            type="button"
+            className="btn btn-primary btn-sm w-10"
+            onClick={() => changeValue(field.value + 1)}
+          >
+            +
+          </button>
+          <button
+            type="button"
+            className="btn btn-primary btn-sm w-10"
+            onClick={() => changeValue(Math.max(0, field.value - 1))}
+          >
+            -
+          </button>
+        </div>
+      </Transition>
+    </div>
   )
+}
+
+const foldSum = RR.foldMap(s.Ord)(n.MonoidSum)
 
 export const ExtrasComponent = (props: Props) => {
   const { modifier } = props
@@ -102,80 +112,55 @@ export const ExtrasComponent = (props: Props) => {
     name: `modifiers.extras.${modifier.identifier}`,
   })
 
-  const handleAmountChange = (choice: string) => (amount: number) => {
-    const next = pipe(lensAmount(choice).set(amount), apply(field.value))
-    field.onChange(next)
-    // validate(next.choices)
-  }
+  const currentAmount = pipe(field.value.choices, foldSum(identity))
 
-  const handleChange = (choices: string[]) => {
-    const getValue = (choice: string) =>
-      pipe(
-        choices,
-        A.findFirst((c) => c === choice),
-        O.chainNullableK((c) => field.value.choices[c]),
-        O.map((prev) => max(1)(prev)),
-        O.getOrElse(() => 0)
-      )
+  const maxReached = pipe(
+    modifier.max,
+    O.fold(constFalse, (max) => Ord.geq(n.Ord)(currentAmount, max))
+  )
 
-    const refs = pipe(
-      modifier.options,
-      A.map((o) => o.identifier)
-    )
+  const minText = pipe(
+    modifier.min,
+    O.map((min) => t("min", { min }))
+  )
+  const maxText = pipe(
+    modifier.max,
+    O.map((max) => t("max", { max }))
+  )
+  const minMaxText = pipe(
+    O.sequenceArray([minText, maxText]),
+    O.fold(constNull, (txts) => txts.join(" "))
+  )
 
-    const nextChoices = RR.fromFoldableMap(last<number>(), RA.Foldable)(refs, (r) => [
-      r,
-      getValue(r),
-    ])
-
-    field.onChange({
-      identifier: modifier.identifier,
-      choices: nextChoices,
-    })
-  }
-
-  const value = pipe(
-    field.value.choices,
-    RR.filter((c) => c > 0),
-    RR.keys,
-    RA.toArray
+  // types here are fucked, can't create an optic for it
+  const errorText = pipe(
+    fieldState.error,
+    O.fromNullable,
+    O.chainNullableK((o) => o?.message),
+    O.fold(constNull, () => <span className="text-error">{t("error")}</span>)
   )
 
   return (
-    <Checkbox.Group
-      {...field}
-      tabIndex={-1}
-      orientation="vertical"
-      offset="lg"
-      size="lg"
-      error={fieldState.error ? t("error") : null}
-      label={getLabel(modifier)(locale)}
-      withAsterisk={isSome(modifier.min)}
-      onChange={handleChange}
-      value={value}
-      description={
-        <>
-          <span>{getDescription(modifier)(locale)}</span>
+    <fieldset ref={field.ref} tabIndex={0} className="form-control">
+      <legend className="label w-full">
+        <p className="label-text">
+          {getLabel(modifier)(locale)}
           <br />
-          {pipe(
-            modifier.min,
-            matchW(
-              () => null,
-              (min: number) => <span className="ltr:mr-2 rtl:ml-2">{t("min", { min })}</span>
-            )
-          )}
-          {pipe(
-            modifier.max,
-            matchW(
-              () => null,
-              (max: number) => <span>{t("max", { max })}</span>
-            )
-          )}
-        </>
-      }
-    >
-      {checkbox(locale)(field.value, handleAmountChange, modifier)}
-    </Checkbox.Group>
+          {minMaxText}
+          <br />
+          {errorText}
+        </p>
+      </legend>
+      {modifier.options.map((o) => (
+        <ExtrasCheck
+          maxReached={maxReached}
+          key={o.identifier}
+          locale={locale}
+          option={o}
+          name={`modifiers.extras.${modifier.identifier}.choices.${o.identifier}`}
+        />
+      ))}
+    </fieldset>
   )
 }
 ExtrasComponent.displayName = "Extras"

@@ -114,7 +114,7 @@ export function ItemModal(props: Props) {
           <p className="mt-2 text-emerald-600">₪ {priceShekel(order.item)}</p>
           <p className="mt-2 text-sm text-gray-500">{desc(order.item)}</p>
         </div>
-        <div className="flex flex-col p-4">
+        <div className="flex flex-col px-4">
           <ItemModalForm
             options={order.item.categoryId === 3}
             containerEl={containerEl}
@@ -190,7 +190,7 @@ export function ItemModal(props: Props) {
         </div>
       </a.div>
       <a.div
-        className="h-14 w-full z-10 absolute flex justify-center items-center bg-white"
+        className="h-14 w-full z-20 absolute flex justify-center items-center bg-white"
         style={{
           y,
           boxShadow: shadow.to(

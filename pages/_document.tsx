@@ -11,7 +11,7 @@ class MyDocument extends Document {
     const { locale } = this.props.__NEXT_DATA__
     const dir = locale === Locale.he ? "rtl" : "ltr"
     return (
-      <Html lang={locale} dir={dir} className="bg-white">
+      <Html lang={locale} dir={dir} data-theme="renu" className="bg-white">
         <Head />
         <body>
           <Main />
