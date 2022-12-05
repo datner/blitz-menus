@@ -29,7 +29,33 @@ module.exports = {
       },
     },
   },
+  daisyui: {
+    themes: [
+      {
+        renu: {
+          primary: "#BDDFD5",
+
+          secondary: "#FEEABE",
+
+          accent: "#FDB9C1",
+
+          neutral: "#FAE5EF",
+
+          "base-100": "#FDFBF9",
+
+          info: "#E67EB0",
+
+          success: "#419277",
+
+          warning: "#FDCB5C",
+
+          error: "#F95063",
+        },
+      },
+    ],
+  },
   plugins: [
+    require("daisyui"),
     require("@tailwindcss/forms")({ strategy: "class" }),
     require("@tailwindcss/line-clamp"),
     plugin(function ({ addVariant }) {
