@@ -63,7 +63,7 @@ const ExtrasCheck = ({
         disabled={field.value === 0 && maxReached}
         checked={field.value > 0}
         type="checkbox"
-        className="checkbox checkbox-primary z-20"
+        className="checkbox checkbox-primary z-20 rtl:-scale-x-100"
         onChange={handleChange}
       />
       <div className="absolute inset-0 z-10" onClick={handleClick} />
@@ -75,12 +75,12 @@ const ExtrasCheck = ({
       )}
       <Transition
         show={show}
-        className="absolute right-0 z-20"
+        className="absolute ltr:right-0 rtl:left-0 z-20"
         leave="transition-all duration-150"
         leaveFrom="opacity-100 translate-y-0"
         leaveTo="opacity-0 translate-y-2"
       >
-        <div className="btn-group bg-white">
+        <div className="btn-group rtl:flex-row-reverse bg-white">
           <button
             disabled={maxReached}
             type="button"
