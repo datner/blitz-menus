@@ -1,11 +1,6 @@
 import { BlitzPage, Routes } from "@blitzjs/next"
-import SpecificItem from "./items/[identifier]"
-import { Aside } from "src/admin/components/Aside"
 import { Content } from "src/admin/components/Content"
-import { Suspense } from "react"
-import { LoadingOverlay } from "@mantine/core"
 import { gSSP } from "src/blitz-server"
-import * as O from "fp-ts/Option"
 import { AdminLayout } from "src/core/layouts/AdminLayout"
 
 const AdminOrganization: BlitzPage = () => {
@@ -30,8 +25,8 @@ AdminOrganization.getLayout = (page) => <AdminLayout>{page}</AdminLayout>
 export const getServerSideProps = gSSP(async (bag) => {
   const { locale, ctx } = bag
   const { session } = ctx
-  const { venue = O.none } = session
-  if (O.isNone(venue)) {
+  const { venue } = session
+  if (!venue) {
     return {
       redirect: {
         destination: Routes.RestaurantSignupPage(),

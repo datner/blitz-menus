@@ -1,5 +1,4 @@
 import { resolver } from "@blitzjs/rpc"
-import * as O from "fp-ts/Option"
 import * as T from "fp-ts/Task"
 import * as TE from "fp-ts/TaskEither"
 import db, { GlobalRole } from "db"
@@ -8,11 +7,11 @@ import { constVoid, pipe } from "fp-ts/lib/function"
 import { getMembership } from "../helpers/getMembership"
 
 export default resolver.pipe(resolver.authorize(), async (_, ctx) => {
-  const userId = ctx.session.$publicData.impersonatingFromUserId
+  const userId = ctx.session.impersonatingFromUserId
 
   return pipe(
     userId,
-    TE.fromOption(() => "Already not impersonating anyone!"),
+    TE.fromNullable(() => "Already not impersonating anyone!"),
     TE.chainW(
       TE.tryCatchK(
         (id) =>
@@ -35,11 +34,8 @@ export default resolver.pipe(resolver.authorize(), async (_, ctx) => {
               (u) => () =>
                 ctx.session.$create({
                   userId: u.id,
-                  organization: O.none,
-                  venue: O.none,
                   roles: [u.role],
                   orgId: -1,
-                  impersonatingFromUserId: O.none,
                 })
             )
           )
@@ -52,11 +48,10 @@ export default resolver.pipe(resolver.authorize(), async (_, ctx) => {
                 () =>
                   ctx.session.$create({
                     userId: user.id,
-                    organization: O.some(m.organization),
-                    venue: O.some(m.affiliation.Venue),
+                    organization: m.organization,
+                    venue: m.affiliation.Venue,
                     roles: [user.role, m.role],
                     orgId: m.organizationId,
-                    impersonatingFromUserId: O.none,
                   })
             ),
             TE.map(({ user }) => user)

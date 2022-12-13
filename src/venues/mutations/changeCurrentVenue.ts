@@ -1,8 +1,6 @@
 import { resolver } from "@blitzjs/rpc"
 import { setDefaultOrganizationId } from "src/auth/helpers/setDefaultOrganizationId"
 import * as TE from "fp-ts/TaskEither"
-import { some } from "fp-ts/Option"
-
 import { z } from "zod"
 import db from "db"
 import { prismaNotFound } from "src/core/helpers/prisma"
@@ -18,6 +16,6 @@ export default resolver.pipe(
   (where, ctx) =>
     pipe(
       TE.tryCatch(() => db.venue.findFirstOrThrow({ where }), prismaNotFound),
-      TE.chainTaskK((venue) => () => ctx.session.$setPublicData({ venue: some(venue) }))
+      TE.chainTaskK((venue) => () => ctx.session.$setPublicData({ venue: venue }))
     )()
 )

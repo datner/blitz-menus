@@ -5,6 +5,6 @@ type NoOrgError = {
   tag: "NoOrgError"
 }
 
-export const getSessionOrganization = E.fromOptionK(() => ({ tag: "NoOrgError" } as NoOrgError))(
+export const getSessionOrganization = E.fromNullableK(() => ({ tag: "NoOrgError" } as NoOrgError))(
   (s: AuthenticatedMiddlewareCtx) => s.session.organization
 )

@@ -5,7 +5,6 @@ import { Suspense } from "react"
 import { LoadingOverlay } from "@mantine/core"
 import { gSSP } from "src/blitz-server"
 import { AdminLayout } from "src/core/layouts/AdminLayout"
-import * as O from "fp-ts/Option"
 
 const AdminMenus: BlitzPage = () => {
   return (
@@ -33,8 +32,8 @@ AdminMenus.getLayout = (page) => <AdminLayout>{page}</AdminLayout>
 export const getServerSideProps = gSSP(async (bag) => {
   const { locale, ctx } = bag
   const { session } = ctx
-  const { venue = O.none } = session
-  if (O.isNone(venue)) {
+  const { venue } = session
+  if (!venue) {
     return {
       redirect: {
         destination: Routes.RestaurantSignupPage(),

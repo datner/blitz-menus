@@ -1,11 +1,10 @@
-import { Ctx } from "blitz"
+import { AuthenticatedMiddlewareCtx } from "@blitzjs/rpc"
 import { Prisma, GlobalRole } from "db"
 import { assert } from "./assert"
-import { getOrInvalid } from "./getOrInvalid"
 
 export function setDefaultOrganizationId<T extends object>(
   input: T,
-  { session }: Ctx
+  { session }: AuthenticatedMiddlewareCtx
 ): T & { organizationId: Prisma.IntFilter | number } {
   assert(session.organization, "Missing session.organization in setDefaultOrganizationId")
   if ("organizationId" in input) {
@@ -16,13 +15,13 @@ export function setDefaultOrganizationId<T extends object>(
     return { ...input, organizationId: { not: 0 } }
   } else {
     // Set organizationId to session.orgId
-    return { ...input, organizationId: getOrInvalid(session.organization) }
+    return { ...input, organizationId: session.organization.id }
   }
 }
 
 export function setDefaultOrganizationIdNoFilter<T extends object>(
   input: T,
-  { session }: Ctx
+  { session }: AuthenticatedMiddlewareCtx
 ): T & { organizationId: number } {
   assert(session.organization, "Missing session.organization in setDefaultOrganizationId")
   if ("organizationId" in input) {
@@ -30,5 +29,5 @@ export function setDefaultOrganizationIdNoFilter<T extends object>(
     return input as T & { organizationId: number }
   }
   // Set organizationId to session.orgId
-  return { ...input, organizationId: getOrInvalid(session.organization) }
+  return { ...input, organizationId: session.organization.id }
 }

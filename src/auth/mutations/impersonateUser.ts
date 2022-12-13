@@ -6,7 +6,6 @@ import { NotFoundError } from "blitz"
 import { getMembership } from "../helpers/getMembership"
 import * as E from "fp-ts/Either"
 import { pipe } from "fp-ts/function"
-import { some } from "fp-ts/Option"
 
 export const ImpersonateUserInput = z.object({
   email: z.string().email(),
@@ -31,11 +30,11 @@ export default resolver.pipe(
       E.map((m) =>
         ctx.session.$create({
           userId: user.id,
-          organization: some(m.organization),
-          venue: some(m.affiliation.Venue),
+          organization: m.organization,
+          venue: m.affiliation.Venue,
           roles: [user.role, m.role],
           orgId: m.organizationId,
-          impersonatingFromUserId: some(ctx.session.userId),
+          impersonatingFromUserId: ctx.session.userId,
         })
       ),
       E.getOrElseW((e) => {

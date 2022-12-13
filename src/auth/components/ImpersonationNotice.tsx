@@ -1,14 +1,13 @@
 import { useAuthenticatedSession } from "@blitzjs/auth"
 import { Routes } from "@blitzjs/next"
 import { invoke, getQueryClient } from "@blitzjs/rpc"
-import { isNone } from "fp-ts/Option"
 import { useRouter } from "next/router"
 import stopImpersonating from "../mutations/stopImpersonating"
 
 export const ImpersonationNotice = () => {
   const { impersonatingFromUserId, userId } = useAuthenticatedSession()
   const router = useRouter()
-  if (isNone(impersonatingFromUserId)) return null
+  if (!impersonatingFromUserId) return null
 
   return (
     <div className="bg-yellow-400 px-2 py-2 text-center font-semibold">

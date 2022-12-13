@@ -8,7 +8,6 @@ import { revalidateVenue } from "src/core/helpers/revalidation"
 import { NotFoundError } from "blitz"
 import db, { Prisma } from "db"
 import { pipe } from "fp-ts/lib/function"
-import { some } from "fp-ts/lib/Option"
 import * as TE from "fp-ts/TaskEither"
 import { match } from "ts-pattern"
 import { z } from "zod"
@@ -29,7 +28,7 @@ export default resolver.pipe(
         (e) =>
           e instanceof Prisma.PrismaClientValidationError ? prismaNotValid(e) : prismaNotFound(e)
       ),
-      TE.chainFirstTaskK((venue) => () => ctx.session.$setPublicData({ venue: some(venue) })),
+      TE.chainFirstTaskK((venue) => () => ctx.session.$setPublicData({ venue: venue })),
       TE.chainFirstTaskK((venue) => revalidateVenue(venue.identifier)),
       TE.getOrElse((e) => {
         throw match(e)

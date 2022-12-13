@@ -1,17 +1,14 @@
-import { Ctx } from "@blitzjs/next"
-import { assert } from "./assert"
-import { getOrInvalid } from "./getOrInvalid"
+import { AuthenticatedMiddlewareCtx } from "@blitzjs/rpc"
 
 export function setDefaultVenueId<T extends object>(
   input: T,
-  { session }: Ctx
+  { session }: AuthenticatedMiddlewareCtx
 ): T & { venueId: number } {
-  assert(session.venue, "Missing session.venue in setDefaultVenueId")
   if ("venueId" in input) {
     // Pass through the input
     return input as T & { venueId: number }
   } else {
     // Set organizationId to session.orgId
-    return { ...input, venueId: getOrInvalid(session.venue) }
+    return { ...input, venueId: session.venue.id }
   }
 }

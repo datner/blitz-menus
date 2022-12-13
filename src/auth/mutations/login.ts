@@ -1,65 +1,95 @@
-import { SecurePassword } from "@blitzjs/auth"
+import { PublicData, SecurePassword } from "@blitzjs/auth"
 import { resolver } from "@blitzjs/rpc"
 import { AuthenticationError } from "blitz"
-import db, { GlobalRole } from "db"
+import { GlobalRole, Prisma } from "db"
 import { pipe } from "fp-ts/function"
 import * as E from "fp-ts/Either"
+import * as TE from "fp-ts/TaskEither"
 import { getMembership } from "../helpers/getMembership"
 import { Login } from "../validations"
-import { none, some } from "fp-ts/Option"
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime"
+import { hashPassword, verifyPassword } from "../helpers/fp/securePassword"
+import { findFirstUser, updateUser } from "src/users/helpers/prisma"
 
-export const authenticateUser = async (rawEmail: string, rawPassword: string) => {
-  const { email, password } = Login.parse({ email: rawEmail, password: rawPassword })
-  const user = await db.user.findFirst({
-    where: { email },
-    include: {
-      membership: { include: { affiliations: { include: { Venue: true } }, organization: true } },
-    },
-  })
-  if (!user) throw new AuthenticationError()
-
-  const result = await SecurePassword.verify(user.hashedPassword, password)
-
-  if (result === SecurePassword.VALID_NEEDS_REHASH) {
-    // Upgrade hashed password with a more secure hash
-    const improvedHash = await SecurePassword.hash(password)
-    await db.user.update({ where: { id: user.id }, data: { hashedPassword: improvedHash } })
-  }
-
-  const { hashedPassword, ...rest } = user
-  return rest
+type AuthError = {
+  tag: "AuthenticationError"
+  error: AuthenticationError
 }
 
-export default resolver.pipe(resolver.zod(Login), async ({ email, password }, ctx) => {
-  // This throws an error if credentials are invalid
-  const user = await authenticateUser(email, password)
+export const authenticateUser =
+  (password: string) =>
+  <A extends Prisma.UserInclude, B extends Prisma.UserWhereUniqueInput>(args: {
+    include: A
+    where: B
+  }) =>
+    pipe(
+      findFirstUser(args),
+      TE.mapLeft((e) =>
+        e.error instanceof PrismaClientKnownRequestError && e.error.code === "P2025"
+          ? ({
+              tag: "AuthenticationError" as const,
+              error: new AuthenticationError(),
+            } as AuthError)
+          : e
+      ),
+      TE.chainW((user) =>
+        pipe(
+          verifyPassword(user.hashedPassword, password),
+          TE.fromTask,
+          TE.chain(
+            TE.fromPredicate(
+              (r) => r === SecurePassword.VALID_NEEDS_REHASH,
+              () => hashPassword
+            )
+          ),
+          TE.orLeft((hash) => hash(password)),
+          TE.orElseW((hashedPassword) =>
+            updateUser({ where: { id: user.id }, data: { hashedPassword } })
+          ),
+          TE.map(() => user)
+        )
+      ),
+      TE.map(({ hashedPassword, ...user }) => user)
+    )
 
-  await pipe(
+const withMembership = {
+  membership: { include: { affiliations: { include: { Venue: true } }, organization: true } },
+} satisfies Prisma.UserInclude
+
+type UserWithMembership = Prisma.UserGetPayload<{ include: typeof withMembership }>
+
+const getPublicData = (user: Omit<UserWithMembership, "hashedPassword">) =>
+  pipe(
     getMembership(user),
-    E.map((m) =>
-      ctx.session.$create({
+    E.map(
+      (m): PublicData => ({
         userId: user.id,
-        organization: some(m.organization),
-        venue: some(m.affiliation.Venue),
+        organization: m.organization,
+        venue: m.affiliation.Venue,
         roles: [user.role, m.role],
         orgId: m.organizationId,
-        impersonatingFromUserId: none,
       })
     ),
-    E.getOrElseW((e) => {
-      if (user.role === GlobalRole.SUPER) {
-        return ctx.session.$create({
-          userId: user.id,
-          organization: none,
-          venue: none,
-          roles: [user.role],
-          orgId: -1,
-          impersonatingFromUserId: none,
-        })
-      }
-      throw e
-    })
+    E.orElse((e) =>
+      user.role === GlobalRole.SUPER
+        ? E.right({
+            userId: user.id,
+            roles: [user.role],
+            orgId: -1,
+          } as PublicData)
+        : E.throwError(e)
+    )
   )
 
-  return user
-})
+export default resolver.pipe(resolver.zod(Login), ({ email, password }, ctx) =>
+  pipe(
+    authenticateUser(password)({ include: withMembership, where: { email } }),
+    TE.chainFirstW((user) =>
+      pipe(
+        getPublicData(user),
+        TE.fromEither,
+        TE.chainTaskK((s) => () => ctx.session.$create(s))
+      )
+    )
+  )()
+)

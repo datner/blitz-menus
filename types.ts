@@ -13,12 +13,26 @@ declare module "@blitzjs/auth" {
     PublicData: {
       userId: User["id"]
       roles: Role[]
-      venue: Option<Venue>
+      venue?: Venue
       orgId?: Organization["id"]
-      organization: Option<Organization>
+      organization?: Organization
       restaurantId?: Restaurant["id"]
-      impersonatingFromUserId: Option<number>
+      impersonatingFromUserId?: number
     }
+  }
+  export interface AuthenticatedSessionContext {
+    userId: User["id"]
+    roles: Role[]
+    venue: Venue
+    orgId: Organization["id"]
+    organization: Organization
+  }
+  export interface AuthenticatedClientSession {
+    userId: User["id"]
+    roles: Role[]
+    venue: Venue
+    orgId: Organization["id"]
+    organization: Organization
   }
 }
 

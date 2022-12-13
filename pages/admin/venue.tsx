@@ -27,7 +27,7 @@ export const getServerSideProps = gSSP(async (bag) => {
   const { locale, ctx } = bag
   const { session } = ctx
   const { venue = O.none } = session
-  if (O.isNone(venue)) {
+  if (venue) {
     return {
       redirect: {
         destination: Routes.RestaurantSignupPage(),

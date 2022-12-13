@@ -5,6 +5,6 @@ type NoVenueError = {
   tag: "NoVenueError"
 }
 
-export const getSessionVenue = E.fromOptionK(() => ({ tag: "NoVenueError" } as NoVenueError))(
+export const getSessionVenue = E.fromNullableK({ tag: "NoVenueError" } as NoVenueError)(
   (s: AuthenticatedMiddlewareCtx) => s.session.venue
 )

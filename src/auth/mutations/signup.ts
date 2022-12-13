@@ -2,7 +2,6 @@ import { SecurePassword } from "@blitzjs/auth"
 import { resolver } from "@blitzjs/rpc"
 import db, { GlobalRole } from "db"
 import { Signup } from "src/auth/validations"
-import { none } from "fp-ts/Option"
 
 export default resolver.pipe(resolver.zod(Signup), async ({ email, password }, ctx) => {
   const hashedPassword = await SecurePassword.hash(password.trim())
@@ -13,10 +12,7 @@ export default resolver.pipe(resolver.zod(Signup), async ({ email, password }, c
   await ctx.session.$create({
     userId: user.id,
     roles: [user.role],
-    venue: none,
-    organization: none,
-    impersonatingFromUserId: none,
-    orgId: 0,
+    orgId: -1,
   })
 
   return user
