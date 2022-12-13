@@ -4,7 +4,7 @@ import { isNonEmpty, filter } from "fp-ts/Array"
 import * as A from "fp-ts/Array"
 import { identity, pipe } from "fp-ts/function"
 import { z } from "zod"
-import { zodIso } from "src/core/helpers/zod"
+import { Json, zodIso } from "src/core/helpers/zod"
 import { match } from "ts-pattern"
 
 // export interface OptionContent {
@@ -57,6 +57,7 @@ export const OptionContent = z.object({
 export type OptionContent = z.infer<typeof OptionContent>
 
 export const BaseOption = z.object({
+  managementRepresentation: Json.optional(),
   identifier: z.string(),
   position: z.number().int(),
   price: z.number(),
