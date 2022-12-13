@@ -31,6 +31,7 @@ const getInitialModifierValues = (mod: {
           he: { name: "", description: "" },
         },
         options: NA.of({
+          managementId: null,
           content: {
             en: { description: "", name: "" },
             he: { name: "", description: "" },
@@ -48,6 +49,7 @@ const getInitialModifierValues = (mod: {
           he: { name: "", description: "" },
         },
         options: NA.of({
+          managementId: null,
           content: {
             en: { locale: "en", description: "", name: "" },
             he: { locale: "he", name: "", description: "" },

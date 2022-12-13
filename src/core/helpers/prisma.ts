@@ -57,3 +57,5 @@ export const getVenueByIdentifier =
         }),
       prismaNotFound
     )
+
+export type QueryFilter<T> = (...args: any[]) => T

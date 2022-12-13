@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client"
 import * as E from "fp-ts/Either"
 import { z } from "zod"
 
@@ -63,3 +64,8 @@ export const ensureType =
       ? E.right(result.data as z.output<Schema>)
       : E.left({ tag: "zodParseError", error: result.error, raw: data })
   }
+
+export const Primitives = z.union([z.string(), z.number(), z.boolean(), z.null()])
+export const Json: z.ZodType<Prisma.JsonValue> = z.lazy(() =>
+  z.union([Primitives, z.array(Json), z.record(Json)])
+)

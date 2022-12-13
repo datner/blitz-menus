@@ -4,7 +4,7 @@ import { titleFor } from "src/core/helpers/content"
 import { useLocale } from "src/core/hooks/useLocale"
 import changeCurrentVenue from "src/venues/mutations/changeCurrentVenue"
 import getOrgVenues from "src/venues/queries/getOrgVenues"
-import { constNull, pipe } from "fp-ts/function"
+import { pipe } from "fp-ts/function"
 import * as RA from "fp-ts/ReadonlyArray"
 import * as O from "fp-ts/Option"
 import { RestaurantI18L, Venue } from "@prisma/client"
@@ -23,14 +23,15 @@ export const ChangeVenueMenu = () => {
   })
   const title = titleFor(useLocale())
 
-  const getVenue = pipe(
-    venue,
-    O.map(({ id }) =>
-      RA.findFirst<Venue & { content: RestaurantI18L[] }>((venue) => venue.id === id)
+  const currentVenue = pipe(
+    O.fromNullable(venue),
+    O.chain(({ id }) =>
+      pipe(
+        venues,
+        RA.findFirst<Venue & { content: RestaurantI18L[] }>((venue) => venue.id === id)
+      )
     )
   )
-
-  const currentVenue = pipe(getVenue, O.ap(venues), O.flatten)
 
   const currentTitle = pipe(
     currentVenue,
@@ -56,10 +57,22 @@ export const ChangeVenueMenu = () => {
         leaveFrom="transform opacity-100 scale-100"
         leaveTo="transform opacity-0 scale-95"
       >
-        <Menu.Items className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
+        <Menu.Items
+          static
+          className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
+        >
           {pipe(
             venues,
-            O.map(
+            RA.match(
+              () => [
+                <Menu.Item
+                  key="loading"
+                  as="button"
+                  className="block w-full px-4 py-2 text-sm text-gray-700 text-left rtl:text-right"
+                >
+                  loading...
+                </Menu.Item>,
+              ],
               RA.map((venue) => (
                 <Menu.Item key={venue.identifier}>
                   {({ active }) => (
@@ -75,8 +88,7 @@ export const ChangeVenueMenu = () => {
                   )}
                 </Menu.Item>
               ))
-            ),
-            O.getOrElseW(constNull)
+            )
           )}
         </Menu.Items>
       </Transition>

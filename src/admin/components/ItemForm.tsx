@@ -1,4 +1,4 @@
-import { useMutation } from "@blitzjs/rpc"
+import { useMutation, useQuery } from "@blitzjs/rpc"
 import { useZodForm } from "src/core/hooks/useZodForm"
 import { GetItemResult, ItemSchema, toDefaults } from "src/items/validations"
 import { useTranslations } from "next-intl"
@@ -23,6 +23,7 @@ import { ModifierPanel } from "./ModifierPanel"
 import { shekelFormatter, shekelParser } from "src/core/helpers/form"
 import { PuzzlePieceIcon } from "@heroicons/react/24/solid"
 import { IntegrationsPanel } from "./IntegrationsPanel"
+import getVenueManagementIntegration from "src/venues/queries/current/getVenueManagementIntegration"
 
 type Props = {
   item: O.Option<GetItemResult>
@@ -53,9 +54,10 @@ const ItemFormTabs: FC<PropsWithChildren<unknown>> = ({ children }) => (
 
 export function ItemForm(props: Props) {
   const { onSubmit: onSubmit_, item } = props
+  const [integration] = useQuery(getVenueManagementIntegration, null)
   const t = useTranslations("admin.Components.ItemForm")
   const isEdit = O.isSome(item)
-  const defaultValues = toDefaults(item)
+  const defaultValues = toDefaults(integration)(item)
   const form = useZodForm({
     schema: ItemSchema,
     defaultValues,
@@ -68,10 +70,10 @@ export function ItemForm(props: Props) {
 
   useStableEffect(
     () => {
-      pipe(item, toDefaults, reset)
+      pipe(item, toDefaults(integration), reset)
     },
-    [item, reset],
-    Eq.tuple(O.getEq(eqItem), { equals: constTrue })
+    [item, reset, integration],
+    Eq.tuple(O.getEq(eqItem), { equals: constTrue }, { equals: constTrue })
   )
 
   const onSubmit = handleSubmit(
@@ -98,7 +100,10 @@ export function ItemForm(props: Props) {
             }).then((res) => res.json())
             image.src = origin_path
           }
-          await pipe(onSubmit_(data), TE.match(setFormError, flow(O.some, toDefaults, reset)))()
+          await pipe(
+            onSubmit_(data),
+            TE.match(setFormError, flow(O.some, toDefaults(integration), reset))
+          )()
         } catch (error: any) {
           setFormError(error.toString())
         }
@@ -181,6 +186,8 @@ export function ItemForm(props: Props) {
                   <NumberInput
                     {...priceProps}
                     label={t("price")}
+                    step={50}
+                    min={0}
                     parser={shekelParser}
                     formatter={shekelFormatter}
                   />
