@@ -17,6 +17,7 @@ export type ReportOrderFailedError = {
 
 export type ManagementMismatchError = {
   tag: "ManagementMismatchError"
+  error: unknown
   needed: ManagementProvider
   given: ManagementProvider
 }
@@ -32,6 +33,7 @@ export const managementMismatchError =
   (needed: ManagementProvider) =>
   (given: ManagementProvider): ManagementMismatchError => ({
     tag: "ManagementMismatchError",
+    error: new Error(`Despite requiring a ${needed} integration, a ${given} one was supplied.`),
     needed,
     given,
   })

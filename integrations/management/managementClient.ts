@@ -6,28 +6,37 @@ import {
   OrderItemModifier,
   OrderState,
 } from "@prisma/client"
-import { HttpClientEnv } from "integrations/http/httpClient"
+import { HttpCacheEnv, HttpClientEnv } from "integrations/http/httpClient"
 import { ManagementError, ReportOrderFailedError } from "./managementErrors"
 import { GenericError } from "integrations/helpers"
 import { ZodParseError } from "src/core/helpers/zod"
 import { HttpError } from "integrations/http/httpErrors"
+import { ManagementMenu } from "./types"
+import { FullOrderWithItems } from "integrations/clearing/clearingProvider"
 
 export type FullOrder = Order & { items: (OrderItem & { modifiers: OrderItemModifier[] })[] }
 
+type Env = HttpClientEnv & ManagementIntegrationEnv & HttpCacheEnv
+
 export interface ManagementClient {
   reportOrder(
-    order: FullOrder
+    order: FullOrderWithItems
   ): RTE.ReaderTaskEither<
-    HttpClientEnv & ManagementIntegrationEnv,
+    Env,
     HttpError | ZodParseError | ManagementError | ReportOrderFailedError | GenericError,
     void
   >
   getOrderStatus(
     order: Order
   ): RTE.ReaderTaskEither<
-    HttpClientEnv & ManagementIntegrationEnv,
+    Env,
     HttpError | ZodParseError | ManagementError | GenericError,
     OrderState
+  >
+  getVenueMenu(): RTE.ReaderTaskEither<
+    Env,
+    HttpError | ZodParseError | ManagementError | GenericError,
+    ManagementMenu
   >
 }
 

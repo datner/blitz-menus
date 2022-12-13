@@ -1,19 +1,28 @@
-import { ManagementProvider, Order } from "@prisma/client"
+import { ManagementProvider, Order, OrderState } from "@prisma/client"
 import * as RTE from "fp-ts/ReaderTaskEither"
+import { FullOrderWithItems } from "integrations/clearing/clearingProvider"
 import { dorixClient } from "integrations/dorix/dorixClient"
-import { FullOrder, ManagementClient, ManagementClientEnv } from "./managementClient"
+import { ManagementClient, ManagementClientEnv, ManagementIntegrationEnv } from "./managementClient"
 
-declare const renuClient: ManagementClient
+const renuClient: ManagementClient = {
+  getVenueMenu: RTE.of("" as unknown) as unknown as ManagementClient["getVenueMenu"],
+  getOrderStatus: RTE.of(OrderState.Unconfirmed) as unknown as ManagementClient["getOrderStatus"],
+  reportOrder: RTE.of(undefined) as unknown as ManagementClient["reportOrder"],
+}
 
 export const clients = {
   [ManagementProvider.DORIX]: dorixClient,
   [ManagementProvider.RENU]: renuClient,
 } as const
 
-export const reportOrder = (order: FullOrder) =>
+export const reportOrder = (order: FullOrderWithItems) =>
   RTE.asksReaderTaskEitherW((env: ManagementClientEnv) => env.managementClient.reportOrder(order))
 
 export const getOrderStatus = (order: Order) =>
   RTE.asksReaderTaskEitherW((env: ManagementClientEnv) =>
     env.managementClient.getOrderStatus(order)
   )
+
+export const getVenueMenu = RTE.asksReaderTaskEitherW((env: ManagementIntegrationEnv) =>
+  clients[env.managementIntegration.provider].getVenueMenu()
+)

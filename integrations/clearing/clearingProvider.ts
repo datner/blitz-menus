@@ -1,13 +1,19 @@
-import { ClearingIntegration, Item, Order, OrderItem, OrderItemModifier } from "@prisma/client"
+import { ClearingIntegration, Order, Prisma } from "@prisma/client"
 import * as RTE from "fp-ts/ReaderTaskEither"
 import { GenericError } from "integrations/helpers"
 import { HttpClientEnv } from "integrations/http/httpClient"
 import { HttpError } from "integrations/http/httpErrors"
 import { ClearingError, ClearingValidationError } from "./clearingErrors"
 
-export type FullOrderWithItems = Order & {
-  items: (OrderItem & { item: Item; modifiers: OrderItemModifier[] })[]
-}
+export const fullOrderInclude = {
+  items: {
+    include: { item: true, modifiers: { include: { modifier: true } } },
+  },
+} satisfies Prisma.OrderInclude
+
+export type FullOrderWithItems = Prisma.OrderGetPayload<{
+  include: typeof fullOrderInclude
+}>
 
 export interface ClearingProvider {
   getClearingPageLink(

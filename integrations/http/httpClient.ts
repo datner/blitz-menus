@@ -1,8 +1,7 @@
-import * as TR from "fp-ts/ReaderTask"
 import * as TE from "fp-ts/TaskEither"
 import * as RTE from "fp-ts/ReaderTaskEither"
-import { pipe } from "fp-ts/function"
 import { OptionsInit } from "got"
+import { Store } from "keyv"
 import {
   HttpClientError,
   HttpContentError,
@@ -10,10 +9,8 @@ import {
   HttpServerError,
 } from "integrations/http/httpErrors"
 
-export type RequestOptions = Pick<
-  OptionsInit,
-  "method" | "json" | "form" | "headers" | "searchParams"
->
+export interface RequestOptions
+  extends Pick<OptionsInit, "method" | "form" | "json" | "headers" | "searchParams"> {}
 
 export type HttpResponse = {
   tag: "HttpResponse"
@@ -26,7 +23,7 @@ export type HttpResponse = {
 export type HttpClientRequest = (
   url: string | URL,
   optionsInit?: RequestOptions | undefined
-) => TE.TaskEither<HttpClientRequestError, HttpResponse>
+) => RTE.ReaderTaskEither<HttpCacheEnv, HttpClientRequestError, HttpResponse>
 
 export interface HttpClient {
   request: HttpClientRequest
@@ -36,12 +33,13 @@ export interface HttpClientEnv {
   httpClient: HttpClient
 }
 
+export interface HttpCacheEnv {
+  cache?: Store<unknown>
+}
+
 export type HttpClientRequestError = HttpRequestError | HttpClientError | HttpServerError
 
 export const request = (
   ...args: Parameters<HttpClientRequest>
-): RTE.ReaderTaskEither<HttpClientEnv, HttpClientRequestError, HttpResponse> =>
-  pipe(
-    TR.asks((env: HttpClientEnv) => env.httpClient),
-    TR.chainTaskK((client) => client.request(...args))
-  )
+): RTE.ReaderTaskEither<HttpClientEnv & HttpCacheEnv, HttpClientRequestError, HttpResponse> =>
+  RTE.asksReaderTaskEitherW((env: HttpClientEnv) => env.httpClient.request(...args))
