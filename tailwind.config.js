@@ -57,6 +57,7 @@ module.exports = {
   plugins: [
     require("daisyui"),
     require("@tailwindcss/forms")({ strategy: "class" }),
+    require("@headlessui/tailwindcss"),
     require("@tailwindcss/line-clamp"),
     plugin(function ({ addVariant }) {
       addVariant("error", ["&[aria-invalid=true]", "&:invalid"])
