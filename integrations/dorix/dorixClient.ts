@@ -9,26 +9,19 @@ import {
   ManagementClient,
   ManagementIntegrationEnv,
 } from "integrations/management/managementClient"
-import { z } from "zod"
 import { ensureType } from "src/core/helpers/zod"
-import { DELIVERY_TYPES, DorixVendorData } from "./types"
+import { DorixVendorData } from "./types"
 import { ManagementProvider, OrderState } from "@prisma/client"
 import { ReportOrderFailedError } from "integrations/management/managementErrors"
 import { ensureManagementMatch } from "integrations/management/managementGuards"
-import {
-  getDesiredTime,
-  OrderResponse,
-  StatusResponse,
-  toItems,
-  toPayment,
-  toTransaction,
-} from "./dorixHelpers"
+import { MenuResponse, OrderResponse, StatusResponse, toOrder } from "./dorixHelpers"
 import { Order as DorixOrder } from "./types"
 import {
   BreakerOptions,
   singletonBreaker,
   withBreakerOptions,
 } from "integrations/http/circuitBreaker"
+import { httpClientError } from "integrations/http/httpErrors"
 
 const headers = pipe(
   getEnvVar("DORIX_API_KEY"),
@@ -76,6 +69,13 @@ const postOrder = (json: DorixOrder) =>
     RTE.chainEitherKW(ensureType(OrderResponse))
   )
 
+const getMenu = (branchId: string) =>
+  pipe(
+    dorixRequest(`/v1/menu/branch/${branchId}`),
+    RTE.chainTaskEitherKW((res) => res.json),
+    RTE.chainEitherKW(ensureType(MenuResponse))
+  )
+
 const getVendorData = pipe(
   RE.asks((e: ManagementIntegrationEnv) => e.managementIntegration),
   RE.chainEitherKW(ensureManagementMatch(ManagementProvider.DORIX)),
@@ -83,12 +83,12 @@ const getVendorData = pipe(
   RE.chainEitherKW(ensureType(DorixVendorData))
 )
 
-const ensureSuccess = (
-  orderResponse: z.infer<typeof OrderResponse>
-): E.Either<ReportOrderFailedError, void> =>
-  orderResponse.ack
-    ? E.right(constVoid())
-    : E.left({ tag: "ReportOrderFailedError", error: new Error(orderResponse.message) })
+type Response<A extends { ack: true }> = { ack: false; message?: string } | A
+
+const ensureSuccess =
+  <E>(onError: (err: unknown) => E) =>
+  <A extends { ack: true }>(orderResponse: Response<A>): E.Either<E, A> =>
+    orderResponse.ack ? E.right(orderResponse) : E.left(onError(orderResponse.message))
 
 const breakerOptions: BreakerOptions = {
   resetTimeoutSecs: 30,
@@ -100,22 +100,13 @@ export const dorixClient: ManagementClient = {
   reportOrder: (order) =>
     pipe(
       RTE.fromReaderEither(getVendorData),
-      RTE.chainW(({ branchId }) =>
-        postOrder({
-          externalId: String(order.id),
-          payment: pipe(order, toTransaction, toPayment),
-          items: toItems(order.items),
-          source: "RENU",
-          branchId,
-          notes: "Sent from Renu",
-          desiredTime: getDesiredTime(),
-          type: DELIVERY_TYPES.PICKUP,
-          customer: { firstName: "", lastName: "", email: "", phone: "" },
-          discounts: [],
-          metadata: {},
-        })
+      RTE.map(({ branchId }) => branchId),
+      RTE.map(toOrder(order)),
+      RTE.chainW(postOrder),
+      RTE.chainEitherKW(
+        ensureSuccess((error): ReportOrderFailedError => ({ tag: "ReportOrderFailedError", error }))
       ),
-      RTE.chainEitherKW(ensureSuccess),
+      RTE.map(constVoid),
       withBreakerOptions(breakerOptions)
     ),
 
@@ -136,6 +127,15 @@ export const dorixClient: ManagementClient = {
             return OrderState.Confirmed
         }
       }),
+      withBreakerOptions(breakerOptions)
+    ),
+
+  getVenueMenu: () =>
+    pipe(
+      RTE.fromReaderEither(getVendorData),
+      RTE.chainW(({ branchId }) => getMenu(branchId)),
+      RTE.chainEitherKW(ensureSuccess(httpClientError)),
+      RTE.map((req) => req.data.menu),
       withBreakerOptions(breakerOptions)
     ),
 }
