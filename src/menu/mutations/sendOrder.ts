@@ -10,6 +10,7 @@ import { gotClient } from "integrations/http/gotHttpClient"
 import { sequenceS } from "fp-ts/lib/Apply"
 import { sendMessage } from "integrations/telegram/sendMessage"
 import { HTTPError } from "got"
+import { fullOrderInclude } from "integrations/clearing/clearingProvider"
 
 type SendOrder = z.infer<typeof SendOrder>
 
@@ -37,14 +38,7 @@ const createNewOrder = ({ orderItems, venueIdentifier }: SendOrder) =>
         })),
       },
     },
-    include: {
-      items: {
-        include: {
-          item: true,
-          modifiers: true,
-        },
-      },
-    },
+    include: fullOrderInclude,
   })
 
 const createOrder = delegate(db.order)((v) => v.create)
