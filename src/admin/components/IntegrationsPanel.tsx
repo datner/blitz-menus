@@ -22,7 +22,7 @@ import {
   ManagementModifierOption,
 } from "integrations/management/types"
 import { useFieldArray, useFormContext, UseFormGetValues } from "react-hook-form"
-import { ItemSchema, ModifierSchema } from "src/items/validations"
+import { ItemSchema, ModifierSchema, OptionsSchemaArray } from "src/items/validations"
 import { useLocale } from "src/core/hooks/useLocale"
 import { matchSorter } from "match-sorter"
 import { AutocompleteCategory, AutocompleteOption, NullableAutocomplete } from "./Autocomplete"
@@ -234,7 +234,7 @@ const createState: (getValues: UseFormGetValues<ItemSchema>) => (menu: Managemen
       formModifiers,
       RA.map((m) =>
         pipe(
-          m.config.options,
+          m.config.options as OptionsSchemaArray,
           RA.map((o) =>
             pipe(
               modifiers,
@@ -356,7 +356,7 @@ function IntegrationMenu(props: Props) {
               <h3>{m.config.content[locale].name}</h3>
               <div className="space-y-8">
                 {pipe(
-                  m.config.options,
+                  m.config.options as OptionsSchemaArray,
                   A.mapWithIndex((optionIndex, op) => (
                     <div key={op.identifier} className="grid grid-cols-3">
                       <input

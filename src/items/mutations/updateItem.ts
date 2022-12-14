@@ -5,7 +5,7 @@ import { pipe, tuple } from "fp-ts/function"
 import { enforceSuperAdminIfNotCurrentOrganization } from "src/auth/helpers/enforceSuperAdminIfNoCurrentOrganization"
 import { setDefaultOrganizationId } from "src/auth/helpers/setDefaultOrganizationId"
 import { getBlurDataUrl } from "src/core/helpers/plaiceholder"
-import { ModifierSchema, UpdateItem } from "../validations"
+import { ModifierSchema, OptionsSchemaArray, UpdateItem } from "../validations"
 import { NotFoundError } from "blitz"
 import { setDefaultVenue } from "src/auth/helpers/setDefaultVenue"
 import { revalidateVenue } from "src/core/helpers/revalidation"
@@ -52,7 +52,7 @@ export default resolver.pipe(
                     { locale: "he", ...config.content.he },
                   ],
                   options: pipe(
-                    config.options,
+                    config.options as OptionsSchemaArray,
                     A.mapWithIndex((i, { managementId, ...o }) => ({
                       ...o,
                       managementRepresentation: { id: managementId },
@@ -90,7 +90,7 @@ export default resolver.pipe(
                       { locale: "he", ...m.config.content.he },
                     ],
                     options: pipe(
-                      m.config.options,
+                      m.config.options as OptionsSchemaArray,
                       A.mapWithIndex((i, o) => ({
                         ...o,
                         position: i,

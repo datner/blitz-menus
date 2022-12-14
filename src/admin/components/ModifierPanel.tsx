@@ -1,4 +1,9 @@
-import { ItemSchema, ModifierSchema } from "src/items/validations"
+import {
+  ExtrasSchemaInput,
+  ItemSchema,
+  ModifierSchema,
+  OneOfSchemaInput,
+} from "src/items/validations"
 import * as L from "monocle-ts/Lens"
 import * as A from "fp-ts/Array"
 import * as O from "fp-ts/Option"
@@ -19,7 +24,7 @@ import { ExtrasForm } from "../modifier-forms/ExtrasForm"
 
 const getInitialModifierValues = (mod: {
   _tag: ModifierEnum
-}): Zod.input<typeof ItemSchema>["modifiers"][number]["config"] => {
+}): OneOfSchemaInput | ExtrasSchemaInput => {
   switch (mod._tag) {
     case ModifierEnum.enum.oneOf:
       return {
@@ -30,6 +35,7 @@ const getInitialModifierValues = (mod: {
           en: { description: "", name: "" },
           he: { name: "", description: "" },
         },
+        // @ts-expect-error
         options: NA.of({
           managementId: null,
           content: {
@@ -48,6 +54,7 @@ const getInitialModifierValues = (mod: {
           en: { description: "", name: "" },
           he: { name: "", description: "" },
         },
+        // @ts-expect-error
         options: NA.of({
           managementId: null,
           content: {

@@ -62,7 +62,7 @@ const BaseModifierSchema = z.object({
 export const OneOfSchema = z
   .object({
     _tag: z.literal("oneOf"),
-    options: OneOfOptionSchema.array().refine(A.isNonEmpty),
+    options: OneOfOptionSchema.array().nonempty(),
     defaultOption: z.string(),
   })
   .extend(BaseModifierSchema.shape)
@@ -70,14 +70,16 @@ export const OneOfSchema = z
 export const ExtrasSchema = z
   .object({
     _tag: z.literal("extras"),
-    options: ExtrasOptionSchema.array().refine(A.isNonEmpty),
+    options: ExtrasOptionSchema.array().nonempty(),
     min: z.number(),
     max: z.number(),
   })
   .extend(BaseModifierSchema.shape)
 
 export type OneOfSchema = z.infer<typeof OneOfSchema>
+export type OneOfSchemaInput = z.input<typeof OneOfSchema>
 export type ExtrasSchema = z.infer<typeof ExtrasSchema>
+export type ExtrasSchemaInput = z.input<typeof ExtrasSchema>
 
 export const ModifierSchema = z.object({
   modifierId: z.number().optional(),
@@ -232,6 +234,11 @@ export const toDefaults = (integration: GetManagementIntegrationResult) =>
 
 const ItemSchemaImgTransform = ItemSchema.extend({ image: Image.transform((it) => it.src) })
 
+export type OptionsSchemaArray = (
+  | z.infer<typeof ExtrasOptionSchema>
+  | z.infer<typeof OneOfOptionSchema>
+)[]
+
 export const CreateItem = ItemSchemaImgTransform.transform(
   ({ en, he, categoryId, modifiers, managementId, ...rest }) =>
     ({
@@ -266,7 +273,10 @@ export const CreateItem = ItemSchemaImgTransform.transform(
                 { locale: Locale.he, ...content.he },
               ],
               options: pipe(
-                c.options,
+                c.options as (
+                  | z.infer<typeof ExtrasOptionSchema>
+                  | z.infer<typeof OneOfOptionSchema>
+                )[],
                 A.mapWithIndex((i, o) => ({
                   ...o,
                   position: i,
