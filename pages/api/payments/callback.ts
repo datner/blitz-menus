@@ -112,7 +112,38 @@ const onCharge = (ppc: PayPlusCallback) =>
             include: fullOrderInclude,
           })
         ),
-        RTE.chainFirstW(reportOrder),
+        RTE.chainFirstW((o) =>
+          pipe(
+            reportOrder(o),
+            RTE.orElseFirst((e) => {
+              switch (e.tag) {
+                case "ReportOrderFailedError": {
+                  const orderId = ppc.transaction.more_info
+                  const venueId = ppc.transaction.more_info_1
+                  const { provider } = managementIntegration
+                  const pre = Format.pre("none")
+                  const message =
+                    e.error instanceof Error
+                      ? `Provider ${provider} reported the following error:\n ${pre(
+                          e.error.message
+                        )}`
+                      : `Please reach out to ${managementIntegration.provider} support for further details.`
+                  return RTE.fromTask(
+                    sendMessage(
+                      // wtf prettier, what is this butchered mess? looks like a murder scene
+                      Format.fmt(
+                        ` Order ${orderId} of venue ${venueId} could not be submitted to management.\n\n${message}`
+                      )
+                    )
+                  )
+                }
+
+                default:
+                  return RTE.left(e)
+              }
+            })
+          )
+        ),
         RTE.apFirstW(
           RTE.fromTaskEither(changeOrderState(ppc.transaction.more_info)(OrderState.Unconfirmed))
         ),
