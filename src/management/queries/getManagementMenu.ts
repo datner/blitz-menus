@@ -6,6 +6,7 @@ import { pipe } from "fp-ts/lib/function"
 import { delegate } from "src/core/helpers/prisma"
 import { ofVenue } from "../helpers/query-filters"
 import { breakers } from "integrations/http/circuitBreaker"
+import db from "db"
 
 const findFirstIntegration = delegate(db.managementIntegration)((mi) => mi.findUniqueOrThrow)
 
