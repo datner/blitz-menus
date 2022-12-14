@@ -87,7 +87,7 @@
     "tailwindcss": "3.x",
     "telegraf": "4.10.0",
     "ts-pattern": "4.0.3",
-    "zod": "3.17.3"
+    "zod": "3.20.2"
   },
   "devDependencies": {
     "@faker-js/faker": "6.1.2",
