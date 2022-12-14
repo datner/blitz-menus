@@ -1,4 +1,3 @@
-import * as C from "fp-ts/Console"
 import * as E from "fp-ts/Either"
 import * as RE from "fp-ts/ReaderEither"
 import * as RTE from "fp-ts/ReaderTaskEither"
@@ -83,7 +82,7 @@ type Response<A extends { ack: true }> = { ack: false; message?: string } | A
 const ensureSuccess =
   <E>(onError: (err: unknown) => E) =>
   <A extends { ack: true }>(orderResponse: Response<A>): E.Either<E, A> =>
-    orderResponse.ack ? E.right(orderResponse) : E.left(onError(orderResponse.message))
+    orderResponse.ack ? E.right(orderResponse) : E.left(onError(new Error(orderResponse.message)))
 
 export const dorixClient: ManagementClient = {
   reportOrder: (order) =>
@@ -102,7 +101,6 @@ export const dorixClient: ManagementClient = {
     pipe(
       RTE.fromReaderEither(getVendorData),
       RTE.chainW(({ branchId }) => getStatus(order.id, branchId)),
-      RTE.orElseFirst((e) => RTE.fromIO(C.log(e.error instanceof Error ? e.error.message : e))),
       RTE.map((p) => {
         switch (p.order.status) {
           case "FAILED":
