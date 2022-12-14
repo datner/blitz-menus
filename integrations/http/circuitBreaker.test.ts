@@ -38,11 +38,11 @@ describe("circuitBreaker", () => {
   beforeEach<Context>(async (ctx) => {
     ctx.request = vi.fn()
     ctx.state = breakerState()
-    ctx.breaker = circuitBreaker(ctx.state)
+    ctx.breaker = circuitBreaker("test")
     ctx.req = pipe(
-      ctx.breaker("test")({
+      ctx.breaker(ctx.state)("state")({
         httpClient: { request: ctx.request },
-        circuitBreakerOptions: { resetTimeoutSecs: 1, maxBreakerRetries: 1, name: "test" },
+        circuitBreakerOptions: { resetTimeoutSecs: 1, maxBreakerRetries: 1 },
       }),
       TE.chainW((res) => res.text)
     )
@@ -104,12 +104,11 @@ describe("circuitBreaker", () => {
   describe("singletonBreaker", () => {
     beforeEach<Context>((ctx) => {
       ctx.req = pipe(
-        singletonBreaker()("test")({
+        singletonBreaker("singletonBreaker")("test")({
           httpClient: { request: ctx.request },
           circuitBreakerOptions: {
             resetTimeoutSecs: 1,
             maxBreakerRetries: 1,
-            name: "singletonBreaker",
           },
         }),
         TE.chainW((res) => res.text)
