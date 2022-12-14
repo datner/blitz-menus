@@ -106,6 +106,7 @@ export interface Order<T extends DELIVERY_TYPES = DELIVERY_TYPES.PICKUP> {
 
 export const DorixVendorData = z.object({
   branchId: z.string(),
+  isQA: z.boolean().default(false),
 })
 export type DorixVendorData = z.infer<typeof DorixVendorData>
 

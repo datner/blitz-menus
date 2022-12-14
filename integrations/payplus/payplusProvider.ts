@@ -1,5 +1,6 @@
 import * as J from "fp-ts/Json"
 import * as E from "fp-ts/Either"
+import * as RE from "fp-ts/ReaderEither"
 import * as RTE from "fp-ts/ReaderTaskEither"
 import { pipe, apply } from "fp-ts/function"
 import { getEnvVar } from "src/core/helpers/env"
@@ -52,7 +53,9 @@ export const payplusRequest =
     pipe(
       E.Do,
       E.apS("Authorization", auth(integration)),
-      E.apSW("prefixUrl", getEnvVar("PAY_PLUS_API_URL")),
+      E.bindW("prefixUrl", ({ Authorization: { isQA } }) =>
+        getEnvVar(isQA ? "PAY_PLUS_QA_API_URL" : "PAY_PLUS_API_URL")
+      ),
       E.bindW("headers", ({ Authorization }) =>
         pipe(
           J.stringify(Authorization),

@@ -43,6 +43,7 @@ declare global {
     readonly IMGIX_API_KEY: string
     readonly IMGIX_SOURCE_ID: string
     readonly DORIX_API_URL: string
+    readonly DORIX_QA_API_URL: string
     readonly DORIX_API_KEY: string
     readonly TELEGRAM_BOT_TOKEN: string
     readonly TELEGRAM_CHAT_ID: string
@@ -50,6 +51,7 @@ declare global {
     readonly PAY_PLUS_API_KEY: string
     readonly PAY_PLUS_SECRET_KEY: string
     readonly PAY_PLUS_API_URL: string
+    readonly PAY_PLUS_QA_API_URL: string
     readonly REVALIDATION_SECRET_TOKEN: string
   }
   namespace NodeJS {

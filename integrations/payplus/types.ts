@@ -184,6 +184,7 @@ export type GetStatusResponse = z.infer<typeof GetStatusResponse>
 export const Authorization = z.object({
   api_key: z.string(),
   secret_key: z.string(),
+  isQA: z.boolean().default(false),
 })
 
 export type Authorization = z.infer<typeof Authorization>

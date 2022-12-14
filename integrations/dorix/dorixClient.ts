@@ -25,11 +25,21 @@ const headers = pipe(
   E.map((apiKey) => ({ Authorization: `Bearer ${apiKey}` }))
 )
 
+const getVendorData = pipe(
+  RE.asks((env: ManagementIntegrationEnv) => env.managementIntegration),
+  RE.chainEitherKW(ensureManagementMatch(ManagementProvider.DORIX)),
+  RE.map((i) => i.vendorData),
+  RE.chainEitherKW(ensureType(DorixVendorData))
+)
+
 const baseOptions = pipe(
-  sequenceS(E.Apply)({
-    prefixUrl: getEnvVar("DORIX_API_URL"),
-    headers,
-  })
+  getVendorData,
+  RE.chainEitherKW((v) =>
+    sequenceS(E.Apply)({
+      prefixUrl: getEnvVar(v.isQA ? "DORIX_QA_API_URL" : "DORIX_API_URL"),
+      headers,
+    })
+  )
 )
 
 const dorixBreaker = singletonBreaker("Dorix")
@@ -37,13 +47,13 @@ const dorixBreaker = singletonBreaker("Dorix")
 export const dorixRequest = (url: string | URL, options?: RequestOptions | undefined) =>
   pipe(
     baseOptions,
-    E.map((opts) =>
+    RE.map((opts) =>
       tuple(new URL(url, opts.prefixUrl), {
         ...options,
         headers: Object.assign(opts.headers, options?.headers),
       })
     ),
-    RTE.fromEither,
+    RTE.fromReaderEither,
     RTE.chainW(tupled(dorixBreaker))
   )
 
@@ -67,13 +77,6 @@ const getMenu = (branchId: string) =>
     RTE.chainTaskEitherKW((res) => res.json),
     RTE.chainEitherKW(ensureType(MenuResponse))
   )
-
-const getVendorData = pipe(
-  RE.asks((env: ManagementIntegrationEnv) => env.managementIntegration),
-  RE.chainEitherKW(ensureManagementMatch(ManagementProvider.DORIX)),
-  RE.map((i) => i.vendorData),
-  RE.chainEitherKW(ensureType(DorixVendorData))
-)
 
 type Response<A extends { ack: true }> = { ack: false; message?: string } | A
 
