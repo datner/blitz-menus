@@ -1,15 +1,12 @@
-import * as E from "fp-ts/Either"
-import * as RE from "fp-ts/ReaderEither"
-import * as R from "fp-ts/Reader"
 import * as J from "fp-ts/Json"
-import * as RA from "fp-ts/ReadonlyArray"
+import * as E from "fp-ts/Either"
 import * as RTE from "fp-ts/ReaderTaskEither"
-import { constVoid, flow, pipe, tuple, tupled } from "fp-ts/function"
+import { pipe, apply } from "fp-ts/function"
 import { getEnvVar } from "src/core/helpers/env"
 import {
-  ClearingIntegrationEnv,
   FullOrderWithItems,
   ClearingProvider,
+  ClearingIntegrationEnv,
 } from "integrations/clearing/clearingProvider"
 import { ensureClearingMatch } from "integrations/clearing/clearingGuards"
 import { ClearingIntegration, ClearingProvider as CP, Order } from "@prisma/client"
@@ -19,82 +16,97 @@ import {
   GeneratePaymentLinkBody,
   GeneratePaymentLinkResponse,
   GetStatusResponse,
-  InvoiceResponse,
+  IPNBody,
+  StatusSuccess,
 } from "./types"
 import { RequestOptions } from "integrations/http/httpClient"
 import { toItems } from "integrations/payplus/lib"
-import { Invoice } from "integrations/payplus/types"
-import { addDays, format, subDays } from "date-fns/fp"
-import { now } from "fp-ts/Date"
 import {
-  InvoiceFailedError,
-  NoTxIdError,
-  txIdNotFoundWithProvider,
+  TransactionFailedError,
+  TransactionNotFoundError,
 } from "integrations/clearing/clearingErrors"
-import { z } from "zod"
-import { HttpContentError } from "integrations/http/httpErrors"
-import {
-  BreakerOptions,
-  singletonBreaker,
-  withBreakerOptions,
-} from "integrations/http/circuitBreaker"
+import { httpServerError, HttpContentError } from "integrations/http/httpErrors"
+import { singletonBreaker } from "integrations/http/circuitBreaker"
+import crypto from "crypto"
 
-const formatDate = format("yyyy-MM-dd")
-
-const yesterday = flow(now, subDays(1), formatDate)
-
-const tomorrow = flow(now, addDays(1), formatDate)
-
-const jStringify = <A>(raw: A) =>
+const auth = (integration: ClearingIntegration) =>
   pipe(
-    raw,
-    J.stringify,
-    E.mapLeft(
-      (error): HttpContentError<"text"> => ({ tag: "HttpContentError", target: "text", error, raw })
+    integration,
+    ensureClearingMatch(CP.PAY_PLUS),
+    E.map((ci) => ci.vendorData),
+    E.chainW(ensureType(Authorization))
+  )
+
+const toPayload = (order: FullOrderWithItems, payment_page_uid: string) =>
+  GeneratePaymentLinkBody.parse({
+    items: toItems(order.items),
+    more_info: String(order.id),
+    more_info_1: String(order.venueId),
+    payment_page_uid,
+  })
+
+const payplusBreaker = singletonBreaker("PayPlus")
+
+export const payplusRequest =
+  (url: string | URL, init?: RequestOptions | undefined) => (integration: ClearingIntegration) =>
+    pipe(
+      E.Do,
+      E.apS("Authorization", auth(integration)),
+      E.apSW("prefixUrl", getEnvVar("PAY_PLUS_API_URL")),
+      E.bindW("headers", ({ Authorization }) =>
+        pipe(
+          J.stringify(Authorization),
+          E.mapLeft(
+            (error): HttpContentError => ({
+              tag: "HttpContentError",
+              error,
+              raw: Authorization,
+              target: "text",
+            })
+          )
+        )
+      ),
+      E.map(({ prefixUrl, Authorization, headers }) => ({
+        url: new URL(url, prefixUrl),
+        options: {
+          ...init,
+          headers: Object.assign({ Authorization: headers }, init?.headers),
+        } as RequestOptions,
+        secretKey: Authorization.secret_key,
+      })),
+      RTE.fromEither,
+      RTE.bindW("response", ({ url, options }) => payplusBreaker(url, options)),
+      RTE.bindW("text", ({ response }) => RTE.fromTaskEither(response.text)),
+      RTE.chainEitherKW(({ response, secretKey, text }) =>
+        pipe(
+          response,
+          E.fromPredicate(
+            (r) => r.headers["user-agent"] === "PayPlus",
+            (r) =>
+              httpServerError(
+                new Error(`Payplus user agent is ${r.headers["user-agent"]} and not as expected`)
+              )
+          ),
+          E.chain(
+            E.fromPredicate(
+              (r) =>
+                crypto.createHmac("sha256", secretKey).update(text).digest("base64") ===
+                r.headers["hash"],
+              () =>
+                httpServerError(
+                  new Error(
+                    `PayPlus response hash does not match. Man in the middle attack suspected`
+                  )
+                )
+            )
+          )
+        )
+      )
     )
-  )
 
-const auth = pipe(
-  RE.asks<ClearingIntegrationEnv, ClearingIntegration>((v) => v.clearingIntegration),
-  RE.chainEitherK(ensureClearingMatch(CP.PAY_PLUS)),
-  RE.map((ci) => ci.vendorData),
-  RE.chainEitherKW(ensureType(Authorization)),
-  RE.chainEitherKW(jStringify),
-  RE.bindTo("Authorization")
-)
-
-const toPayload = (order: FullOrderWithItems) =>
-  pipe(
-    R.asks<ClearingIntegrationEnv, string>((v) => v.clearingIntegration.terminal),
-    R.map((payment_page_uid) => ({
-      items: toItems(order.items),
-      more_info: String(order.id),
-      more_info_1: String(order.venueId),
-      payment_page_uid,
-    })),
-    R.map(GeneratePaymentLinkBody.parse)
-  )
-
-const payplusBreaker = singletonBreaker()
-
-export const payplusRequest = (url: string | URL, init?: RequestOptions | undefined) =>
-  pipe(
-    RE.Do,
-    RE.apS("headers", auth),
-    RE.apSW("prefixUrl", RE.fromEither(getEnvVar("PAY_PLUS_API_URL"))),
-    RE.map(({ prefixUrl, headers }) =>
-      tuple(new URL(url, prefixUrl), { ...init, headers: Object.assign(headers, init?.headers) })
-    ),
-    RTE.fromReaderEither,
-    RTE.chainW(tupled(payplusBreaker))
-  )
-
-const toStatusBody = (transaction_uid: string) => ({
-  transaction_uid,
-  filter: {
-    fromDate: yesterday(),
-    untilDate: tomorrow(),
-  },
+const toIPNBody = (order: Order): IPNBody => ({
+  related_transaction: false,
+  more_info: String(order.id),
 })
 
 export type PayPlusNotFound = {
@@ -102,62 +114,57 @@ export type PayPlusNotFound = {
   txId: string
 }
 
-const ensureInvoiceFound = (txId: string) => (data: z.infer<typeof GetStatusResponse>) =>
+const ensureStatusSuccess = (response: GetStatusResponse) =>
   pipe(
-    data,
-    RE.fromPredicate(
-      (d): d is z.infer<typeof InvoiceResponse> => d !== "cannot-find-invoice-for-this-transaction",
-      () => txId
-    ),
-    RE.orLeft(txIdNotFoundWithProvider)
-  )
-
-const getTxId = (order: Order) =>
-  pipe(order.txId, E.fromNullable<NoTxIdError>({ tag: "NoTxIdError", order: order.id }))
-
-const checkStatus = (txId: string) =>
-  pipe(
+    response,
     E.fromPredicate(
-      (invoice: Invoice) => invoice.status !== "success",
-      (): InvoiceFailedError => ({ tag: "InvoiceFailedError", txId })
-    ),
-    E.traverseArray
+      (r): r is StatusSuccess => r.results.status === "success",
+      (r) =>
+        ({
+          tag: "TransactionNotFoundError",
+          provider: "PAY_PLUS",
+          error: new Error(`payplus returned ${r.results.description}`),
+        } as TransactionNotFoundError)
+    )
   )
 
-const payplusBreakerOptions: BreakerOptions = {
-  name: "Payplus",
-  maxBreakerRetries: 3,
-  resetTimeoutSecs: 30,
-}
+const ensureTransactionSuccess = (response: StatusSuccess) =>
+  pipe(
+    response,
+    E.fromPredicate(
+      (r) => r.data.status_code === "000",
+      (r) =>
+        ({
+          tag: "TransactionFailedError",
+          orderId: Number(r.data.more_info),
+          error: new Error(`payplus returned ${r.results.description}`),
+        } as TransactionFailedError)
+    )
+  )
 
 export const payplusProvider: ClearingProvider = {
-  getClearingPageLink: flow(
-    RTE.fromReaderK(toPayload),
-    RTE.chainW((json) =>
-      payplusRequest("/api/v1.0/PaymentPages/generateLink", { method: "POST", json })
-    ),
-    RTE.chainTaskEitherKW((r) => r.json),
-    RTE.chainEitherKW(ensureType(GeneratePaymentLinkResponse)),
-    RTE.map((r) => r.data.payment_page_link),
-    withBreakerOptions(payplusBreakerOptions)
-  ),
-
-  validateTransaction: flow(
-    RTE.fromEitherK(getTxId),
-    RTE.chainFirstW((txId) =>
+  getClearingPageLink: (order) =>
+    RTE.asksReaderTaskEitherW((env: ClearingIntegrationEnv) =>
       pipe(
-        txId,
-        toStatusBody,
-        (json) => payplusRequest("/api/v1.0/Invoice/GetDocuments", { method: "POST", json }),
+        toPayload(order, env.clearingIntegration.terminal),
+        (json) => payplusRequest("/api/v1.0/PaymentPages/generateLink", { method: "POST", json }),
+        apply(env.clearingIntegration),
         RTE.chainTaskEitherKW((r) => r.json),
-        RTE.chainEitherKW(ensureType(GetStatusResponse)),
-        RTE.chainReaderEitherKW(ensureInvoiceFound(txId)),
-        RTE.map((r) => r.invoices),
-        RTE.map(RA.fromArray),
-        RTE.chainEitherKW(checkStatus(txId))
+        RTE.chainEitherKW(ensureType(GeneratePaymentLinkResponse)),
+        RTE.map((r) => r.data.payment_page_link)
       )
     ),
-    RTE.map(constVoid),
-    withBreakerOptions(payplusBreakerOptions)
-  ),
+
+  validateTransaction: (order) =>
+    RTE.asksReaderTaskEitherW((env: ClearingIntegrationEnv) =>
+      pipe(
+        payplusRequest("/api/v1.0/PaymentPages/ipn", { method: "POST", json: toIPNBody(order) }),
+        apply(env.clearingIntegration),
+        RTE.chainTaskEitherKW((r) => r.json),
+        RTE.chainEitherKW(ensureType(GetStatusResponse)),
+        RTE.chainEitherKW(ensureStatusSuccess),
+        RTE.chainEitherKW(ensureTransactionSuccess),
+        RTE.map((r) => r.data.transaction_uid)
+      )
+    ),
 }

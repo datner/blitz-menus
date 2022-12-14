@@ -1,7 +1,6 @@
 import * as E from "fp-ts/Either"
-import * as R from "fp-ts/Reader"
 import * as RTE from "fp-ts/ReaderTaskEither"
-import { constVoid, flow, pipe, tuple, tupled } from "fp-ts/function"
+import { flow, pipe, tuple, tupled } from "fp-ts/function"
 import { getEnvVar } from "src/core/helpers/env"
 import {
   ClearingIntegrationEnv,
@@ -9,10 +8,10 @@ import {
   ClearingProvider,
 } from "integrations/clearing/clearingProvider"
 import { ensureClearingMatch } from "integrations/clearing/clearingGuards"
-import { ClearingProvider as CP, Order } from "@prisma/client"
+import { ClearingIntegration, ClearingProvider as CP, Order } from "@prisma/client"
 import { ensureType, ZodParseError } from "src/core/helpers/zod"
 import { request, RequestOptions } from "integrations/http/httpClient"
-import { ClearingMismatchError, InvoiceFailedError } from "integrations/clearing/clearingErrors"
+import { TransactionFailedError } from "integrations/clearing/clearingErrors"
 import { z, ZodError } from "zod"
 import { Credentials } from "./lib"
 import { JSDOM } from "jsdom"
@@ -26,14 +25,6 @@ const baseOptions = pipe(
   E.map((prefixUrl) => new Options({ prefixUrl, method: "POST" }))
 )
 
-const addCredentials =
-  (int_in: string): R.Reader<CreditGuardEnv, { int_in: string; user: string; password: string }> =>
-  ({ credentials }) => ({
-    int_in,
-    user: credentials.username,
-    password: credentials.password,
-  })
-
 export const creditGuardRequest = (url: string | URL, opts?: RequestOptions | undefined) =>
   pipe(
     baseOptions,
@@ -43,12 +34,9 @@ export const creditGuardRequest = (url: string | URL, opts?: RequestOptions | un
     RTE.chainW(tupled(request))
   )
 
-const getDoDealXml = (order: FullOrderWithItems) =>
-  pipe(
-    R.ask<ClearingIntegrationEnv & CreditGuardEnv>(),
-    R.map(
-      (e) =>
-        `
+const getDoDealXml =
+  (order: FullOrderWithItems, integration: ClearingIntegration) => (mid: string) =>
+    `
 <ashrait>
 	<request>
 		<version>2000</version>
@@ -64,9 +52,9 @@ const getDoDealXml = (order: FullOrderWithItems) =>
 
 			<user>renu customer</user>
 			<currency>ILS</currency>
-			<terminalNumber>${e.clearingIntegration.terminal}</terminalNumber>
+			<terminalNumber>${integration.terminal}</terminalNumber>
 			<total>${getAmount(order.items)}</total>
-			<mid>${e.credentials.mid}</mid>
+			<mid>${mid}</mid>
 			<uniqueid>${order.id}</uniqueid>
       <successUrl>${successUrl}</successUrl>
       <errorUrl>${errorUrl}</errorUrl>
@@ -78,21 +66,14 @@ const getDoDealXml = (order: FullOrderWithItems) =>
 	</request>
 </ashrait>
 `
-    )
-  )
 
-type CreditGuardEnv = {
-  credentials: z.infer<typeof Credentials>
-}
-
-const getCredentials = R.asks((e: ClearingIntegrationEnv) =>
+const getCredentials = (ci: ClearingIntegration) =>
   pipe(
-    e.clearingIntegration,
+    ci,
     ensureClearingMatch(CP.CREDIT_GUARD),
     E.map((ci) => ci.vendorData),
     E.chainW(ensureType(Credentials))
   )
-)
 
 const parseXml = (xml: string) =>
   E.tryCatch<ZodParseError, XMLDocument>(
@@ -122,38 +103,23 @@ const getTextContent =
       E.chainNullableK(customZodError(`no text content in ${tag}`))((el) => el.textContent)
     )
 
-const checkReponseCode = (txId: string | null) =>
+const checkReponseCode = (_: string | null) =>
   flow(
     getTextContent("cgGatewayResponseCode"),
     E.chainFirst(ensureType(ResponseCodeSuccess)),
-    E.mapLeft(() => ({ tag: "InvoiceFailedError", txId } as InvoiceFailedError))
+    E.mapLeft(
+      () =>
+        ({
+          tag: "TransactionFailedError",
+          orderId: -1,
+          error: new Error("Credit Guard transaction failed"),
+        } as TransactionFailedError)
+    )
   )
 
-const withCredentials =
-  <R extends ClearingIntegrationEnv, E, A, B>(
-    rte: (a: A) => RTE.ReaderTaskEither<R & CreditGuardEnv, E, B>
-  ) =>
-  (a: A): RTE.ReaderTaskEither<R, E | ClearingMismatchError | ZodParseError, B> =>
-    pipe(
-      RTE.fromReaderEither(getCredentials),
-      RTE.chainW((credentials) =>
-        pipe(
-          a,
-          rte,
-          RTE.local((e: R) => Object.assign(e, { credentials } as CreditGuardEnv))
-        )
-      )
-    )
-
 const getPageUrl = getTextContent("mpiHostedPageUrl")
-const getInquireTransactionsXml = ({ txId }: Order) =>
-  pipe(
-    R.asks<ClearingIntegrationEnv & CreditGuardEnv, [string, string]>((e) =>
-      tuple(e.clearingIntegration.terminal, e.credentials.mid)
-    ),
-    R.map(
-      ([terminal, mid]) =>
-        `
+const getInquireTransactionsXml = ({ txId }: Order, terminal: string, mid: string) =>
+  `
 <ashrait>
   <request>
     <version>2000</version>
@@ -168,31 +134,38 @@ const getInquireTransactionsXml = ({ txId }: Order) =>
   </request>
 </ashrait>
 `
-    )
-  )
 
 export const creditGuardProvider: ClearingProvider = {
-  getClearingPageLink: withCredentials(
-    flow(
-      RTE.fromReaderK(getDoDealXml),
-      RTE.chainReaderKW(addCredentials),
-      RTE.chainW((form) => creditGuardRequest("/xpo/Relay", { form })),
-      RTE.chainTaskEitherKW((r) => r.text),
-      RTE.chainEitherKW(parseXml),
-      RTE.chainEitherKW(getPageUrl)
-    )
-  ),
+  getClearingPageLink: (order) =>
+    RTE.asksReaderTaskEitherW((env: ClearingIntegrationEnv) =>
+      pipe(
+        RTE.fromEither(getCredentials(env.clearingIntegration)),
+        RTE.map((cred) => ({
+          int_in: getDoDealXml(order, env.clearingIntegration)(cred.mid),
+          user: cred.username,
+          password: cred.password,
+        })),
+        RTE.chainW((form) => creditGuardRequest("/xpo/Relay", { form })),
+        RTE.chainTaskEitherKW((r) => r.text),
+        RTE.chainEitherKW(parseXml),
+        RTE.chainEitherKW(getPageUrl)
+      )
+    ),
 
-  validateTransaction: withCredentials((order) =>
-    pipe(
-      order,
-      RTE.fromReaderK(getInquireTransactionsXml),
-      RTE.chainReaderKW(addCredentials),
-      RTE.chainW((form) => creditGuardRequest("/xpo/Relay", { form })),
-      RTE.chainTaskEitherKW((r) => r.text),
-      RTE.chainEitherKW(parseXml),
-      RTE.chainFirstEitherKW(checkReponseCode(order.txId)),
-      RTE.map(constVoid)
-    )
-  ),
+  validateTransaction: (order) =>
+    RTE.asksReaderTaskEitherW((env: ClearingIntegrationEnv) =>
+      pipe(
+        RTE.fromEither(getCredentials(env.clearingIntegration)),
+        RTE.map((cred) => ({
+          int_in: getInquireTransactionsXml(order, env.clearingIntegration.terminal, cred.mid),
+          user: cred.username,
+          password: cred.password,
+        })),
+        RTE.chainW((form) => creditGuardRequest("/xpo/Relay", { form })),
+        RTE.chainTaskEitherKW((r) => r.text),
+        RTE.chainEitherKW(parseXml),
+        RTE.chainFirstEitherKW(checkReponseCode(order.txId)),
+        RTE.map(() => "credit-guard-tx-id")
+      )
+    ),
 }

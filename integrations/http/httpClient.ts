@@ -17,6 +17,7 @@ export type HttpResponse = {
   json: TE.TaskEither<HttpContentError<"json">, unknown>
   text: TE.TaskEither<HttpContentError<"text">, string>
   status: number
+  headers: Record<string, string | string[]>
   rawResponse: unknown
 }
 

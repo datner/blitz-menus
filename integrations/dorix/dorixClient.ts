@@ -1,3 +1,4 @@
+import * as C from "fp-ts/Console"
 import * as E from "fp-ts/Either"
 import * as RE from "fp-ts/ReaderEither"
 import * as RTE from "fp-ts/ReaderTaskEither"
@@ -16,11 +17,7 @@ import { ReportOrderFailedError } from "integrations/management/managementErrors
 import { ensureManagementMatch } from "integrations/management/managementGuards"
 import { MenuResponse, OrderResponse, StatusResponse, toOrder } from "./dorixHelpers"
 import { Order as DorixOrder } from "./types"
-import {
-  BreakerOptions,
-  singletonBreaker,
-  withBreakerOptions,
-} from "integrations/http/circuitBreaker"
+import { singletonBreaker } from "integrations/http/circuitBreaker"
 import { httpClientError } from "integrations/http/httpErrors"
 
 const headers = pipe(
@@ -35,12 +32,7 @@ const baseOptions = pipe(
   })
 )
 
-const dorixBreaker = singletonBreaker()
-export const dorixBreakerOptions: BreakerOptions = {
-  name: "Dorix",
-  maxBreakerRetries: 3,
-  resetTimeoutSecs: 30,
-}
+const dorixBreaker = singletonBreaker("Dorix")
 
 export const dorixRequest = (url: string | URL, options?: RequestOptions | undefined) =>
   pipe(
@@ -57,7 +49,7 @@ export const dorixRequest = (url: string | URL, options?: RequestOptions | undef
 
 const getStatus = (orderId: number, branchId: string) =>
   pipe(
-    dorixRequest(`/v1/order/${orderId}/status`, { searchParams: { branchId, vendor: "RENU" } }),
+    dorixRequest(`/v1/order/${orderId}/status`, { searchParams: { branchId, source: "RENU" } }),
     RTE.chainTaskEitherKW((res) => res.json),
     RTE.chainEitherKW(ensureType(StatusResponse))
   )
@@ -77,7 +69,7 @@ const getMenu = (branchId: string) =>
   )
 
 const getVendorData = pipe(
-  RE.asks((e: ManagementIntegrationEnv) => e.managementIntegration),
+  RE.asks((env: ManagementIntegrationEnv) => env.managementIntegration),
   RE.chainEitherKW(ensureManagementMatch(ManagementProvider.DORIX)),
   RE.map((i) => i.vendorData),
   RE.chainEitherKW(ensureType(DorixVendorData))
@@ -90,12 +82,6 @@ const ensureSuccess =
   <A extends { ack: true }>(orderResponse: Response<A>): E.Either<E, A> =>
     orderResponse.ack ? E.right(orderResponse) : E.left(onError(orderResponse.message))
 
-const breakerOptions: BreakerOptions = {
-  resetTimeoutSecs: 30,
-  maxBreakerRetries: 3,
-  name: "Dorix",
-}
-
 export const dorixClient: ManagementClient = {
   reportOrder: (order) =>
     pipe(
@@ -106,14 +92,14 @@ export const dorixClient: ManagementClient = {
       RTE.chainEitherKW(
         ensureSuccess((error): ReportOrderFailedError => ({ tag: "ReportOrderFailedError", error }))
       ),
-      RTE.map(constVoid),
-      withBreakerOptions(breakerOptions)
+      RTE.map(constVoid)
     ),
 
   getOrderStatus: (order) =>
     pipe(
       RTE.fromReaderEither(getVendorData),
       RTE.chainW(({ branchId }) => getStatus(order.id, branchId)),
+      RTE.orElseFirst((e) => RTE.fromIO(C.log(e.error instanceof Error ? e.error.message : e))),
       RTE.map((p) => {
         switch (p.order.status) {
           case "FAILED":
@@ -126,8 +112,7 @@ export const dorixClient: ManagementClient = {
           default:
             return OrderState.Confirmed
         }
-      }),
-      withBreakerOptions(breakerOptions)
+      })
     ),
 
   getVenueMenu: () =>
@@ -135,7 +120,6 @@ export const dorixClient: ManagementClient = {
       RTE.fromReaderEither(getVendorData),
       RTE.chainW(({ branchId }) => getMenu(branchId)),
       RTE.chainEitherKW(ensureSuccess(httpClientError)),
-      RTE.map((req) => req.data.menu),
-      withBreakerOptions(breakerOptions)
+      RTE.map((req) => req.data.menu)
     ),
 }

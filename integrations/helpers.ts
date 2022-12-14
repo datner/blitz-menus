@@ -22,4 +22,4 @@ export const getOrder = (id: number) =>
 export const successUrl = `${host()}/payments/success`
 export const errorUrl = `${host()}/payments/error`
 export const cancelUrl = (provider: ClearingKind) => `${host()}/payments/${provider}/cancel`
-export const callbackUrl = `${host()}/api/payment/callback`
+export const callbackUrl = `${host()}/api/payments/callback`

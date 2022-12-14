@@ -1,44 +1,42 @@
 import { resolver } from "@blitzjs/rpc"
 import { z } from "zod"
 import { pipe } from "fp-ts/function"
-import { Order, OrderState } from "@prisma/client"
+import { Order } from "@prisma/client"
 import * as E from "fp-ts/Either"
-import * as O from "fp-ts/Option"
 import * as TE from "fp-ts/TaskEither"
-import { Id, Option } from "src/core/helpers/zod"
-import { getOrder } from "integrations/helpers"
+import { Id } from "src/core/helpers/zod"
+import { findUniqueOrder } from "src/orders/helpers/prisma"
 
 const OrderSuccess = z.object({
-  orderId: Option(Id),
-  txId: Option(z.string()),
+  orderId: z
+    .union([Id, z.string().transform(Number)])
+    .nullable()
+    .refine((id): id is number => id != null),
 })
-
-type OrderSuccess = {
-  orderId: O.Option<number>
-  txId: O.Option<string>
-}
-
-type MissingParamError = {
-  tag: "missingParamError"
-  param: string
-}
-
-type StateNotConfirmedError = {
-  tag: "StateNotConfirmedError"
-  state: OrderState
-}
+type OrderSuccess = z.infer<typeof OrderSuccess>
 
 const ensureOrderState = <O extends Order>(order: O) =>
-  E.fromPredicate(
-    (o: Order) => o.state === "Confirmed",
-    () => ({ tag: "StateNotConfirmedError", state: order.state } as StateNotConfirmedError)
-  )(order)
+  pipe(
+    order,
+    E.fromPredicate(
+      (o: Order) => o.state === "Confirmed",
+      () => ({ tag: "StateNotConfirmedError", order } as const)
+    )
+  )
+
+const ensureOrderTxId = <O extends Order>(order: O) =>
+  pipe(
+    order,
+    E.fromPredicate(
+      (o: Order) => o.txId != null,
+      () => ({ tag: "NoTxId", order } as const)
+    )
+  )
 
 const orderSuccess = (input: OrderSuccess) =>
   pipe(
-    input.orderId,
-    TE.fromOption<MissingParamError>(() => ({ tag: "missingParamError", param: "txId" })),
-    TE.chainW(getOrder),
+    findUniqueOrder({ where: { id: input.orderId } }),
+    TE.chainEitherKW(ensureOrderTxId),
     TE.chainEitherKW(ensureOrderState)
   )
 

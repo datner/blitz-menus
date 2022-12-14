@@ -14,7 +14,6 @@ import { Locale } from "@prisma/client"
 import * as E from "fp-ts/Either"
 import { useAtomValue } from "jotai"
 import { amountAtom, orderAtomFamily, orderItemsAtom, priceAtom } from "src/menu/jotai/order"
-import { HTTPError } from "got"
 
 type Props = {
   open?: boolean

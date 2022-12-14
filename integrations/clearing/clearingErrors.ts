@@ -1,8 +1,7 @@
 import { ClearingProvider } from "db"
-import { ClearingIntegrationEnv } from "./clearingProvider"
 
 export type ClearingError = ClearingMismatchError
-export type ClearingValidationError = NoTxIdError | TxIdNotFoundWithProvider | InvoiceFailedError
+export type ClearingValidationError = TransactionNotFoundError | TransactionFailedError
 
 export type ClearingMismatchError = {
   tag: "ClearingMismatchError"
@@ -10,15 +9,16 @@ export type ClearingMismatchError = {
   given: ClearingProvider
 }
 
-export type NoTxIdError = {
-  tag: "NoTxIdError"
-  order: number
+export type TransactionFailedError = {
+  tag: "TransactionFailedError"
+  orderId: number
+  error: unknown
 }
 
-export type TxIdNotFoundWithProvider = {
-  tag: "TxIdNotFoundWithProvider"
-  txId: string
+export type TransactionNotFoundError = {
+  tag: "TransactionNotFoundError"
   provider: ClearingProvider
+  error: unknown
 }
 
 export type InvoiceFailedError = {
@@ -28,16 +28,8 @@ export type InvoiceFailedError = {
 
 export const clearingMismatchError =
   (needed: ClearingProvider) =>
-  (given: ClearingProvider): ClearingMismatchError => ({
+  (given: ClearingProvider = "UNKNOWN" as ClearingProvider): ClearingMismatchError => ({
     tag: "ClearingMismatchError",
     needed,
     given,
-  })
-
-export const txIdNotFoundWithProvider =
-  (txId: string) =>
-  (i: ClearingIntegrationEnv): TxIdNotFoundWithProvider => ({
-    tag: "TxIdNotFoundWithProvider",
-    txId,
-    provider: i.clearingIntegration.provider,
   })

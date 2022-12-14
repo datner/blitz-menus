@@ -8,9 +8,9 @@ import * as RTE from "fp-ts/ReaderTaskEither"
 import { request } from "integrations/http/httpClient"
 import { breakerError, BreakerError } from "integrations/http/httpErrors"
 import { now } from "fp-ts/Date"
+import { ManagementProvider, ClearingProvider } from "@prisma/client"
 
 export type BreakerOptions = {
-  name: string
   maxBreakerRetries: number
   resetTimeoutSecs: number
 }
@@ -64,32 +64,29 @@ const foldBreakerState =
     }
   }
 
-const rteBreakerError = <R, E, A>(s: BreakerOpen) =>
-  RTE.asksReaderTaskEither<R & CircuitBreakerEnv, BreakerError | E, A>(
-    ({ circuitBreakerOptions: { name } }) =>
-      RTE.throwError(
-        breakerError(
-          new Error(
-            `breaker "${name}" tripped, resetting in ${differenceInSeconds(now())(
-              s.endTime
-            )} seconds`
-          )
+const rteBreakerError =
+  (name: string) =>
+  <R, E, A>(s: BreakerOpen) =>
+    RTE.throwError<R, E | BreakerError, A>(
+      breakerError(
+        new Error(
+          `breaker "${name}" tripped, resetting in ${differenceInSeconds(now())(s.endTime)} seconds`
         )
       )
-  )
+    )
 
 export type CircuitBreakerEnv = {
   circuitBreakerOptions: BreakerOptions
 }
 
-export const circuitBreaker = (state: IOR.IORef<BreakerState>) =>
+export const circuitBreaker = (name: string) => (state: IOR.IORef<BreakerState>) =>
   flow(request, (r) =>
     pipe(
       RTE.fromIO(state.read),
       RTE.chain(
         foldBreakerState(
           () => r,
-          (s) => rteBreakerError(s),
+          (s) => rteBreakerError(name)(s),
           () => r
         )
       ),
@@ -134,7 +131,26 @@ export const withBreakerOptions = <R extends {}>(circuitBreakerOptions: BreakerO
     } as CircuitBreakerEnv)
   )
 
-export const singletonBreaker = () => {
+export const singletonBreaker = (name: string) => {
   const state = breakerState()
-  return circuitBreaker(state)
+  return circuitBreaker(name)(state)
 }
+
+export const breakers = {
+  DORIX: {
+    maxBreakerRetries: 3,
+    resetTimeoutSecs: 30,
+  },
+  PAY_PLUS: {
+    maxBreakerRetries: 3,
+    resetTimeoutSecs: 30,
+  },
+  RENU: {
+    maxBreakerRetries: 3,
+    resetTimeoutSecs: 30,
+  },
+  CREDIT_GUARD: {
+    maxBreakerRetries: 3,
+    resetTimeoutSecs: 30,
+  },
+} satisfies Record<ManagementProvider | ClearingProvider, BreakerOptions>

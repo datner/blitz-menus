@@ -18,6 +18,7 @@ import {
 import { FullOrderWithItems } from "integrations/clearing/clearingProvider"
 import { ensureType } from "src/core/helpers/zod"
 import { BaseModifier } from "db/itemModifierConfig"
+import { host } from "src/core/helpers/env"
 
 type OrderItemWithInfo = Prisma.OrderItemGetPayload<{
   include: { item: true; modifiers: { include: { modifier: true } } }
@@ -102,6 +103,9 @@ export const toOrder =
     customer: { firstName: "", lastName: "", email: "", phone: "" },
     discounts: [],
     metadata: {},
+    webhooks: {
+      status: `${host()}/api/webhooks/dorix/status`,
+    },
   })
 
 export function toItems(items: (OrderItem & { modifiers: OrderItemModifier[] })[]) {

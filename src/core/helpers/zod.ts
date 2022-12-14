@@ -2,7 +2,7 @@ import { Prisma } from "@prisma/client"
 import * as E from "fp-ts/Either"
 import { z } from "zod"
 
-export const Id = z.number().int().nonnegative()
+export const Id = z.coerce.number().int().nonnegative()
 
 export const Slug = z
   .string()

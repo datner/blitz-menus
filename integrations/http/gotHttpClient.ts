@@ -43,6 +43,7 @@ const gotRequest: HttpClientRequest = (...args) =>
             )
           ),
           text: TE.of(res.body),
+          headers: res.headers,
           rawResponse: res,
         } as HttpResponse)
     )

@@ -1,48 +1,35 @@
-import { useRouter } from "next/router"
-import { getQueryKey, invoke } from "@blitzjs/rpc"
-import { useQuery } from "@tanstack/react-query"
+import { useSearchParams } from "next/navigation"
+import { useQuery, invoke } from "@blitzjs/rpc"
 import { CheckIcon, EllipsisHorizontalIcon, XMarkIcon } from "@heroicons/react/24/solid"
-import orderSuccess from "src/menu/queries/orderSuccess"
 import { pipe } from "fp-ts/function"
 import * as E from "fp-ts/Either"
-import * as O from "fp-ts/Option"
 import { Button, Textarea } from "@mantine/core"
 import { useZodForm } from "src/core/hooks/useZodForm"
 import { z } from "zod"
 import sendComment from "src/menu/mutations/sendComment"
-import { useRouterQuery } from "@blitzjs/next"
+import validateStatus from "src/orders/queries/validateStatus"
+import { Suspense } from "react"
 
-const pa = (p: string | string[] | undefined) => pipe(p, O.fromNullable, O.map(String))
-
-export default function Success() {
-  const params = useRouterQuery()
-  console.log(params)
-  const args = {
-    txId: pa(params.transaction_uid),
-    orderId: pipe(params.more_info, pa, O.map(Number)),
-  }
-  const { status } = useQuery({
-    queryKey: getQueryKey(orderSuccess, args),
-    queryFn: async () =>
-      pipe(
-        await invoke(orderSuccess, args),
-        E.getOrElseW((e) => {
-          throw e
-        })
-      ),
-    retry: (count, error) =>
-      (error as { tag: string }).tag === "StateNotConfirmedError" && count < 10,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-    suspense: false,
-  })
+export function SuccessPage() {
+  const searchParams = useSearchParams()
+  const [response] = useQuery(
+    validateStatus,
+    {
+      orderId: searchParams.get("more_info"),
+      txId: searchParams.get("transaction_uid"),
+    },
+    { retry: 35 }
+  )
 
   const form = useZodForm({
     schema: z.object({ comment: z.string() }),
   })
 
-  switch (status) {
-    case "error":
-      return (
+  console.log(response)
+  return pipe(
+    response,
+    E.match(
+      () => (
         <div className="grow flex items-center place-self-center min-h-0">
           <div className="p-4">
             <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
@@ -61,27 +48,8 @@ export default function Success() {
             </div>
           </div>
         </div>
-      )
-    case "loading":
-      return (
-        <div className="grow flex place-content-center place-self-center min-h-0">
-          <div className="p-4">
-            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100">
-              <EllipsisHorizontalIcon className="h-6 w-6 text-blue-600" aria-hidden="true" />
-            </div>
-            <div className="mt-3 text-center sm:mt-5">
-              <h3 className="text-lg leading-6 font-medium text-gray-900">Wait for it....</h3>
-              <div className="mt-2">
-                <p className="text-sm text-gray-500">
-                  {`We're just checking to see everything is fine and telling the kitchen to start cooking!`}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )
-    case "success":
-      return (
+      ),
+      () => (
         <div className="grow flex items-center place-self-center min-h-0">
           <div className="p-4">
             <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
@@ -113,5 +81,32 @@ export default function Success() {
           </div>
         </div>
       )
-  }
+    )
+  )
+}
+
+export default function Success() {
+  return (
+    <Suspense
+      fallback={
+        <div className="grow flex place-content-center place-self-center min-h-0">
+          <div className="p-4">
+            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100">
+              <EllipsisHorizontalIcon className="h-6 w-6 text-blue-600" aria-hidden="true" />
+            </div>
+            <div className="mt-3 text-center sm:mt-5">
+              <h3 className="text-lg leading-6 font-medium text-gray-900">Wait for it....</h3>
+              <div className="mt-2">
+                <p className="text-sm text-gray-500">
+                  {`We're just checking to see everything is fine and telling the kitchen to start cooking!`}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    >
+      <SuccessPage />
+    </Suspense>
+  )
 }
