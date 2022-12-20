@@ -38,6 +38,7 @@ const methods = pipe(
   ["get", "post", "options", "put", "head", "patch", "trace", "delete"] as Method[],
   A.chain((m) => [m, S.toUpperCase(m)])
 )
+
 const zMethods = z
   .string()
   .refine((m): m is Method => methods.includes(m))
@@ -114,38 +115,38 @@ const onCharge = (ppc: PayPlusCallback) =>
         ),
         RTE.chainFirstW((o) =>
           pipe(
-            reportOrder(o),
-            RTE.orElseFirst((e) => {
-              switch (e.tag) {
-                case "ReportOrderFailedError": {
-                  const orderId = ppc.transaction.more_info
-                  const venueId = ppc.transaction.more_info_1
-                  const { provider } = managementIntegration
-                  const pre = Format.pre("none")
-                  const message =
-                    e.error instanceof Error
-                      ? `Provider ${provider} reported the following error:\n ${pre(
-                          e.error.message
-                        )}`
-                      : `Please reach out to ${managementIntegration.provider} support for further details.`
-                  return RTE.fromTask(
+            o,
+            reportOrder,
+            RTE.orElseFirstW((e) => {
+              if (e.tag === "ReportOrderFailedError") {
+                const orderId = ppc.transaction.more_info
+                const venueId = ppc.transaction.more_info_1
+                const { provider } = managementIntegration
+                const pre = Format.pre("none")
+                const message =
+                  e.error instanceof Error
+                    ? `Provider ${provider} reported the following error:\n ${pre(e.error.message)}`
+                    : `Please reach out to ${managementIntegration.provider} support for further details.`
+
+                return pipe(
+                  RTE.fromTask(
                     sendMessage(
-                      // wtf prettier, what is this butchered mess? looks like a murder scene
                       Format.fmt(
                         ` Order ${orderId} of venue ${venueId} could not be submitted to management.\n\n${message}`
                       )
                     )
-                  )
-                }
-
-                default:
-                  return RTE.left(e)
+                  ),
+                  RTE.apSecondW(RTE.throwError({ tag: "ContinueToCheckStatus", order: o } as const))
+                )
               }
+
+              return RTE.rightIO(constVoid)
             })
           )
         ),
-        RTE.apFirstW(
-          RTE.fromTaskEither(changeOrderState(ppc.transaction.more_info)(OrderState.Unconfirmed))
+        RTE.chainFirstTaskEitherKW((o) => changeOrderState(o.id)(OrderState.Unconfirmed)),
+        RTE.orElseFirstW((e) =>
+          e.tag === "ContinueToCheckStatus" ? RTE.right(e.order) : RTE.throwError(e)
         ),
         RTE.chainW(getOrderStatus),
         RTE.chainTaskEitherKW(changeOrderState(ppc.transaction.more_info)),
@@ -172,12 +173,12 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) =>
       sendMessage(
         Format.fmt(
           `Error in payment callback\n\n`,
-          Format.pre("none")(e.error instanceof Error ? e.error.message : e.tag)
+          Format.pre("none")("error" in e && e.error instanceof Error ? e.error.message : e.tag)
         )
       )
     ),
     TE.bimap(
-      (e) => res.status(500).json(e),
+      () => res.status(400).json({ success: false }),
       () => res.status(200).json({ success: true })
     )
   )()
